@@ -1,0 +1,1 @@
+const kDefaultPageItemNumber = 20;

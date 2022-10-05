@@ -1,0 +1,211 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/blocs/data_fetcher/data_collection_fetch_bloc.dart';
+import 'package:netflox/data/blocs/data_fetcher/filter_parameter.dart';
+import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/ui/router/router.gr.dart';
+import 'package:provider/provider.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import '../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
+import '../../data/blocs/data_fetcher/paged_data_fetch_manager.dart';
+import '../widgets/custom_awesome_dialog.dart';
+import '../widgets/filters/filter_menu_dialog.dart';
+import '../widgets/paged_media_sliver_grid_view.dart';
+import '../widgets/tmdb/list_tmdb_media_card.dart';
+
+class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
+  final DiscoverFilterParameter _discoverFilterParameter;
+  final Set<TMDBPrimaryMedia> _data;
+
+  DiscoverScreen({super.key, DiscoverFilterParameter? parameter})
+      : _discoverFilterParameter = parameter ?? const DiscoverFilterParameter(),
+        _data = {},
+        _controller = ScrollController();
+  final ScrollController _controller;
+
+  Future<void> showFilterMenuDialog(BuildContext context) {
+    return CustomAwesomeDialog(
+            dialogType: DialogType.noHeader,
+            bodyHeaderDistance: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            body: FilterMenuDialog(
+              currentParameters: context
+                  .read<PagedDataFilterManager<DiscoverFilterParameter>>()
+                  .state
+                  .currentFilter,
+              onParameterSubmitted: (newParameter) {
+                context
+                    .read<PagedDataFilterManager<DiscoverFilterParameter>>()
+                    .updateParameter(newParameter);
+              },
+            ),
+            context: context)
+        .show();
+  }
+
+  Widget _bottomAppBar(BuildContext context) {
+    return Container(
+        height: 35,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.center,
+        color: ResponsiveWrapper.of(context).isLargerThan(MOBILE)
+            ? Theme.of(context).shadowColor
+            : Theme.of(context).primaryColor,
+        child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
+            PagedRequestParameter<DiscoverFilterParameter>>(
+          buildWhen: (previous, current) =>
+              current.currentFilter != previous.currentFilter,
+          builder: (context, state) {
+            final singleValueFilters =
+                state.currentFilter.toMap().entries.where((e) {
+              return e.value != null && e.value is! List;
+            }).toList();
+            return Center(
+              child: ListView.separated(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (BuildContext context, int index) {
+                  final filter = singleValueFilters[index];
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "${filter.key.tr(context)}:",
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13),
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        filter.value.toString().tr(context),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      )
+                    ],
+                  );
+                },
+                itemCount: singleValueFilters.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    const VerticalDivider(
+                  thickness: 2,
+                  indent: 5,
+                  endIndent: 5,
+                ),
+              ),
+            );
+          },
+        ));
+  }
+
+  Widget _buildReturnButton() {
+    return ChangeNotifierProvider.value(
+      value: _controller,
+      child: Consumer<ScrollController>(builder: (context, value, child) {
+        if (value.offset > MediaQuery.of(context).size.height) {
+          return IconButton(
+              icon: const Icon(Icons.arrow_upward),
+              onPressed: () {
+                _controller.animateTo(0,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.ease);
+              });
+        }
+        return const SizedBox.shrink();
+      }),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) => SliverAppBar(
+        floating: true,
+        elevation: 10,
+        titleSpacing: 0,
+        snap: true,
+        centerTitle: false,
+        leading: const Icon(Icons.explore),
+        title: const Text(
+          "explore",
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        ).tr(),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: _bottomAppBar(context),
+        ),
+        actions: [
+          _buildReturnButton(),
+          IconButton(
+              onPressed: () => showFilterMenuDialog(context),
+              icon: const Icon(Icons.filter_list)),
+          const SizedBox(
+            width: 20,
+          )
+        ],
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return PagedSliverScrollViewWrapper(
+      bloc: context.read<TMDBMultimediaDiscoverBloc>(),
+      controller: _controller,
+      onEndReached: () {
+        context
+            .read<PagedDataFilterManager<DiscoverFilterParameter>>()
+            .nextPage();
+      },
+      slivers: [
+        _buildAppBar(context),
+        BlocConsumer<TMDBMultimediaDiscoverBloc, BasicServerFetchState>(
+            listener: (context, state) {
+          if (state.hasData()) {
+            _data.addAll(state.result!);
+          }
+        }, builder: (context, state) {
+          return SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  ((context, index) => ListTMDBMediaCard(
+                        height:
+                            ResponsiveWrapper.of(context).isLargerThan(MOBILE)
+                                ? 150
+                                : 100,
+                        media: _data.elementAt(index),
+                        onTap: (media) =>
+                            context.pushRoute(MediaRoute.fromMedia(media)),
+                      )),
+                  childCount: _data.length));
+        }),
+      ],
+    );
+  }
+
+  @override
+  Widget wrappedRoute(BuildContext context) {
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => TMDBMultimediaDiscoverBloc(context: context)
+              ..add(PagedRequestParameter(_discoverFilterParameter)),
+          ),
+          BlocProvider(
+              create: (context) =>
+                  PagedDataFilterManager(_discoverFilterParameter))
+        ],
+        child: BlocListener<PagedDataFilterManager<DiscoverFilterParameter>,
+            PagedRequestParameter<DiscoverFilterParameter>>(
+          child: this,
+          listener: (context, state) {
+            if (state.isNewRequest()) {
+              _data.clear();
+            }
+            context.read<TMDBMultimediaDiscoverBloc>().add(state);
+          },
+        ));
+  }
+}

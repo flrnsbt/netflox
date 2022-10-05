@@ -1,25 +1,86 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:netflox/main.dart';
+import 'package:netflox/ui/screens/admin_screen.dart';
+import 'package:netflox/ui/screens/auths/auth_screen.dart';
+import 'package:netflox/ui/screens/auths/forgot_password_screen.dart';
 import 'package:netflox/ui/screens/auths/my_account_screen.dart';
-import 'package:netflox/ui/screens/auths/sign_in_screen.dart';
-import 'package:netflox/ui/screens/auths/sign_up_screen.dart';
-import 'package:netflox/ui/screens/home_screen.dart';
+import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
+import 'package:netflox/ui/screens/discover_screen.dart';
+import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/screens/search_screen.dart';
 import 'package:netflox/ui/screens/library_screen.dart';
+import 'package:netflox/ui/screens/settings_screen.dart';
+import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart';
+import 'package:netflox/ui/screens/upload_screen.dart';
 
-import '../../main.dart';
-
-part 'router.gr.dart';
+import '../screens/stream_media_screen.dart';
+import '../screens/tmdb/media_screen.dart';
+import '../screens/tmdb/tv_show_season_screen.dart';
 
 @MaterialAutoRouter(
-  replaceInRouteName: 'Screen',
+  replaceInRouteName: 'Screen,Route',
   routes: <AutoRoute>[
-    AutoRoute(page: AppGenerator, path: "", initial: true, children: [
-      AutoRoute(page: HomeScreen, path: "dashboard", initial: true),
-      AutoRoute(page: LibraryScreen),
-      AutoRoute(page: MyAccountScreen),
-      AutoRoute(page: SignInScreen),
-      AutoRoute(page: SignUpScreen),
+    AutoRoute(page: StackScreen, initial: true, path: "", children: [
+      AutoRoute(
+          path: "dashboard",
+          initial: true,
+          page: TabHomeScreen,
+          children: [
+            AutoRoute(
+              page: SearchScreen,
+              path: "search",
+              initial: true,
+            ),
+            AutoRoute(
+              page: DiscoverScreen,
+              path: "discover",
+            ),
+            AutoRoute(
+              page: LibraryScreen,
+              path: "library",
+            ),
+            AutoRoute(page: MyAccountScreen, path: 'my-account'),
+          ]),
+      AutoRoute(page: UnverifiedUserScreen, path: "unverified-user"),
+      AutoRoute(
+        page: MediaScreen,
+        path: ":mediaType/:id",
+      ),
+      AutoRoute(
+        page: TVShowSeasonScreen,
+        path: "tv/:tvShowId/:seasonNumber",
+      ),
+      AutoRoute(
+        page: TVShowEpisodeScreen,
+      ),
+      AutoRoute(
+        path: 'stream',
+        fullscreenDialog: true,
+        page: StreamMediaScreen,
+      ),
+      AutoRoute<bool>(page: AuthScreen, path: 'auth'),
+      AutoRoute(
+        page: ForgotPasswordScreen,
+        path: "forgot-password",
+      ),
+      AutoRoute(
+        path: 'admin-panel',
+        page: AdminScreen,
+      ),
+      AutoRoute(
+        path: 'settings',
+        page: SettingsScreen,
+      ),
+      AutoRoute(
+        path: 'upload-file',
+        page: UploadScreen,
+      ),
     ]),
+    AutoRoute(
+      path: 'error/:error',
+      page: ErrorScreen,
+    ),
+    RedirectRoute(path: '*', redirectTo: 'error/404-not-found'),
   ],
 )
-class NetfloxRouter extends _$NetfloxRouter {}
+class $NetfloxRouter {}

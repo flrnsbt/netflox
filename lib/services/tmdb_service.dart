@@ -1,102 +1,281 @@
 import 'dart:ui';
-import 'package:netflox/data/models/tmdb/element.dart';
+
+import 'package:netflox/data/models/tmdb/genre.dart';
+import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/data/models/tmdb/people.dart';
+import 'package:netflox/data/models/tmdb/season.dart';
+import 'package:netflox/data/models/tmdb/type.dart';
 import 'package:netflox/data/models/tmdb/movie.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
-import 'package:netflox/data/repositories/tmdb_repository.dart';
+import 'package:netflox/data/models/tmdb/video.dart';
+import 'package:netflox/data/models/tmdb/parameters.dart';
+import '../data/repositories/tmdb_repository.dart';
+import '../data/repositories/tmdb_result.dart';
 
 class TMDBService {
+  final String? defaultLanguage;
   final TMDBRepository _repository;
 
-  const TMDBService(this._repository);
+  TMDBService({required TMDBRepository repository, Locale? defaultLanguage})
+      : _repository = repository,
+        defaultLanguage = defaultLanguage?.languageCode;
 
-  Future<TMDBQueryResult<TMDBMovie>> getMovie(
-      {required String movieId, Locale? language, bool? includeAdult}) async {
-    try {
-      final query = _repository.movie().getElement(movieId);
-      if (language != null) {
-        query.language(language);
-      }
-      if (includeAdult != null) {
-        query.includeAdult(includeAdult);
-      }
-      return query.fetch();
-    } catch (e) {
-      rethrow;
-    }
+  TMDBQueryHTTPClient? _currentQueryClient;
+
+  void _updateQueryClient(TMDBQueryHTTPClient queryClient) {
+    _currentQueryClient?.close(true);
+    _currentQueryClient = queryClient;
   }
 
-  Future<TMDBQueryResult<TMDBTv>> getTvShow(
-      {required String tvShowId, Locale? language, bool? includeAdult}) async {
-    try {
-      final query = _repository.tv().getElement(tvShowId);
-      if (language != null) {
-        query.language(language);
-      }
-      if (includeAdult != null) {
-        query.includeAdult(includeAdult);
-      }
-      return query.fetch();
-    } catch (e) {
-      rethrow;
-    }
+  Future<TMDBDocumentResult<TMDBMovie>> getMovie(
+      {required String movieId, String? language}) async {
+    final query = _repository
+        .movie()
+        .document(movieId)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+    final result = await query.fetch();
+    return result;
   }
 
-  Future<TMDBQueryResult<List<TMDBElement>>>? search(String searchTerms,
-      {int? year, Locale? language, bool? includeAdult}) {
-    final query = _repository.search();
+  Future<TMDBDocumentResult<TMDBTv>> getTvShow(
+      {required String tvShowId, String? language}) async {
+    final query = _repository
+        .tv()
+        .document(tvShowId)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBDocumentResult<TMDBTVEpisode>> getEpisode(
+      {required String tvShowId,
+      required int seasonNumber,
+      required int episodeNumber,
+      String? language}) async {
+    final query = _repository
+        .tv()
+        .document(tvShowId)
+        .getSeason(seasonNumber)
+        .getEpisode(episodeNumber)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBDocumentResult<TMDBTVSeason>> getSeason(
+      {required String tvShowId,
+      required int seasonNumber,
+      String? language}) async {
+    final query = _repository
+        .tv()
+        .document(tvShowId)
+        .getSeason(seasonNumber)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBDocumentResult<T>> getPrimaryMedia<T extends TMDBPrimaryMedia>(
+      {required String id, required TMDBType<T> type, String? language}) async {
+    final query = _repository
+        .primaryMedia<T>(type)
+        .document(id)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBDocumentResult<T>> getMultimedia<T extends TMDBMultiMedia>(
+      {required String id, required TMDBType<T> type, String? language}) async {
+    final query = _repository
+        .multimedia<T>(type)
+        .document(id)
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBCollectionResult<T>> search<T extends TMDBPrimaryMedia>(
+      String searchTerms,
+      {TMDBType<T>? mediaType,
+      String? language,
+      int? year,
+      bool? includeAdult,
+      num page = 1}) async {
+    final query = _repository.search(mediaType);
+    if (year != null && (mediaType?.isMultimedia() ?? false)) {
+      query.year(year);
+    }
+    final collectionQuery = query.searchTerms(searchTerms);
+    collectionQuery.setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(collectionQuery);
+
+    final result = await collectionQuery.fetch(page: page);
+    return result;
+  }
+
+  Future<TMDBCollectionResult<T>> discover<T extends TMDBMultiMedia>(
+      TMDBType<T> mediaType,
+      {SortParameter? sortParameter,
+      List<TMDBMultiMediaGenre<T>>? genres,
+      String? mediaLanguage,
+      String? resultLanguage,
+      int? year,
+      num page = 1}) async {
+    final query = _repository.discover<T>(mediaType);
+    if (genres?.isNotEmpty ?? false) {
+      final g = genres!.map((e) => e.id).join(",");
+      query.withGenres(g);
+    }
     if (year != null) {
       query.year(year);
     }
-    if (language != null) {
-      query.language(language);
+    if (mediaLanguage != null) {
+      query.language(mediaLanguage);
     }
-    if (includeAdult != null) {
-      query.includeAdult(includeAdult);
+    if (sortParameter != null) {
+      query.sort(sortParameter.toString());
     }
-    return query.query(searchTerms).fetch();
-  }
+    final collectionQuery = query.submit();
+    collectionQuery.setLanguage(resultLanguage ?? defaultLanguage);
+    _updateQueryClient(collectionQuery);
 
-  Future<TMDBQueryResult<List<TMDBMovie>>>? searchMovies(String searchTerms,
-      {int? year, Locale? language, bool? includeAdult}) {
-    final query = _repository.movie().search(searchTerms, year: year);
-    if (language != null) {
-      query.language(language);
-    }
-    if (includeAdult != null) {
-      query.includeAdult(includeAdult);
-    }
-    final result = query.fetch();
+    final result = await collectionQuery.fetch(page: page);
     return result;
   }
 
-  Future<TMDBQueryResult<List<TMDBTv>>>? searchTvShows(String searchTerms,
-      {int? year, Locale? language, bool? includeAdult}) {
-    final query = _repository.tv().search(searchTerms, year: year);
-    if (language != null) {
-      query.language(language);
-    }
-    if (includeAdult != null) {
-      query.includeAdult(includeAdult);
-    }
-    return query.fetch();
-  }
+  Future<TMDBCollectionResult<T>> getPopulars<T extends TMDBPrimaryMedia>(
+      {required TMDBType<T> mediaType, String? language, num page = 1}) async {
+    final query = _repository
+        .primaryMedia<T>(mediaType)
+        .getPopulars()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
 
-  Future<TMDBQueryResult<List<TMDBMovie>>>? getPopularMovies(
-      {Locale? language}) {
-    final query = _repository.movie().getPopulars();
-    if (language != null) {
-      query.language(language);
-    }
-    final result = query.fetch();
+    final result = await query.fetch(page: page);
+
     return result;
   }
 
-  Future<TMDBQueryResult<List<TMDBTv>>>? getPopularTvShows({Locale? language}) {
-    final query = _repository.tv().getPopulars();
-    if (language != null) {
-      query.language(language);
-    }
-    final result = query.fetch();
+  Future<TMDBCollectionResult<T>> getTopRated<T extends TMDBMultiMedia>(
+      {required TMDBType<T> mediaType, String? language, num page = 1}) async {
+    final query = _repository
+        .multimedia<T>(mediaType)
+        .getTopRated()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch(page: page);
+
     return result;
+  }
+
+  Future<TMDBCollectionResult<T>> trending<T extends TMDBPrimaryMedia>(
+      {required TMDBType<T> mediaType,
+      TimeWindow timeWindow = TimeWindow.day,
+      String? language,
+      num page = 1}) async {
+    final query = _repository
+        .primaryMedia<T>(mediaType)
+        .trending()
+        .timeWindow(timeWindow)
+        .get()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch(page: page);
+
+    return result;
+  }
+
+  Future<TMDBCollectionResult<T>> getRecommendations<T extends TMDBMultiMedia>(
+      {required TMDBType<T> mediaType,
+      required String id,
+      String? language,
+      num page = 1}) async {
+    final query = _repository
+        .multimedia<T>(mediaType)
+        .document(id)
+        .getRecommendations()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch(page: page);
+
+    return result;
+  }
+
+  Future<TMDBDocumentResult<List<TMDBVideo>>>
+      getVideos<T extends TMDBMultiMedia>(
+          {required TMDBType<T> mediaType,
+          required String id,
+          String? language}) async {
+    final query = _repository
+        .multimedia<T>(mediaType)
+        .document(id)
+        .getVideos()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    result.data?.sort();
+    return result;
+  }
+
+  Future<TMDBCollectionResult<T>> getSimilars<T extends TMDBMultiMedia>(
+      {required TMDBType<T> mediaType,
+      required String id,
+      String? language,
+      num? page}) async {
+    final query = _repository
+        .multimedia<T>(mediaType)
+        .document(id)
+        .getSimilars()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch(page: page);
+    return result;
+  }
+
+  Future<TMDBDocumentResult<List<TMDBPerson>>> getMediaCredits(
+      {required String id,
+      required TMDBType<TMDBMultiMedia> type,
+      String? language}) async {
+    final query = _repository
+        .multimedia(type)
+        .document(id)
+        .credits()
+        .setLanguage(language ?? defaultLanguage);
+    final result = await query.fetch();
+    return result;
+  }
+
+  Future<TMDBDocumentResult<List<TMDBMultiMedia>>> getPersonCasting(
+      {required String id, String? language}) async {
+    final query = _repository
+        .people()
+        .document(id)
+        .credits()
+        .setLanguage(language ?? defaultLanguage);
+    _updateQueryClient(query);
+
+    final result = await query.fetch();
+    return result;
+  }
+
+  void close([bool force = false]) {
+    _currentQueryClient?.close(force);
   }
 }

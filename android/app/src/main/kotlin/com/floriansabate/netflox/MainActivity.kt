@@ -1,4 +1,4 @@
-package com.example.netflox
+package com.floriansabate.netflox
 
 import io.flutter.embedding.android.FlutterActivity
 

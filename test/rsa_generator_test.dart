@@ -1,0 +1,42 @@
+import 'dart:convert';
+
+import 'package:dartssh2/dartssh2.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:netflox/utils/rsa_key_helper.dart';
+
+void main() {
+  const passphrase = "test";
+
+  test("Check If AES Encryption & Decryption is working", () async {
+    final keys = await RSAKeysHelper.generate();
+    final encryptedKey = await keys.privateKey.encrypt(passphrase);
+    final decryptedKey = await encryptedKey.getPrivateKeys(passphrase);
+
+    expect(keys.privateKey.keyblob, decryptedKey.toBlob());
+  });
+
+  test("Check If PEM parsing and exporting work", () async {
+    final keys = await RSAKeysHelper.generate(passphrase: passphrase);
+    final pem = keys.privateKey.toPem();
+    print(pem);
+
+    final keyFromPem = SSHPem.decode(pem);
+
+    expect(keys.privateKey.keyblob, keyFromPem.content);
+  });
+
+  test("Check ", () async {
+    const passphrase = "R25EE9Wyz6cQqDeJC0QKARFI9NQ2";
+    const public = """-----BEGIN RSA PUBLIC KEY-----
+MIICCgKCAgEAsvjLCJXfdTgI/zZHjZ1K4lNeyu2O87gSWyvanfkiGYxcsX8HizArT9yujIbGMh+JcVDCmEkHL4dOhfKysvR4kozEwvSNUrE1at6QWXa0t41/cXBnhL6doqCrnOZDMPoML6CSxOGLJDJ3sdLBwFbKI0VFIza2cIWbeQMPw2wP4PTwYcZf4NBw+yjJ19GZI2Z/JLITvtxxpRsckHC7cpgiQ8n527lu3Pj8t9e8XIN2Nwk1zCh+truy31cnnlZpdTPN6IqWFfsnuJR9ylQDe3n+BZ83xY2Rqy/qwz9qXr2Yy6liaYXkZd5XWAzEgG2/EWMhZsPZmTof5G4mMVhH7osO81mqbdqCT9t/nSpDg2USsb1VjLDq/f8Y6xlbrUfeJxK9b39k8lxUaMYJMPsQyjc5Ll3JnUrlHvhZVMBf0hPIM7Enblr8DRYP57rus10w5HSX7MgaQ5t1f+ti5VRfb//uUytPLNbm8lZ3ZBqlf1IqOXWVqvP2Wrz9T5ybDKnRCre3jQz1kZQDwN0leyjptGpx4PwZzu7qVyFkU5lvPTy3RmzjJZ8FgYlkw7YDLRZlDJs9omdrBPDpRstlz3vIxrTtG8g9WbNhzz4ljjKoFXatZUTIhbKVEZ1CDHhNVKvVSmhG0/ST8iEm/1Yc68TnmIaw16kzWgcwmhRWH7cMYWqxUwUCAwEAAQ==
+-----END RSA PUBLIC KEY-----""";
+    const pem = """-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----""";
+    final keys = NetfloxRSAPrivateKey.fromPem(pem);
+    final privateKey = await keys.getPrivateKeys(passphrase);
+
+    print(privateKey.toPem());
+    // expect(keys.privateKey.keyblob, keyFromPem.content);
+  });
+}
