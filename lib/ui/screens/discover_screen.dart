@@ -171,10 +171,6 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
           return SliverList(
               delegate: SliverChildBuilderDelegate(
                   ((context, index) => ListTMDBMediaCard(
-                        height:
-                            ResponsiveWrapper.of(context).isLargerThan(MOBILE)
-                                ? 150
-                                : 100,
                         media: _data.elementAt(index),
                         onTap: (media) =>
                             context.pushRoute(MediaRoute.fromMedia(media)),

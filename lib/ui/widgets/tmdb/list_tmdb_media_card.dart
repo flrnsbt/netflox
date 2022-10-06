@@ -29,105 +29,88 @@ class ListTMDBMediaCard extends StatelessWidget {
             child: Container(
               height: height,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                Flexible(
-                  flex: 1,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: TMDBImageWidget(
-                      img: media.img,
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: TMDBImageWidget(
+                        img: media.img,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: AutoSizeText(
-                            media.name!,
-                            maxLines: 2,
-                            wrapWords: false,
-                            minFontSize: 12,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            children: [
-                              FramedText(
-                                text: media.type.name.tr(context),
-                                color: Theme.of(context).primaryColor,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                ),
-                              ),
-                              if (media.popularityLevel != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 5),
-                                  child: FramedText(
-                                    text: media.popularityLevel!.tr(context),
-                                    color: Theme.of(context).primaryColor,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                )
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Wrap(
+                    const SizedBox(width: 10),
+                    Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (media is TMDBMultiMedia &&
-                                (media as TMDBMultiMedia).genres.isNotEmpty)
-                              Text(
-                                "${(media as TMDBMultiMedia).genres.first.tr(context)} - ",
+                            Flexible(
+                              child: AutoSizeText(
+                                media.name!,
+                                maxLines: 2,
+                                wrapWords: false,
+                                minFontSize: 12,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 8, fontStyle: FontStyle.italic),
+                                    fontSize: 18, fontWeight: FontWeight.w700),
                               ),
-                            if (media.date != null)
-                              Text(
-                                media.date!,
-                                style: const TextStyle(
-                                    fontSize: 8, fontStyle: FontStyle.italic),
-                              )
+                            ),
+                            const SizedBox(height: 5),
+                            FramedText(
+                              text: media.type.name.tr(context),
+                              color: Theme.of(context).primaryColor,
+                              style: const TextStyle(
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Wrap(
+                              children: [
+                                if (media is TMDBMultiMedia &&
+                                    (media as TMDBMultiMedia).genres.isNotEmpty)
+                                  Text(
+                                    "${(media as TMDBMultiMedia).genres.first.tr(context)} - ",
+                                    style: const TextStyle(
+                                        fontSize: 9,
+                                        fontStyle: FontStyle.italic),
+                                  ),
+                                if (media.date != null)
+                                  Text(
+                                    media.date!,
+                                    style: const TextStyle(
+                                        fontSize: 9,
+                                        fontStyle: FontStyle.italic),
+                                  )
+                              ],
+                            )
                           ],
-                        )
-                      ],
-                    )),
-                const Spacer(),
-                Expanded(
-                    flex: 3,
-                    child: ResponsiveWrapper.of(context).isLargerThan(MOBILE) &&
-                            media.overview != null
-                        ? Text(
-                            media.overview!,
-                            softWrap: false,
-                            style: TextStyle(
-                                color: Theme.of(context).hintColor,
-                                fontSize: 12),
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.justify,
-                          )
-                        : const SizedBox.shrink()),
-                const SizedBox(
-                  width: 10,
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).focusColor,
-                )
-              ]),
+                        )),
+                    const Spacer(),
+                    if (ResponsiveWrapper.of(context).isLargerThan(MOBILE) &&
+                        media.overview != null)
+                      Flexible(
+                          flex: 2,
+                          child: Center(
+                            child: Text(
+                              media.overview!,
+                              softWrap: false,
+                              style: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                  fontSize: 12),
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.justify,
+                            ),
+                          )),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Theme.of(context).focusColor,
+                    )
+                  ]),
             )));
   }
 }
