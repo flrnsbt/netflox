@@ -275,7 +275,7 @@ abstract class TMDBReference<T> with TMDBQueryHTTPClient {
 
   Future<Map<String, dynamic>> _getJson() async {
     final uri = _getUri();
-    print(uri);
+    debugPrint(uri.toString());
     final clientRequest = await _client.getUrl(uri);
     final HttpClientResponse response = await clientRequest.close();
     final data = await response

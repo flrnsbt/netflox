@@ -76,10 +76,10 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
   @override
   Widget build(BuildContext context) {
     return FadedEdgeWidget(
-      show: context.read<ThemeDataCubit>().state == ThemeMode.dark,
+      show: context.read<ThemeDataCubit>().state.mode == ThemeMode.dark,
       ratio: const EdgeInsets.only(top: 0.05),
       child: SafeArea(
-          minimum: const EdgeInsets.only(left: 25, right: 25, top: 30),
+          minimum: const EdgeInsets.only(left: 25, right: 25, top: 40),
           child: PagedSliverScrollViewWrapper(
             showFloatingReturnTopButton: true,
             bloc: context.read<TMDBPrimaryMediaSearchBloc>(),
@@ -91,7 +91,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
             slivers: [
               _buildSearchBar(context),
               SliverPadding(
-                  padding: const EdgeInsets.only(top: 15),
+                  padding: const EdgeInsets.only(top: 10),
                   sliver: BlocConsumer<TMDBPrimaryMediaSearchBloc,
                       BasicServerFetchState>(listener: (context, state) {
                     if (state.hasData()) {

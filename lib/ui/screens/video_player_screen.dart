@@ -1,7 +1,10 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
+import 'package:netflox/utils/custom_modal_bottom_sheet.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
@@ -27,28 +30,47 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
   BetterPlayerController? _controller;
   BetterPlayerDataSource? _dataSource;
 
-  BetterPlayerConfiguration _getConfig(BuildContext context) =>
-      BetterPlayerConfiguration(
-          // aspectRatio: 16 / 9,
-          autoDetectFullscreenAspectRatio: true,
-          // fullScreenAspectRatio: 16 / 9,
-          allowedScreenSleep: false,
-          controlsConfiguration: const BetterPlayerControlsConfiguration(
-              progressBarPlayedColor: Colors.pink,
-              showControlsOnInitialize: false,
-              controlsHideTime: Duration(milliseconds: 600),
-              loadingColor: Colors.pink,
-              enableQualities: false),
-          showPlaceholderUntilPlay: true,
-          autoPlay: true,
-          autoDispose: true,
-          looping: false,
-          handleLifecycle: true,
-          fit: BoxFit.none,
-          expandToFill: false, //
-          subtitlesConfiguration: BetterPlayerSubtitlesConfiguration(
-              fontColor: Colors.yellow, fontSize: 7.sp(context)),
-          fullScreenByDefault: true);
+  // _showfitMenuItem() {
+  //   Navigator.maybePop(context);
+  //   CustomModalBottomSheet(
+  //       onSelected: (value) {
+  //         _controller!.setOverriddenFit(value);
+  //         Navigator.pop(context, true);
+  //       },
+  //       defaultValue: _controller!.getFit(),
+  //       values: [BoxFit.contain, BoxFit.cover, BoxFit.fill]).show(context);
+  // }
+
+  BetterPlayerConfiguration _getConfig(BuildContext context) {
+    return BetterPlayerConfiguration(
+        translations: [NetfloxBetterPlayerTranslationConfiguration(context)],
+        autoDetectFullscreenAspectRatio: true,
+        allowedScreenSleep: false,
+        controlsConfiguration: const BetterPlayerControlsConfiguration(
+            progressBarPlayedColor: Colors.pink,
+            showControlsOnInitialize: false,
+            // overflowMenuCustomItems: [
+            //   BetterPlayerOverflowMenuItem(Icons.fit_screen, 'fit'.tr(context),
+            //       () => _showfitMenuItem()),
+            // ],
+            // controlsHideTime: const Duration(milliseconds: 600),
+            loadingColor: Colors.pink,
+            enableQualities: false),
+        showPlaceholderUntilPlay: true,
+        autoPlay: true,
+        autoDispose: true,
+        looping: false,
+        handleLifecycle: true,
+        fit: BoxFit.contain,
+        expandToFill: false,
+        subtitlesConfiguration: BetterPlayerSubtitlesConfiguration(
+            rightPadding: 20,
+            leftPadding: 20,
+            bottomPadding: 15,
+            fontColor: Colors.yellow,
+            fontSize: 6.h(context)),
+        fullScreenByDefault: true);
+  }
 
   Future<void> _initVideoContent() async {
     final subtitles = _initSubtitles();
@@ -56,7 +78,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
         useAsmsAudioTracks: false,
         useAsmsSubtitles: false,
         useAsmsTracks: false,
-        drmConfiguration: BetterPlayerDrmConfiguration(),
         subtitles: subtitles,
         notificationConfiguration: BetterPlayerNotificationConfiguration(
           title: widget.title,
@@ -70,9 +91,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
         cacheConfiguration:
             const BetterPlayerCacheConfiguration(useCache: false));
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final newConfig = _getConfig(context);
-      _controller = BetterPlayerController(newConfig,
-          betterPlayerDataSource: _dataSource);
+      final config = _getConfig(context);
+      _controller =
+          BetterPlayerController(config, betterPlayerDataSource: _dataSource);
     });
   }
 
@@ -125,4 +146,24 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
     }
     return subs;
   }
+}
+
+class NetfloxBetterPlayerTranslationConfiguration
+    extends BetterPlayerTranslations {
+  final BuildContext context;
+
+  NetfloxBetterPlayerTranslationConfiguration(this.context)
+      : super(
+            languageCode: context
+                .read<AppLocalization>()
+                .state
+                .currentLocale
+                .languageCode,
+            overflowMenuSubtitles: 'subtitles'.tr(context),
+            generalDefaultError: 'video-error'.tr(context),
+            generalNone: "none".tr(context),
+            generalDefault: "default".tr(context),
+            overflowMenuAudioTracks: 'audio'.tr(context),
+            overflowMenuPlaybackSpeed: 'playback-speed'.tr(context),
+            generalRetry: "retry".tr(context));
 }

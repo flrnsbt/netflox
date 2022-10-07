@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/rendering.dart';
 import 'package:netflox/data/models/tmdb/element.dart';
 import 'package:netflox/data/models/tmdb/movie.dart';
 import 'package:netflox/data/models/tmdb/people.dart';

@@ -24,7 +24,7 @@ class LibraryMediaAccessCubit extends Cubit<SFTPMediaAccessState> {
       emit(SFTPMediaAccessState.waiting);
       try {
         final path = "$_baseRemoteDirectoryPath/$remoteFilePath";
-        print(path);
+
         final subFiles = (await _sftpClient.readdir(path).first)
             .where((e) => e.filename.split(".").last == "srt");
         final subtitles = <String, String>{};

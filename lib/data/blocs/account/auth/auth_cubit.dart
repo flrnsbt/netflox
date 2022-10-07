@@ -36,8 +36,6 @@ class AuthCubit extends Cubit<AuthState> {
         final netfloxUser = NetfloxUser.fromUser(user, data: data);
         emit(AuthState.signedIn(user: netfloxUser, message: exception));
       }
-    }, onError: (e) {
-      print("ERROR: $e");
     });
   }
 

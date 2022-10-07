@@ -111,7 +111,6 @@ class TMDBService {
       {TMDBType<T>? mediaType,
       String? language,
       int? year,
-      bool? includeAdult,
       num page = 1}) async {
     final query = _repository.search(mediaType);
     if (year != null && (mediaType?.isMultimedia() ?? false)) {

@@ -68,12 +68,7 @@ class StreamMediaScreen extends StatelessWidget {
                       return const LoadingScreen();
                     }, listener: (context, state) {
                       if (state.failed()) {
-                        final exception =
-                            NetfloxException.from(state.exception!);
-                        ErrorDialog.fromException(
-                          exception,
-                          context,
-                        ).tr();
+                        dialog = _errorDialog(context, state.exception!);
                       }
                     }),
                   );
@@ -85,11 +80,7 @@ class StreamMediaScreen extends StatelessWidget {
                 dialog = null;
 
                 if (state is SFTPMediaAccessFailedState) {
-                  final exception = NetfloxException.from(state.exception);
-                  dialog = ErrorDialog.fromException(
-                    exception,
-                    context,
-                  ).tr();
+                  dialog = _errorDialog(context, state.exception!);
                 }
                 dialog?.show();
               },
@@ -99,16 +90,11 @@ class StreamMediaScreen extends StatelessWidget {
         return const LoadingScreen();
       },
       listener: (context, state) {
-        print(state);
         dialog?.dismiss();
         dialog = null;
 
         if (state.failed()) {
-          final exception = NetfloxException.from(state.exception!);
-          dialog = ErrorDialog.fromException(
-            exception,
-            context,
-          ).tr();
+          dialog = _errorDialog(context, state.exception!);
         }
         if (state.isDisconnected()) {
           dialog = CustomAwesomeDialog(
@@ -128,5 +114,19 @@ class StreamMediaScreen extends StatelessWidget {
         dialog?.show();
       },
     );
+  }
+
+  CustomAwesomeDialog _errorDialog(
+    BuildContext context,
+    Object exception,
+  ) {
+    final netfloxException = NetfloxException.from(exception);
+    return ErrorDialog.fromException(
+      netfloxException,
+      context,
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    ).tr();
   }
 }

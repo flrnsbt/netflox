@@ -96,6 +96,14 @@ class NetfloxApp extends StatelessWidget {
                         const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
                         const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
                       ],
+                      breakpointsLandscape: [
+                        const ResponsiveBreakpoint.autoScale(500,
+                            scaleFactor: 0.5, name: MOBILE),
+                        const ResponsiveBreakpoint.autoScale(800,
+                            scaleFactor: 0.7, name: TABLET),
+                        const ResponsiveBreakpoint.resize(1100, name: DESKTOP),
+                        const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
+                      ],
                       defaultScale: false,
                       minWidth: 200,
                       background:

@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
@@ -98,53 +95,6 @@ class MyAccountScreen extends StatelessWidget {
               const SizedBox(
                 height: 25,
               ),
-              Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 25),
-                        child: Row(children: [
-                          const Text(
-                            "favorite-media",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 15),
-                          ).tr(),
-                          const Spacer(),
-                          TextButton(
-                              onPressed: () {},
-                              child: const Text("see-all").tr())
-                        ]),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        height: 120,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 10),
-                              child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child:
-                                      TMDBMediaCard(media: TMDBMediaEmpty())),
-                            );
-                          },
-                          itemCount: 15,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(
                 height: 30,
               ),
@@ -154,4 +104,48 @@ class MyAccountScreen extends StatelessWidget {
       );
     });
   }
+
+  Widget _buildFavoriteCard() => Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 10,
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Row(children: [
+                  const Text(
+                    "favorite-media",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ).tr(),
+                  const Spacer(),
+                  TextButton(
+                      onPressed: () {}, child: const Text("see-all").tr())
+                ]),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: AspectRatio(
+                          aspectRatio: 1,
+                          child: TMDBMediaCard(media: TMDBMediaEmpty())),
+                    );
+                  },
+                  itemCount: 15,
+                ),
+              )
+            ],
+          ),
+        ),
+      );
 }

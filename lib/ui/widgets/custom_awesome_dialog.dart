@@ -164,20 +164,20 @@ class CustomAwesomeDialog extends AwesomeDialog with NetfloxCustomDialog {
 class ErrorDialog extends CustomAwesomeDialog {
   final String errorCode;
   final String? description;
-  ErrorDialog(this.errorCode, this.description, {required super.context})
+  final void Function()? onPressed;
+  ErrorDialog(this.errorCode, this.description,
+      {required super.context, this.onPressed})
       : super(
             dialogType: DialogType.error,
-            btnOkOnPress: () {},
+            btnOkOnPress: onPressed?.call ?? () {},
             title: errorCode,
             desc: description);
 
   factory ErrorDialog.fromException(
-      NetfloxException exception, BuildContext context) {
-    return ErrorDialog(
-      exception.errorCode,
-      "${exception.errorCode}-desc",
-      context: context,
-    );
+      NetfloxException exception, BuildContext context,
+      {void Function()? onPressed}) {
+    return ErrorDialog(exception.errorCode, "${exception.errorCode}-desc",
+        context: context, onPressed: onPressed);
   }
 }
 

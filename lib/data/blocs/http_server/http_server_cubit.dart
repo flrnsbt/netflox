@@ -55,9 +55,6 @@ class LocalServerVideoBinderCubit extends Cubit<HttpVideoBinderState> {
           });
           req.response.addStream(stream);
         }
-
-        print(req.headers);
-        print(req.response.headers);
       });
       emit(HttpVideoBinderState.on);
     } catch (e) {

@@ -40,10 +40,9 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       this.showHover = true,
       this.insetPadding = const EdgeInsets.only(left: 15, right: 15, top: 15),
       Widget Function(BuildContext context, T media)? contentBuilder,
-      BorderRadius? borderRadius,
+      this.borderRadius,
       this.onTap})
-      : borderRadius = borderRadius ?? BorderRadius.circular(25),
-        content = contentBuilder != null
+      : content = contentBuilder != null
             ? TMDBMediaCardContentBuilder<T>(
                 media: media,
                 opacity: 0.5,
@@ -61,10 +60,12 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
             : null,
         super(key: key);
 
-  final BorderRadius borderRadius;
+  final BorderRadius? borderRadius;
   final hovered = ValueNotifier(false);
 
   Widget _buildCard(BuildContext context) {
+    final borderRadius =
+        this.borderRadius ?? BorderRadius.circular(2.hw(context));
     return Material(
         borderRadius: borderRadius,
         color: Theme.of(context).cardColor,

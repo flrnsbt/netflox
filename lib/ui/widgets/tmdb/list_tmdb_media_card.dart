@@ -90,7 +90,7 @@ class ListTMDBMediaCard extends StatelessWidget {
                     if (ResponsiveWrapper.of(context).isLargerThan(MOBILE) &&
                         media.overview != null)
                       Flexible(
-                          flex: 2,
+                          flex: 4,
                           child: Center(
                             child: Text(
                               media.overview!,

@@ -9,11 +9,7 @@ class SFTPConnectionCubit extends Cubit<SSHConnectionState> {
   final NetfloxSSHConfig _sshConfig;
   final List<SSHKeyPair>? _identities;
   SFTPConnectionCubit(this._identities, this._sshConfig)
-      : super(SSHConnectionState.disconnected()) {
-    stream.listen((event) {
-      print(event);
-    });
-  }
+      : super(SSHConnectionState.disconnected());
 
   factory SFTPConnectionCubit.fromUser(
       NetfloxUser user, NetfloxSSHConfig sshConfig) {

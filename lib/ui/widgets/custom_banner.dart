@@ -18,7 +18,7 @@ class CustomBanner extends StatelessWidget {
   final Widget? child;
 
   // if height is null, the banner will be sized to fit the child proportionally
-  final double? height;
+  final double height;
 
   final double? offset;
 
@@ -49,11 +49,12 @@ class CustomBanner extends StatelessWidget {
       required this.location,
       required this.color,
       required this.textStyle,
-      this.height,
+      this.height = _kHeight,
       this.offset,
       this.child});
 
-  Widget _buildBanner(BuildContext context, double height) {
+  @override
+  Widget build(BuildContext context) {
     final offset = this.offset ?? message.length * 0.8 + height * 2.2;
     return ClipRect(
       child: CustomPaint(
@@ -70,21 +71,6 @@ class CustomBanner extends StatelessWidget {
         child: child,
       ),
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (height == null) {
-      return LayoutBuilder(builder: (context, constraints) {
-        final height = max(constraints.maxHeight * 0.07, _kHeight);
-        return _buildBanner(
-          context,
-          height,
-        );
-      });
-    } else {
-      return _buildBanner(context, height!);
-    }
   }
 }
 
@@ -223,7 +209,7 @@ class CustomBannerPainter extends CustomPainter {
 }
 
 class CustomBannerOptions {
-  final double? height;
+  final double height;
   final double? offset;
 
   final String message;
@@ -270,7 +256,7 @@ class CustomBannerOptions {
           textStyle: textStyle ?? this.textStyle);
 
   const CustomBannerOptions(
-      {this.height,
+      {this.height = _kHeight,
       this.offset,
       required this.message,
       this.location = BannerLocation.topStart,

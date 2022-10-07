@@ -65,28 +65,16 @@ class SettingsScreen extends StatelessWidget {
         title: "app-settings".tr(context),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "language",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ).tr(),
-                Flexible(child: _buildLanguagePicker(context)),
-              ],
+            SettingItem(
+              name: 'language'.tr(context),
+              child: _buildLanguagePicker(context),
             ),
             const SizedBox(
               height: 20,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "theme",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ).tr(),
-                Flexible(child: _buildThemePicker(context)),
-              ],
+            SettingItem(
+              name: 'theme'.tr(context),
+              child: _buildThemePicker(context),
             ),
           ],
         ));
@@ -284,6 +272,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                     child: AutoSizeText(
                       "admin-panel".tr(context),
                       maxLines: 2,
+                      wrapWords: false,
                       textAlign: TextAlign.center,
                       minFontSize: 10,
                     )),
@@ -293,6 +282,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                 child: AutoSizeText(
                   "sign-out".tr(context),
                   maxLines: 1,
+                  wrapWords: false,
                   textAlign: TextAlign.center,
                   minFontSize: 10,
                 ),
@@ -304,6 +294,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                 child: AutoSizeText(
                   "delete-account".tr(context),
                   maxLines: 2,
+                  wrapWords: false,
                   textAlign: TextAlign.center,
                   minFontSize: 10,
                 ),
@@ -328,100 +319,77 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
             key: key,
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: const Text(
-                        'email',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ).tr(),
-                    ),
-                    Flexible(
-                        flex: 3,
-                        child: TextFormField(
-                          controller: emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          onChanged: (value) {
-                            if (!_emailEdited) {
-                              setState(() {
-                                emailController.clear();
-                                _emailEdited = true;
-                              });
-                            }
-                          },
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return "fill-out-this-field".tr(context);
-                            } else if (!EmailValidator.validate(value!)) {
-                              return "use-valid-email".tr(context);
-                            }
-                            return null;
-                          },
-                          style: const TextStyle(fontSize: 15),
-                          decoration: InputDecoration(
-                              prefixIcon: const Icon(Icons.email),
-                              hintText: "email-address-hint".tr(context),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 10),
-                              fillColor: const Color.fromARGB(21, 0, 0, 0),
-                              filled: true,
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(10))),
-                        )),
-                  ],
-                ),
+                SettingItem(
+                    name: 'email'.tr(context),
+                    child: TextFormField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      onChanged: (value) {
+                        if (!_emailEdited) {
+                          setState(() {
+                            emailController.clear();
+                            _emailEdited = true;
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return "fill-out-this-field".tr(context);
+                        } else if (!EmailValidator.validate(value!)) {
+                          return "use-valid-email".tr(context);
+                        }
+                        return null;
+                      },
+                      style: const TextStyle(fontSize: 15),
+                      decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.email),
+                          hintText: "email-address-hint".tr(context),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 10),
+                          fillColor: const Color.fromARGB(21, 0, 0, 0),
+                          filled: true,
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(10))),
+                    )),
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        _passwordEdited ? 'new-password' : 'password',
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ).tr(),
-                    ),
-                    Flexible(
-                        flex: 3,
-                        child: TextFormField(
-                          controller: passwordController,
-                          obscureText: true,
-                          onChanged: (value) {
-                            if (!_passwordEdited) {
-                              setState(() {
-                                passwordController.clear();
-                                _passwordEdited = true;
-                              });
-                            }
-                          },
-                          style: const TextStyle(fontSize: 15),
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return "fill-out-this-field".tr(context);
-                            }
-                            if ((value?.length ?? 0) <= 7) {
-                              return "password-too-short".tr(context);
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.visiblePassword,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.lock),
-                            hintText: "password-hint".tr(context),
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 5, horizontal: 10),
-                            fillColor: const Color.fromARGB(21, 0, 0, 0),
-                            filled: true,
-                            border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                        )),
-                  ],
-                ),
+                SettingItem(
+                    name: (_passwordEdited ? 'new-password' : 'password')
+                        .tr(context),
+                    child: TextFormField(
+                      controller: passwordController,
+                      obscureText: true,
+                      onChanged: (value) {
+                        if (!_passwordEdited) {
+                          setState(() {
+                            passwordController.clear();
+                            _passwordEdited = true;
+                          });
+                        }
+                      },
+                      style: const TextStyle(fontSize: 15),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return "fill-out-this-field".tr(context);
+                        }
+                        if ((value?.length ?? 0) <= 7) {
+                          return "password-too-short".tr(context);
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.visiblePassword,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock),
+                        hintText: "password-hint".tr(context),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
+                        fillColor: const Color.fromARGB(21, 0, 0, 0),
+                        filled: true,
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    )),
                 if (_passwordEdited) _buildConfirmPasswordField(),
                 if (_edited()) _buildControlButtons()
               ],
@@ -434,44 +402,34 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
     final confirmController = TextEditingController();
     return Padding(
       padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: const Text(
-              'confirm-password-hint',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
-          ),
-          Flexible(
-              flex: 3,
-              child: TextFormField(
-                controller: confirmController,
-                obscureText: true,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return "fill-out-this-field".tr(context);
-                  }
-                  if (value != passwordController.text) {
-                    return "passwords-not-matching".tr(context);
-                  }
-                  return null;
-                },
-                style: const TextStyle(fontSize: 15),
-                keyboardType: TextInputType.visiblePassword,
-                decoration: InputDecoration(
-                  hintText: "confirm-password-hint".tr(context),
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  fillColor: const Color.fromARGB(21, 0, 0, 0),
-                  filled: true,
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              )),
-        ],
-      ),
+      child: SettingItem(
+          name: 'confirm-password-hint'.tr(context),
+          child: TextFormField(
+            controller: confirmController,
+            obscureText: true,
+            validator: (value) {
+              if (value?.isEmpty ?? true) {
+                return "fill-out-this-field".tr(context);
+              }
+              if (value != passwordController.text) {
+                return "passwords-not-matching".tr(context);
+              }
+              return null;
+            },
+            style: const TextStyle(fontSize: 15),
+            keyboardType: TextInputType.visiblePassword,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.lock_outline),
+              hintText: "confirm-password-hint".tr(context),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              fillColor: const Color.fromARGB(21, 0, 0, 0),
+              filled: true,
+              border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          )),
     );
   }
 
@@ -509,11 +467,41 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                   _reset();
                 });
               },
-              child: const Text("reset").tr(),
+              child: AutoSizeText(
+                "reset".tr(context),
+                maxLines: 1,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class SettingItem extends StatelessWidget {
+  final String name;
+  final Widget child;
+
+  const SettingItem({super.key, required this.name, required this.child});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: AutoSizeText(
+            name,
+            minFontSize: 10,
+            maxLines: 2,
+            wrapWords: false,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(flex: 3, child: child),
+      ],
     );
   }
 }
@@ -525,27 +513,24 @@ class SettingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 500),
-      child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              child: Column(
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(
-                    height: 35,
-                  ),
-                  child
-                ],
-              ))),
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+          child: Column(
+            children: [
+              Text(
+                title,
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(
+                height: 35,
+              ),
+              child
+            ],
+          )),
     );
   }
 }
