@@ -10,9 +10,8 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: color,
-      body: Column(
+    return Material(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const NetfloxLoadingIndicator(),

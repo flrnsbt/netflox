@@ -1,6 +1,8 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/ui/screens/loading_screen.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
   final String url;
@@ -25,29 +27,30 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
   BetterPlayerController? _controller;
   BetterPlayerDataSource? _dataSource;
 
-  static const _config = BetterPlayerConfiguration(
-      aspectRatio: 16 / 9,
-      autoDetectFullscreenAspectRatio: false,
-      fullScreenAspectRatio: 16 / 9,
-      allowedScreenSleep: false,
-      controlsConfiguration: BetterPlayerControlsConfiguration(
-          progressBarPlayedColor: Colors.pink,
-          showControlsOnInitialize: false,
-          controlsHideTime: Duration(milliseconds: 600),
-          loadingColor: Colors.pink,
-          enableQualities: false),
-      showPlaceholderUntilPlay: true,
-      autoPlay: true,
-      autoDispose: true,
-      looping: false,
-      handleLifecycle: true,
-      fit: BoxFit.none,
-      expandToFill: false, //
-      subtitlesConfiguration: BetterPlayerSubtitlesConfiguration(
-          fontColor: Colors.yellow, fontSize: 32),
-      fullScreenByDefault: true);
+  BetterPlayerConfiguration _getConfig(BuildContext context) =>
+      BetterPlayerConfiguration(
+          // aspectRatio: 16 / 9,
+          autoDetectFullscreenAspectRatio: true,
+          // fullScreenAspectRatio: 16 / 9,
+          allowedScreenSleep: false,
+          controlsConfiguration: const BetterPlayerControlsConfiguration(
+              progressBarPlayedColor: Colors.pink,
+              showControlsOnInitialize: false,
+              controlsHideTime: Duration(milliseconds: 600),
+              loadingColor: Colors.pink,
+              enableQualities: false),
+          showPlaceholderUntilPlay: true,
+          autoPlay: true,
+          autoDispose: true,
+          looping: false,
+          handleLifecycle: true,
+          fit: BoxFit.none,
+          expandToFill: false, //
+          subtitlesConfiguration: BetterPlayerSubtitlesConfiguration(
+              fontColor: Colors.yellow, fontSize: 7.sp(context)),
+          fullScreenByDefault: true);
 
-  Future<void> _initVideoPlayer() async {
+  Future<void> _initVideoContent() async {
     final subtitles = _initSubtitles();
     _dataSource = BetterPlayerDataSource.network(widget.url,
         useAsmsAudioTracks: false,
@@ -66,19 +69,17 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
             bufferForPlaybackAfterRebufferMs: 30000),
         cacheConfiguration:
             const BetterPlayerCacheConfiguration(useCache: false));
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final newConfig = _getConfig(context);
+      _controller = BetterPlayerController(newConfig,
+          betterPlayerDataSource: _dataSource);
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    initialized = _initVideoPlayer();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _controller =
-        BetterPlayerController(_config, betterPlayerDataSource: _dataSource);
+    initialized = _initVideoContent();
   }
 
   @override
@@ -90,20 +91,27 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const CloseButton(
-          color: Colors.white,
+        appBar: AppBar(
+          leading: const CloseButton(
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.transparent,
         ),
-        backgroundColor: Colors.transparent,
-      ),
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
-      body: Center(
-        child: BetterPlayer(
-          controller: _controller!,
-        ),
-      ),
-    );
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.black,
+        body: Center(
+          child: FutureBuilder(
+            future: initialized,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return BetterPlayer(
+                  controller: _controller!,
+                );
+              }
+              return const LoadingScreen();
+            },
+          ),
+        ));
   }
 
   List<BetterPlayerSubtitlesSource> _initSubtitles() {

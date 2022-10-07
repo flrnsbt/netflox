@@ -20,6 +20,14 @@ class TMDBMovieScreen extends StatelessWidget {
             ),
           ),
         const SizedBox(
+          height: 15,
+        ),
+        if (movie.date != null)
+          Text(
+            movie.date!,
+            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+          ),
+        const SizedBox(
           height: 35,
         ),
         TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>(

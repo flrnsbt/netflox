@@ -16,12 +16,11 @@ class UnverifiedUserScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                    height: 100,
-                    child: Image.asset(
-                      'assets/images/user_verification.gif',
-                      fit: BoxFit.contain,
-                    )),
+                Icon(
+                  Icons.verified_user,
+                  color: Theme.of(context).primaryColor,
+                  size: 48,
+                ),
                 const SizedBox(
                   height: 25,
                 ),

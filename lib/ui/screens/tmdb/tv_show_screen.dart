@@ -122,6 +122,14 @@ class TMDBTvScreen extends StatelessWidget {
                 style: const TextStyle(fontSize: 13),
               )),
         const SizedBox(
+          height: 15,
+        ),
+        if (tv.date != null)
+          Text(
+            tv.date!,
+            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+          ),
+        const SizedBox(
           height: 35,
         ),
         if (tv.seasons.isNotEmpty)

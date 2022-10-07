@@ -84,7 +84,7 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
                   Theme(
                     data: ThemeDataCubit.darkThemeData,
                     child: SliverAppBar(
-                      floating: true,
+                      floating: false,
                       pinned: true,
                       actions: [
                         _returnTopButton!,
