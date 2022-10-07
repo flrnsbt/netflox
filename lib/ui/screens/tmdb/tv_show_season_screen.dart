@@ -71,7 +71,8 @@ class TVShowSeasonScreen extends StatelessWidget {
                   AutoSizeText(
                     episode.name ?? episodeNumber,
                     maxLines: 2,
-                    minFontSize: 12,
+                    minFontSize: 10,
+                    wrapWords: false,
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
@@ -84,24 +85,9 @@ class TVShowSeasonScreen extends StatelessWidget {
                   AutoSizeText(
                     "S$seasonNumber:E${episode.episodeNumber}",
                     maxLines: 1,
-                    minFontSize: 8,
+                    minFontSize: 7,
                     style: const TextStyle(color: Colors.white, fontSize: 10),
                   ),
-                  const Spacer(),
-                  if (episode.date != null)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        AutoSizeText(episode.date!,
-                            maxLines: 1,
-                            minFontSize: 7,
-                            style: const TextStyle(
-                                fontFamily: "Verdana",
-                                fontStyle: FontStyle.italic,
-                                color: Colors.white,
-                                fontSize: 8))
-                      ],
-                    ),
                 ]);
           },
           showHover: false,
@@ -134,7 +120,7 @@ class TVShowSeasonScreen extends StatelessWidget {
                     mainAxisSpacing: 20,
                     crossAxisSpacing: 20,
                     minCrossAxisExtent: 100,
-                    maxCrossAxisExtent: 100,
+                    maxCrossAxisExtent: 200,
                     childAspectRatio: 1),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),

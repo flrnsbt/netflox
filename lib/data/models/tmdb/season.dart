@@ -122,7 +122,7 @@ class TMDBTVEpisode extends TMDBMedia
     return TMDBTVEpisode(
       map['id'].toString(),
       overview: map['overview'],
-      showId: map['showId'].toString(),
+      showId: map['show_id'].toString(),
       name: map['name'],
       guests: map['guest_stars']
           ?.map<TMDBPerson>((e) => TMDBPerson.fromJson(e))

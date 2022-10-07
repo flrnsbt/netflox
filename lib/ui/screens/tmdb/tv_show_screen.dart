@@ -8,7 +8,7 @@ class TMDBTvScreen extends StatelessWidget {
     final seasons = tv.seasons.reversed;
     final count = seasons.length;
     var maxCrossAxisExtent = 200.0;
-    if (count > 9) {
+    if (count > 6) {
       maxCrossAxisExtent = 120;
     }
     return GridView.custom(
@@ -53,17 +53,13 @@ class TMDBTvScreen extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      ("${"season".tr(context)} ${season.seasonNumber}"),
-                      maxLines: 1,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
+                  AutoSizeText(
+                    ("${"season".tr(context)} ${season.seasonNumber}"),
+                    maxLines: 1,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                   const SizedBox(
                     height: 5,
@@ -71,7 +67,7 @@ class TMDBTvScreen extends StatelessWidget {
                   Text(
                     "${season.episodeCount} ${"episodes".tr(context)}",
                     maxLines: 1,
-                    style: const TextStyle(fontSize: 8, color: Colors.white),
+                    style: const TextStyle(fontSize: 12, color: Colors.white),
                   ),
                   const Spacer(),
                   if (season.date != null)
@@ -81,7 +77,7 @@ class TMDBTvScreen extends StatelessWidget {
                         Text(season.date!,
                             style: const TextStyle(
                                 fontStyle: FontStyle.italic,
-                                fontSize: 7,
+                                fontSize: 8,
                                 color: Colors.white))
                       ],
                     )
