@@ -1,15 +1,12 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/blocs/http_server/http_server_cubit.dart';
+import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
 import 'package:netflox/data/repositories/tmdb_repository.dart';
@@ -19,8 +16,10 @@ import 'package:netflox/services/tmdb_service.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
-import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
+import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
+import 'package:nil/nil.dart';
 import 'package:provider/provider.dart';
 import 'data/blocs/account/auth/auth_cubit.dart';
 import 'data/blocs/app_localization/app_localization_cubit.dart';
@@ -32,28 +31,24 @@ import 'firebase_options.dart';
 Future<void> main() async {
   await initApp();
   runApp(MultiProvider(providers: [
-    BlocProvider(create: (context) => AppConfigCubit()),
+    BlocProvider(
+      lazy: false,
+      create: (context) => ConnectivityManager(),
+    ),
     BlocProvider(create: (BuildContext context) => AppLocalization()),
     BlocProvider(create: (BuildContext context) => ThemeDataCubit()),
-    BlocProvider<AuthCubit>(
-      lazy: false,
-      create: (context) => AuthCubit(),
-    ),
   ], child: NetfloxApp()));
 }
 
 Future<void> initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
-  HttpOverrides.global = LocalHostHttpOverrides();
   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-    return ErrorScreen(
-      child: ElevatedButton(
-          onPressed: () {},
-          child: const Text(
-            "send-feedbacks",
-            style: TextStyle(fontSize: 15),
-          ).tr()),
-    );
+    if (kDebugMode) {
+      return CustomErrorWidget(
+        errorDescription: errorDetails.exceptionAsString(),
+      );
+    }
+    return const Nil();
   };
   await SharedPreferenceService.init();
   if (!kIsWeb) {
@@ -130,39 +125,35 @@ class NetfloxApp extends StatelessWidget {
 class StackScreen extends StatelessWidget {
   const StackScreen({super.key});
 
-  Widget _buildVerifiedUser(
-      BuildContext context, NetfloxUser user, Widget child) {
-    return BlocBuilder<AppConfigCubit, AppConfig>(
-      builder: (context, state) {
-        if (state.finished()) {
-          final tmdbRepository = TMDBRepository(state.tmdbApiConfig!);
-          final language = context.read<AppLocalization>().state.currentLocale;
-          final tmdbService = TMDBService(
-              repository: tmdbRepository, defaultLanguage: language);
-          return MultiProvider(
-            providers: [
-              BlocProvider<SFTPConnectionCubit>(
-                  create: (BuildContext context) =>
-                      SFTPConnectionCubit.fromUser(user, state.sshConfig!)),
-              Provider(
-                create: (context) => tmdbService,
-                dispose: (context, value) => value.close(true),
-              )
-            ],
-            child: child,
-          );
-        } else if (state.isLoading()) {
-          return LoadingScreen(
-            loadingMessage: 'fetching-app-config'.tr(context),
-          );
-        } else {
-          return ErrorScreen(
-            error: state.error,
-          );
-        }
-      },
-    );
+  @override
+  Widget build(BuildContext context) {
+    final dialog = ErrorDialog(
+      'network-connection-problem',
+      'network-connection-problem-desc',
+      context: context,
+    ).tr();
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthCubit>(
+            create: (context) => AuthCubit(),
+          ),
+          BlocProvider(create: (context) => AppConfigCubit()),
+        ],
+        child: BlocListener<ConnectivityManager, ConnectivityState>(
+          child: const ConnectedScreen(),
+          listener: (context, state) {
+            if (state.hasNetworkAccess()) {
+              dialog.dismiss();
+            } else {
+              dialog.show();
+            }
+          },
+        ));
   }
+}
+
+class ConnectedScreen extends StatelessWidget {
+  const ConnectedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -182,45 +173,35 @@ class StackScreen extends StatelessWidget {
               },
             ));
   }
-}
 
-class TabHomeScreen extends StatelessWidget {
-  const TabHomeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AutoTabsScaffold(
-      routes: [
-        SearchRoute(),
-        LibraryRoute(),
-        DiscoverRoute(),
-        const MyAccountRoute()
-      ],
-      animationCurve: Curves.ease,
-      animationDuration: const Duration(milliseconds: 800),
-      homeIndex: 0,
-      bottomNavigationBuilder: (_, tabsRouter) {
-        return BottomNavigationBar(
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: const Icon(CupertinoIcons.search),
-                label: 'search'.tr(context),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.video_library),
-                label: context.tr('library'),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.explore),
-                label: 'explore'.tr(context),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.account_box),
-                label: 'my-account'.tr(context),
-              ),
+  Widget _buildVerifiedUser(
+      BuildContext context, NetfloxUser user, Widget child) {
+    return BlocBuilder<AppConfigCubit, AppConfig>(
+      builder: (context, state) {
+        if (state.success()) {
+          final tmdbRepository = TMDBRepository(state.tmdbApiConfig!);
+          final language = context.read<AppLocalization>().state.currentLocale;
+          final tmdbService = TMDBService(
+              repository: tmdbRepository, defaultLanguage: language);
+          return MultiProvider(
+            providers: [
+              BlocProvider<SSHConnectionCubit>(
+                  create: (BuildContext context) =>
+                      SSHConnectionCubit.fromUser(user, state.sshConfig!)),
+              Provider(
+                create: (context) => tmdbService,
+                dispose: (context, value) => value.close(true),
+              )
             ],
-            currentIndex: tabsRouter.activeIndex,
-            onTap: tabsRouter.setActiveIndex);
+            child: child,
+          );
+        } else if (state.isLoading()) {
+          return LoadingScreen(
+            loadingMessage: 'fetching-app-config'.tr(context),
+          );
+        } else {
+          return CustomErrorWidget.from(error: state.error);
+        }
       },
     );
   }

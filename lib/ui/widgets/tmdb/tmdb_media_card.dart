@@ -66,28 +66,29 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
   Widget _buildCard(BuildContext context) {
     final borderRadius =
         this.borderRadius ?? BorderRadius.circular(2.hw(context));
-    return Material(
-        borderRadius: borderRadius,
-        color: Theme.of(context).cardColor,
-        child: InkWell(
-            borderRadius: borderRadius,
-            onHover: (value) {
-              hovered.value = value;
-            },
-            onTap: () {
-              if (onTap != null) {
-                onTap!(media);
-              }
-            },
-            onTapDown: (_) {
-              hovered.value = true;
-            },
-            onTapCancel: () {
-              hovered.value = false;
-            },
-            onTapUp: (_) => hovered.value = false,
-            child: ClipRRect(
-              borderRadius: borderRadius,
+    return ClipPath(
+        clipper: ShapeBorderClipper(
+          shape: RoundedRectangleBorder(borderRadius: borderRadius),
+          textDirection: Directionality.maybeOf(context),
+        ),
+        child: Material(
+            color: Theme.of(context).cardColor,
+            child: InkWell(
+              onHover: (value) {
+                hovered.value = value;
+              },
+              onTap: () {
+                if (onTap != null) {
+                  onTap!(media);
+                }
+              },
+              onTapDown: (_) {
+                hovered.value = true;
+              },
+              onTapCancel: () {
+                hovered.value = false;
+              },
+              onTapUp: (_) => hovered.value = false,
               child: Stack(
                 fit: StackFit.expand,
                 children: [

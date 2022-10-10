@@ -24,7 +24,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
         child: BlocBuilder<LibraryMediaInfoFetchCubit,
             BasicServerFetchState<LibraryMediaInformation>>(
           builder: (context, state) {
-            if (state.finished()) {
+            if (state.success()) {
               final mediaInfo = state.result;
               if (mediaInfo != null) {
                 return _buildMediaLayout(mediaInfo, context);

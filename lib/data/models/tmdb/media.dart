@@ -108,7 +108,7 @@ abstract class TMDBMedia extends TMDBElement
 mixin TMDBLibraryMedia on TMDBMedia {
   LibraryMediaInformation get libraryMediaInfo;
   set libraryMediaInfo(LibraryMediaInformation libraryMediaInfo);
-  String get libraryId;
+  String get libraryPath;
 }
 
 mixin TMDBPrimaryMediaIdProvider {
@@ -165,7 +165,7 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
   }
 
   @override
-  String get libraryId => id;
+  String get libraryPath => id;
 
   int? get duration;
   num? get voteAverage;

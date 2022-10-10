@@ -3,6 +3,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/models/exception.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
@@ -13,7 +14,7 @@ import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../../data/models/tmdb/library_media_information.dart';
-import '../error_screen.dart';
+import '../../widgets/error_widget.dart';
 import 'media_screen_components/components.dart';
 
 class TVShowSeasonScreen extends StatelessWidget {
@@ -32,16 +33,15 @@ class TVShowSeasonScreen extends StatelessWidget {
         ..fetch(),
       child: BlocBuilder<TMDBSeasonCubit, BasicServerFetchState<TMDBTVSeason>>(
         builder: (context, state) {
-          if (state.finished() && state.hasData()) {
+          if (state.success() && state.hasData()) {
             final season = state.result!;
             return _buildLayout(context, season);
           }
           if (state.isLoading()) {
             return const LoadingScreen();
           }
-          return ErrorScreen(
-            error: state.error,
-          );
+          return CustomErrorWidget.from(error: state.error);
+          ;
         },
       ),
     );

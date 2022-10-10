@@ -1,6 +1,6 @@
 part of 'auth_cubit.dart';
 
-enum AuthStatus { authenticated, unauthenticated, loading }
+enum AuthStatus { authenticated, unauthenticated, loading, init }
 
 @immutable
 class AuthState extends Equatable {
@@ -12,6 +12,8 @@ class AuthState extends Equatable {
   bool isAuthenticated() => status == AuthStatus.authenticated;
   bool isUnauthenticated() => status == AuthStatus.unauthenticated;
   bool isLoading() => status == AuthStatus.loading;
+
+  static const AuthState init = AuthState._(AuthStatus.init);
 
   const AuthState._(this.status, {this.user, this.message});
 

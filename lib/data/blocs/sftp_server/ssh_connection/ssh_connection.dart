@@ -5,16 +5,16 @@ import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_state.dart';
 import '../../../models/server_configs/ssh_config.dart';
 import '../../../models/user/user.dart';
 
-class SFTPConnectionCubit extends Cubit<SSHConnectionState> {
+class SSHConnectionCubit extends Cubit<SSHConnectionState> {
   final NetfloxSSHConfig _sshConfig;
   final List<SSHKeyPair>? _identities;
-  SFTPConnectionCubit(this._identities, this._sshConfig)
+  SSHConnectionCubit(this._identities, this._sshConfig)
       : super(SSHConnectionState.disconnected());
 
-  factory SFTPConnectionCubit.fromUser(
+  factory SSHConnectionCubit.fromUser(
       NetfloxUser user, NetfloxSSHConfig sshConfig) {
     final sshKeyPair = user.sshKeyPair;
-    return SFTPConnectionCubit(sshKeyPair, sshConfig);
+    return SSHConnectionCubit(sshKeyPair, sshConfig);
   }
 
   FutureOr<void> connect() async {
@@ -31,8 +31,7 @@ class SFTPConnectionCubit extends Cubit<SSHConnectionState> {
             username: _sshConfig.username, identities: _identities);
         await sshClient.authenticated;
         final sftpClient = await sshClient.sftp();
-        emit(SSHConnectionState.connected(
-            sftpClient, _sshConfig.remoteDirectoryPath));
+        emit(SSHConnectionState.connected(sftpClient));
       } catch (e) {
         emit(SSHConnectionState.disconnected(e));
       }

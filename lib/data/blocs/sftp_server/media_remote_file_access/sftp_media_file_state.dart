@@ -1,11 +1,11 @@
-part of 'media_access_cubit.dart';
+part of 'sftp_media_file_access_cubit.dart';
 
-abstract class SFTPMediaAccessState extends Equatable {
+abstract class SFTPMediaFileAccessState extends Equatable {
   bool isWaiting() => this is SFTPMediaAccessWaitingState;
   bool failed() => this is SFTPMediaAccessFailedState;
   bool opened() => this is SFTPMediaOpenedState;
 
-  const SFTPMediaAccessState();
+  const SFTPMediaFileAccessState();
 
   static SFTPMediaAccessFailedState fail(Object exception) =>
       SFTPMediaAccessFailedState._(exception);
@@ -21,7 +21,7 @@ abstract class SFTPMediaAccessState extends Equatable {
   List<Object?> get props => [];
 }
 
-class SFTPMediaAccessFailedState extends SFTPMediaAccessState {
+class SFTPMediaAccessFailedState extends SFTPMediaFileAccessState {
   final Object exception;
   const SFTPMediaAccessFailedState._(this.exception);
 
@@ -29,11 +29,11 @@ class SFTPMediaAccessFailedState extends SFTPMediaAccessState {
   List<Object?> get props => [exception];
 }
 
-class SFTPMediaAccessWaitingState extends SFTPMediaAccessState {
+class SFTPMediaAccessWaitingState extends SFTPMediaFileAccessState {
   const SFTPMediaAccessWaitingState._();
 }
 
-class SFTPMediaOpenedState extends SFTPMediaAccessState {
+class SFTPMediaOpenedState extends SFTPMediaFileAccessState {
   final SftpFile video;
   final Map<String, String> subtitles;
   final Object? exception;

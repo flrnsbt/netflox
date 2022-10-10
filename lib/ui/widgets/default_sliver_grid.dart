@@ -4,27 +4,36 @@ import 'package:responsive_framework/responsive_grid.dart';
 
 class DefaultSliverGrid extends StatelessWidget {
   final SliverChildBuilderDelegate sliverChildBuilderDelegate;
-  const DefaultSliverGrid({super.key, required this.sliverChildBuilderDelegate})
+  final SliverGridDelegate? gridDelegate;
+  final EdgeInsets padding;
+  const DefaultSliverGrid(
+      {super.key,
+      this.gridDelegate,
+      this.padding = const EdgeInsets.only(top: 5),
+      required this.sliverChildBuilderDelegate})
       : _pageSize = null;
   final int? _pageSize;
-  // const DefaultSliverGrid.paged(
-  //     {super.key,
-  //     required this.sliverChildBuilderDelegate,
-  //     int pageSize = kDefaultPageItemNumber})
-  //     : _pageSize = pageSize;
+  const DefaultSliverGrid.paged(
+      {super.key,
+      required this.sliverChildBuilderDelegate,
+      this.padding = const EdgeInsets.only(top: 5),
+      int pageSize = kDefaultPageItemNumber})
+      : _pageSize = pageSize,
+        gridDelegate = null;
 
   @override
   Widget build(BuildContext context) {
-    final SliverGridDelegate gridDelegate;
+    var gridDelegate = this.gridDelegate ?? defaultGridDelegate;
     if (_pageSize != null) {
       gridDelegate =
           defaultPagedGridDelegate(context, pageItemNumber: _pageSize!);
-    } else {
-      gridDelegate = defaultGridDelegate;
     }
-    return SliverGrid(
-      gridDelegate: gridDelegate,
-      delegate: sliverChildBuilderDelegate,
+    return SliverPadding(
+      padding: padding,
+      sliver: SliverGrid(
+        gridDelegate: gridDelegate,
+        delegate: sliverChildBuilderDelegate,
+      ),
     );
   }
 
@@ -33,7 +42,7 @@ class DefaultSliverGrid extends StatelessWidget {
       minCrossAxisExtent: 100,
       maxCrossAxisExtent: 200,
       mainAxisSpacing: 20,
-      crossAxisSpacing: 10);
+      crossAxisSpacing: 20);
 
   static SliverGridDelegateWithFixedCrossAxisCount defaultPagedGridDelegate(
       BuildContext context,

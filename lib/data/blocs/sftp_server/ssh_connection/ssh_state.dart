@@ -12,9 +12,8 @@ class SSHConnectionState extends Equatable {
   bool failed() => exception != null;
   bool isDisconnected() => status == SSHConnectionStatus.disconnected;
 
-  static SSHConnectedState connected(
-          SftpClient sftpClient, String remoteDirectoryPath) =>
-      SSHConnectedState._(sftpClient, remoteDirectoryPath);
+  static SSHConnectedState connected(SftpClient sftpClient) =>
+      SSHConnectedState._(sftpClient);
 
   static const connecting =
       SSHConnectionState._(SSHConnectionStatus.connecting);
@@ -27,9 +26,8 @@ class SSHConnectionState extends Equatable {
 
 class SSHConnectedState extends SSHConnectionState {
   final SftpClient sftpClient;
-  final String remoteDirectoryPath;
 
-  const SSHConnectedState._(this.sftpClient, this.remoteDirectoryPath)
+  const SSHConnectedState._(this.sftpClient)
       : super._(SSHConnectionStatus.connected);
 
   @override

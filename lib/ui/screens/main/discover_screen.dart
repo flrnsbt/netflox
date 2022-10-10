@@ -3,18 +3,18 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/blocs/data_fetcher/data_collection_fetch_bloc.dart';
+import 'package:netflox/data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
 import 'package:netflox/data/blocs/data_fetcher/filter_parameter.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_framework/responsive_framework.dart';
-import '../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
-import '../../data/blocs/data_fetcher/paged_data_fetch_manager.dart';
-import '../widgets/custom_awesome_dialog.dart';
-import '../widgets/filters/filter_menu_dialog.dart';
-import '../widgets/paged_media_sliver_grid_view.dart';
-import '../widgets/tmdb/list_tmdb_media_card.dart';
+import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
+import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
+import '../../widgets/custom_awesome_dialog.dart';
+import '../../widgets/error_widget.dart';
+import '../../widgets/filters/filter_menu_dialog.dart';
+import '../../widgets/paged_sliver_grid_view.dart';
+import '../../widgets/tmdb/list_tmdb_media_card.dart';
 
 class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
   final DiscoverFilterParameter _discoverFilterParameter;
@@ -34,8 +34,7 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
             body: FilterMenuDialog(
               currentParameters: context
                   .read<PagedDataFilterManager<DiscoverFilterParameter>>()
-                  .state
-                  .currentFilter,
+                  .state,
               onParameterSubmitted: (newParameter) {
                 context
                     .read<PagedDataFilterManager<DiscoverFilterParameter>>()
@@ -52,16 +51,11 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         width: MediaQuery.of(context).size.width,
         alignment: Alignment.center,
-        color: ResponsiveWrapper.of(context).isLargerThan(MOBILE)
-            ? Theme.of(context).shadowColor
-            : Theme.of(context).primaryColor,
+        color: Theme.of(context).shadowColor,
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
-            PagedRequestParameter<DiscoverFilterParameter>>(
-          buildWhen: (previous, current) =>
-              current.currentFilter != previous.currentFilter,
+            DiscoverFilterParameter>(
           builder: (context, state) {
-            final singleValueFilters =
-                state.currentFilter.toMap().entries.where((e) {
+            final singleValueFilters = state.toMap().entries.where((e) {
               return e.value != null && e.value is! List;
             }).toList();
             return Center(
@@ -153,12 +147,23 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
   @override
   Widget build(BuildContext context) {
     return PagedSliverScrollViewWrapper(
-      bloc: context.read<TMDBMultimediaDiscoverBloc>(),
+      pagedScrollViewAsyncFeedback: PagedScrollViewAsyncFeedback(
+        controller: PagedScrollViewAsyncFeedbackController.from(
+            context.read<TMDBMultimediaDiscoverBloc>()),
+        errorBuilder: (context, [error]) {
+          if (_data.isNotEmpty) {
+            return CustomErrorWidget.from(
+              error: error,
+              showDescription: false,
+            );
+          }
+        },
+      ),
       controller: _controller,
       onEndReached: () {
         context
-            .read<PagedDataFilterManager<DiscoverFilterParameter>>()
-            .nextPage();
+            .read<TMDBMultimediaDiscoverBloc>()
+            .add(const PagedDataCollectionFetchNextPage());
       },
       slivers: [
         _buildAppBar(context),
@@ -186,21 +191,20 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
     return MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) => TMDBMultimediaDiscoverBloc(context: context)
-              ..add(PagedRequestParameter(_discoverFilterParameter)),
+            create: (context) => TMDBMultimediaDiscoverBloc(context: context),
           ),
           BlocProvider(
               create: (context) =>
                   PagedDataFilterManager(_discoverFilterParameter))
         ],
         child: BlocListener<PagedDataFilterManager<DiscoverFilterParameter>,
-            PagedRequestParameter<DiscoverFilterParameter>>(
+            DiscoverFilterParameter>(
           child: this,
           listener: (context, state) {
-            if (state.isNewRequest()) {
-              _data.clear();
-            }
-            context.read<TMDBMultimediaDiscoverBloc>().add(state);
+            _data.clear();
+            context
+                .read<TMDBMultimediaDiscoverBloc>()
+                .add(PagedDataCollectionUpdateParameter(state));
           },
         ));
   }

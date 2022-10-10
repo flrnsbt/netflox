@@ -58,12 +58,12 @@ class _PersonCastingGridLayoutState extends State<PersonCastingGridLayout> {
       child: BlocConsumer<TMDBFetchPeopleCasting,
           BasicServerFetchState<List<TMDBMultiMedia>>>(
         listener: (context, state) {
-          if (state.finished() && state.hasData()) {
+          if (state.success() && state.hasData()) {
             _media.addAll(state.result!);
           }
         },
         builder: (context, state) {
-          if (state.finished() && _media.isNotEmpty) {
+          if (state.success() && _media.isNotEmpty) {
             final sortParameter = SortParameter(
                 criterion: _parameter.sortCriterion, order: _parameter.order);
             final data = _media

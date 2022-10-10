@@ -1,7 +1,7 @@
-part of '../data_collection_fetch_bloc.dart';
+part of '../paged_data_collection_fetch_bloc.dart';
 
 class TMDBPrimaryMediaSearchBloc
-    extends DataCollectionFetchBloc<SearchFilterParameter> {
+    extends PagedDataCollectionFetchBloc<SearchFilterParameter> {
   final TMDBService _tmdbService;
 
   TMDBPrimaryMediaSearchBloc(BuildContext context)
@@ -12,13 +12,11 @@ class TMDBPrimaryMediaSearchBloc
 
   @override
   Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
-      PagedRequestParameter<SearchFilterParameter<TMDBPrimaryMedia>>
-          parameters) {
-    final searchTerms = parameters.currentFilter.searchTerms;
-    final page = parameters.currentPage;
-    final year = parameters.currentFilter.year;
-    final type = parameters.currentFilter.type;
-    if ((searchTerms?.isEmpty ?? true) && year == null) {
+      SearchFilterParameter<TMDBPrimaryMedia> parameters, int page) {
+    final searchTerms = parameters.searchTerms;
+    final year = parameters.year;
+    final type = parameters.type;
+    if ((searchTerms?.isEmpty ?? true) && !type.isPeople()) {
       return _tmdbService.trending(mediaType: type, page: page);
     } else {
       return _tmdbService.search(searchTerms ?? "",

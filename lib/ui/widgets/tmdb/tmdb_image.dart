@@ -61,15 +61,13 @@ class TMDBImageWidget extends StatelessWidget {
 
   Widget _buildError(BuildContext context) {
     return showError
-        ? const Material(
-            child: FractionallySizedBox(
-              heightFactor: 0.3,
-              child: FittedBox(
-                fit: BoxFit.fitHeight,
-                child: Text(
-                  "?",
-                  style: TextStyle(color: Colors.white54),
-                ),
+        ? const FractionallySizedBox(
+            heightFactor: 0.3,
+            child: FittedBox(
+              fit: BoxFit.fitHeight,
+              child: Text(
+                "?",
+                style: TextStyle(color: Colors.white54),
               ),
             ),
           )

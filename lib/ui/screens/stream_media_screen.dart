@@ -4,15 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/http_server/http_server_cubit.dart';
+import 'package:netflox/data/blocs/sftp_server/media_remote_file_access/sftp_media_file_access_cubit.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_connection.dart';
 import 'package:netflox/data/models/exception.dart';
-import 'package:netflox/data/models/tmdb/img.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/screens/video_player_screen.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import '../../data/blocs/app_config.dart';
-import '../../data/blocs/sftp_server/media_files_access/media_access_cubit.dart';
 import '../../data/blocs/sftp_server/ssh_connection/ssh_state.dart';
 
 class StreamMediaScreen extends StatelessWidget {
@@ -21,7 +20,7 @@ class StreamMediaScreen extends StatelessWidget {
       : super(key: key);
 
   void init(BuildContext context) {
-    context.read<SFTPConnectionCubit>().connect();
+    context.read<SSHConnectionCubit>().connect();
   }
 
   String? _getUrl(BuildContext context) {
@@ -39,15 +38,14 @@ class StreamMediaScreen extends StatelessWidget {
     init(context);
     NetfloxCustomDialog? dialog;
     final imgUrl = _getUrl(context);
-
-    return BlocConsumer<SFTPConnectionCubit, SSHConnectionState>(
+    return BlocConsumer<SSHConnectionCubit, SSHConnectionState>(
       builder: (context, state) {
         if (state.isConnected()) {
           return BlocProvider(
-            create: (context) => LibraryMediaAccessCubit.fromSSHConnectedState(
+            create: (context) => SFTPMediaAccessCubit.fromSSHConnectedState(
                 state as SSHConnectedState)
               ..open(playableMedia.remoteFilePath!),
-            child: BlocConsumer<LibraryMediaAccessCubit, SFTPMediaAccessState>(
+            child: BlocBuilder<SFTPMediaAccessCubit, SFTPMediaFileAccessState>(
               builder: (context, state) {
                 if (state is SFTPMediaOpenedState) {
                   final subtitles = state.subtitles;
@@ -65,7 +63,9 @@ class StreamMediaScreen extends StatelessWidget {
                           subtitles: subtitles,
                         );
                       }
-                      return const LoadingScreen();
+                      return LoadingScreen(
+                        loadingMessage: 'buffering-video'.tr(context),
+                      );
                     }, listener: (context, state) {
                       if (state.failed()) {
                         dialog = _errorDialog(context, state.exception!);
@@ -73,33 +73,27 @@ class StreamMediaScreen extends StatelessWidget {
                     }),
                   );
                 }
-                return const LoadingScreen();
-              },
-              listener: (context, state) {
-                dialog?.dismiss();
-                dialog = null;
-
-                if (state is SFTPMediaAccessFailedState) {
-                  dialog = _errorDialog(context, state.exception!);
-                }
-                dialog?.show();
+                return LoadingScreen(
+                  loadingMessage: 'retrieving-files'.tr(context),
+                );
               },
             ),
           );
         }
-        return const LoadingScreen();
+        return LoadingScreen(
+          loadingMessage: 'connecting-server'.tr(context),
+        );
       },
       listener: (context, state) {
         dialog?.dismiss();
         dialog = null;
-
         if (state.failed()) {
           dialog = _errorDialog(context, state.exception!);
         }
         if (state.isDisconnected()) {
           dialog = CustomAwesomeDialog(
                   context: context,
-                  title: 'internet-issue',
+                  title: 'server-connection-failed',
                   desc: 'server-connection-failed-desc',
                   btnCancelOnPress: () {
                     context.router.pop();

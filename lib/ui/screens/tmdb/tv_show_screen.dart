@@ -136,6 +136,7 @@ class TMDBTvScreen extends StatelessWidget {
         ),
         TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>(
           title: 'credits'.tr(context),
+          play: true,
           height: 150,
         ),
         const SizedBox(

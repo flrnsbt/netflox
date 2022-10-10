@@ -4,82 +4,100 @@ import 'package:bloc/bloc.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
 import 'package:netflox/data/constants/local_server.dart';
+import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
 part 'http_server_state.dart';
 
 class LocalServerVideoBinderCubit extends Cubit<HttpVideoBinderState> {
   HttpServer? _server;
-  ServerSocket? _socket;
   LocalServerVideoBinderCubit() : super(HttpVideoBinderState.off);
 
   Future<void> bind(SftpFile video) async {
+    emit(HttpVideoBinderState.loading);
     if (state.isRunning()) {
-      _server!.close(force: true);
+      _server?.close(force: true);
     }
-    emit(HttpVideoBinderState.off);
-    try {
-      _socket = await ServerSocket.bind(kLocalServerAddress, kLocalServerPort);
-      _server = HttpServer.listenOn(_socket!);
-      _server!.listen((HttpRequest req) async {
-        final fileLength = (await video.stat()).size!;
-        if (req.method == "HEAD") {
-          req.response.statusCode = 200;
-          req.response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
-          req.response.headers.contentLength = fileLength;
-          req.response.close();
-        } else {
-          int start = 0;
-          int end = fileLength - 1;
-          req.response.statusCode = HttpStatus.ok;
-          req.response.headers.contentType = ContentType.parse("video/mp4");
-          req.response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
-          final range = req.headers['range']?.first.split("=").last.split("-");
-          if (range != null) {
-            start = int.tryParse(range.first)?.clamp(0, end) ?? 0;
-            final int _end = int.tryParse(range.last)?.clamp(start, end) ?? 1;
-            if (_end == 1) {
-              end = fileLength - 1;
-            } else {
-              end = _end;
+    _server = await shelf_io.serve(((request) async {
+      final responseHeader = <String, Object>{};
+      int? start;
+      int? end;
+      final range = request.headers['range'];
+      if (range != null) {
+        const bytesPrefix = "bytes=";
+        if (range.startsWith(bytesPrefix)) {
+          final bytesRange = range.substring(bytesPrefix.length);
+          final parts = bytesRange.split("-");
+          if (parts.length == 2) {
+            final rangeStart = parts[0].trim();
+            if (rangeStart.isNotEmpty) {
+              start = int.parse(rangeStart);
             }
-            req.response.statusCode = 206;
-          } else {
-            req.response.statusCode = 200;
+            final rangeEnd = parts[1].trim();
+            if (rangeEnd.isNotEmpty) {
+              end = int.parse(rangeEnd);
+            }
           }
-          req.response.headers
-              .set(HttpHeaders.connectionHeader, 'keep-alive'); //
-          req.response.headers.contentLength = end - start + 1;
-          req.response.headers.set(
-              HttpHeaders.contentRangeHeader, 'bytes $start-$end/$fileLength');
-          final stream = video.read(offset: start).handleError((e) {
-            req.response.statusCode = 500;
-          });
-          req.response.addStream(stream);
         }
-      });
-      emit(HttpVideoBinderState.on);
-    } catch (e) {
-      emit(HttpVideoBinderState.fail(e));
-    }
+      }
+      responseHeader.putIfAbsent(
+          HttpHeaders.contentTypeHeader, () => 'video/mp4');
+      try {
+        final stat = await video.stat();
+        final fileSize = stat.size!;
+        if (request.method == "HEAD") {
+          responseHeader.putIfAbsent(
+              HttpHeaders.acceptRangesHeader, () => 'bytes');
+          responseHeader.putIfAbsent(
+              HttpHeaders.contentLengthHeader, () => fileSize.toString());
+          return Response.ok(null, headers: responseHeader);
+        } else {
+          int retrievedLength;
+          if (start != null && end != null) {
+            retrievedLength = (end + 1) - start;
+          } else if (start != null) {
+            retrievedLength = fileSize - start;
+          } else if (end != null) {
+            retrievedLength = (end + 1);
+          } else {
+            retrievedLength = fileSize;
+          }
+
+          final int statusCode = (start != null || end != null) ? 206 : 200;
+          start = start ?? 0;
+          end = end ?? fileSize - 1;
+          responseHeader.putIfAbsent(HttpHeaders.contentLengthHeader,
+              () => retrievedLength.toString());
+
+          if (range != null) {
+            responseHeader.putIfAbsent(HttpHeaders.contentRangeHeader,
+                () => 'bytes $start-$end/$fileSize');
+            responseHeader.putIfAbsent(
+                HttpHeaders.acceptRangesHeader, () => 'bytes');
+            // responseHeader.putIfAbsent(HttpHeaders.transferEncodingHeader, () => 'chunked');
+
+          }
+
+          final stream = video
+              .read(offset: start, length: retrievedLength)
+              .handleError((e) {
+            throw e;
+          });
+          return Response(statusCode,
+              body: stream,
+              headers: responseHeader,
+              context: {"shelf.io.buffer_output": false});
+        }
+      } catch (e) {
+        return Response.internalServerError();
+      }
+    }), kLocalServerAddress, kLocalServerPort);
+    emit(HttpVideoBinderState.on);
   }
 
   @override
   Future<void> close() async {
-    await _socket?.close();
     await _server?.close(force: true);
     emit(HttpVideoBinderState.off);
     return super.close();
-  }
-}
-
-class LocalHostHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) {
-        if (host.isNotEmpty && (host == "127.0.0.1" || host == "localhost")) {
-          return true;
-        }
-        return false;
-      };
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:netflox/ui/widgets/faded_edge_widget.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../../data/blocs/theme/theme_cubit_cubit.dart';
@@ -59,63 +61,78 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
     super.dispose();
   }
 
+  Widget _buildAppbar(BuildContext context) => Theme(
+        data: ThemeDataCubit.darkThemeData,
+        child: SliverAppBar(
+          floating: false,
+          pinned: true,
+          actions: [
+            _returnTopButton!,
+            SizedBox(
+              width: 4.w(context),
+            )
+          ],
+          leading: Row(children: [
+            SizedBox(
+              width: 4.w(context),
+            ),
+            const Flexible(child: BackButton()),
+            const Flexible(child: HomeButton())
+          ]),
+          leadingWidth: 100,
+          expandedHeight: 250,
+          flexibleSpace: FlexibleSpaceBar(
+            stretchModes: const [
+              StretchMode.blurBackground,
+              StretchMode.zoomBackground
+            ],
+            background:
+                TMDBScreenHeader(element: widget.element, child: widget.header),
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Material(
         child: NetfloxBackgroundImage(
-            opacityStrength: 1,
-            overlay: ResponsiveWrapper.of(context).isLargerThan(MOBILE),
-            backgroundImage: (context) {
-              if (widget.element.type.isMultimedia() &&
-                  ResponsiveWrapper.of(context).isLargerThan(MOBILE)) {
-                var img = (widget.element as TMDBMultiMedia).backdropImg;
-                img ??= widget.element.img;
-                return TMDBImageWidget(
-                  img: img,
-                  showError: false,
-                  showProgressIndicator: false,
-                );
-              }
-            },
-            child: CustomScrollView(
-                clipBehavior: Clip.none,
-                controller: _controller,
-                slivers: [
-                  Theme(
-                    data: ThemeDataCubit.darkThemeData,
-                    child: SliverAppBar(
-                      floating: false,
-                      pinned: true,
-                      actions: [
-                        _returnTopButton!,
-                        const SizedBox(
-                          width: 15,
-                        )
-                      ],
-                      leading: Row(children: const [
-                        SizedBox(
-                          width: 15,
-                        ),
-                        Flexible(child: BackButton()),
-                        Flexible(child: HomeButton())
-                      ]),
-                      leadingWidth: 100,
-                      expandedHeight: 250,
-                      flexibleSpace: FlexibleSpaceBar(
-                        stretchModes: const [
-                          StretchMode.blurBackground,
-                          StretchMode.zoomBackground
-                        ],
-                        background: TMDBScreenHeader(
-                            element: widget.element, child: widget.header),
-                      ),
-                    ),
-                  ),
-                  SliverPadding(
-                      padding: const EdgeInsets.only(
-                          left: 25, right: 25, top: 15, bottom: 35),
-                      sliver: SliverList(
-                          delegate: SliverChildListDelegate(widget.content)))
-                ])));
+      opacityStrength: 1,
+      overlay: ResponsiveWrapper.of(context).isLargerThan(MOBILE),
+      backgroundImage: (context) {
+        if (widget.element.type.isMultimedia() &&
+            ResponsiveWrapper.of(context).isLargerThan(MOBILE)) {
+          var img = (widget.element as TMDBMultiMedia).backdropImg;
+          img ??= widget.element.img;
+          return TMDBImageWidget(
+            img: img,
+            showError: false,
+            showProgressIndicator: false,
+          );
+        }
+      },
+      child: CustomScrollView(
+          // clipBehavior: Clip.none,
+          controller: _controller,
+          slivers: [
+            _buildAppbar(context),
+            SliverToBoxAdapter(
+              child: FadedEdgeWidget(
+                  color: Colors.black,
+                  axis: Axis.horizontal,
+                  ratio: const EdgeInsets.only(left: 0.05, right: 0.1),
+                  child: Padding(
+                      padding: EdgeInsets.only(
+                          left: 6.w(context),
+                          right: 6.w(context),
+                          top: 15,
+                          bottom: 35),
+                      child: ListView(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: widget.content,
+                      ))),
+            )
+          ]),
+    ));
   }
 }

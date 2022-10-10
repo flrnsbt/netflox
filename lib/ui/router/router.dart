@@ -5,14 +5,16 @@ import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/forgot_password_screen.dart';
 import 'package:netflox/ui/screens/auths/my_account_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
-import 'package:netflox/ui/screens/discover_screen.dart';
-import 'package:netflox/ui/screens/error_screen.dart';
-import 'package:netflox/ui/screens/search_screen.dart';
-import 'package:netflox/ui/screens/library_screen.dart';
+import 'package:netflox/ui/screens/main/discover_screen.dart';
+import 'package:netflox/ui/screens/download_screen.dart';
+import 'package:netflox/ui/widgets/error_widget.dart';
+import 'package:netflox/ui/screens/main/search_screen.dart';
+import 'package:netflox/ui/screens/main/library_screen.dart';
 import 'package:netflox/ui/screens/settings_screen.dart';
 import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart';
 import 'package:netflox/ui/screens/upload_screen.dart';
 
+import '../screens/main/tab_home_screen.dart';
 import '../screens/stream_media_screen.dart';
 import '../screens/tmdb/media_screen.dart';
 import '../screens/tmdb/tv_show_season_screen.dart';
@@ -58,6 +60,11 @@ import '../screens/tmdb/tv_show_season_screen.dart';
         fullscreenDialog: true,
         page: StreamMediaScreen,
       ),
+      AutoRoute(
+        path: 'download',
+        fullscreenDialog: true,
+        page: DownloadScreen,
+      ),
       AutoRoute<bool>(page: AuthScreen, path: 'auth'),
       AutoRoute(
         page: ForgotPasswordScreen,
@@ -78,7 +85,7 @@ import '../screens/tmdb/tv_show_season_screen.dart';
     ]),
     AutoRoute(
       path: 'error/:error',
-      page: ErrorScreen,
+      page: CustomErrorWidget,
     ),
     RedirectRoute(path: '*', redirectTo: 'error/404-not-found'),
   ],

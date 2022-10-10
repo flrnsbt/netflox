@@ -32,8 +32,8 @@ class TMDBDocumentResult<T> extends TMDBQueryResult<T> {
 }
 
 class TMDBCollectionResult<T> extends TMDBQueryResult<List<T>> {
-  final num currentPage;
-  final num maxPage;
+  final int currentPage;
+  final int maxPage;
 
   bool get loadable => currentPage < maxPage;
 
@@ -54,10 +54,11 @@ class TMDBCollectionResult<T> extends TMDBQueryResult<List<T>> {
       {super.data,
       super.timeStamp,
       this.currentPage = 1,
-      this.maxPage = double.maxFinite,
-      super.error});
+      int? maxPage,
+      super.error})
+      : maxPage = maxPage ?? double.maxFinite.toInt();
 
   static TMDBCollectionResult<T> empty<T>() {
-    return TMDBCollectionResult(maxPage: 1, currentPage: double.maxFinite);
+    return TMDBCollectionResult(maxPage: 1, currentPage: 1);
   }
 }

@@ -17,7 +17,7 @@ class AuthCubit extends Cubit<AuthState> {
   StreamSubscription<User?>? _listener;
   AuthCubit({FirebaseAuthService? authService})
       : _authService = authService ?? FirebaseAuthService(),
-        super(AuthState.signedOut()) {
+        super(AuthState.init) {
     _listener = _authService.stream.listen((User? user) async {
       emit(AuthState.loading());
       if (user == null) {

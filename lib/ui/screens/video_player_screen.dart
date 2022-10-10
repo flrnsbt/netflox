@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/utils/custom_modal_bottom_sheet.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
@@ -35,7 +34,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
   //   CustomModalBottomSheet(
   //       onSelected: (value) {
   //         _controller!.setOverriddenFit(value);
-  //         Navigator.pop(context, true);
+  //         Navigator.pop(context);
   //       },
   //       defaultValue: _controller!.getFit(),
   //       values: [BoxFit.contain, BoxFit.cover, BoxFit.fill]).show(context);
@@ -62,13 +61,15 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
         looping: false,
         handleLifecycle: true,
         fit: BoxFit.contain,
+        useRootNavigator: true,
         expandToFill: false,
         subtitlesConfiguration: BetterPlayerSubtitlesConfiguration(
+            outlineEnabled: false,
             rightPadding: 20,
             leftPadding: 20,
             bottomPadding: 15,
             fontColor: Colors.yellow,
-            fontSize: 6.h(context)),
+            fontSize: 6.hw(context)),
         fullScreenByDefault: true);
   }
 
@@ -85,15 +86,23 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
           showNotification: true,
         ),
         bufferingConfiguration: const BetterPlayerBufferingConfiguration(
-            minBufferMs: 30000,
-            bufferForPlaybackMs: 15000,
-            bufferForPlaybackAfterRebufferMs: 30000),
+            minBufferMs: 24000,
+            maxBufferMs: 13107200,
+            bufferForPlaybackMs: 24000,
+            bufferForPlaybackAfterRebufferMs: 24000),
         cacheConfiguration:
             const BetterPlayerCacheConfiguration(useCache: false));
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final config = _getConfig(context);
       _controller =
           BetterPlayerController(config, betterPlayerDataSource: _dataSource);
+      _controller!.addEventsListener((event) {
+        if (event.betterPlayerEventType ==
+            BetterPlayerEventType.hideFullscreen) {
+          _controller!.pause();
+          Navigator.of(context).pop();
+        }
+      });
     });
   }
 
@@ -111,27 +120,18 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          leading: const CloseButton(
-            color: Colors.white,
-          ),
-          backgroundColor: Colors.transparent,
-        ),
-        extendBodyBehindAppBar: true,
-        backgroundColor: Colors.black,
-        body: Center(
-          child: FutureBuilder(
-            future: initialized,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return BetterPlayer(
-                  controller: _controller!,
-                );
-              }
-              return const LoadingScreen();
-            },
-          ),
+    return Material(
+        color: Colors.black,
+        child: FutureBuilder(
+          future: initialized,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return BetterPlayer(
+                controller: _controller!,
+              );
+            }
+            return const LoadingScreen();
+          },
         ));
   }
 

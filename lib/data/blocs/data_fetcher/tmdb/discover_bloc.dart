@@ -1,20 +1,19 @@
-part of '../data_collection_fetch_bloc.dart';
+part of '../paged_data_collection_fetch_bloc.dart';
 
 class TMDBMultimediaDiscoverBloc
-    extends DataCollectionFetchBloc<DiscoverFilterParameter> {
+    extends PagedDataCollectionFetchBloc<DiscoverFilterParameter> {
   final TMDBService _tmdbService;
   TMDBMultimediaDiscoverBloc({required BuildContext context})
       : _tmdbService = context.read<TMDBService>();
 
   @override
   Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
-      PagedRequestParameter<DiscoverFilterParameter<TMDBMultiMedia>>
-          parameters) {
-    return _tmdbService.discover(parameters.currentFilter.type,
-        sortParameter: parameters.currentFilter.sortParameter,
-        genres: parameters.currentFilter.genres,
+      DiscoverFilterParameter<TMDBMultiMedia> parameters, int page) {
+    return _tmdbService.discover(parameters.type,
+        sortParameter: parameters.sortParameter,
+        genres: parameters.genres,
         // language: _currentParameters!.language,
-        year: parameters.currentFilter.year,
-        page: parameters.currentPage);
+        year: parameters.year,
+        page: page);
   }
 }

@@ -11,7 +11,7 @@ class ListTMDBMediaCard extends StatelessWidget {
   final double height;
   final void Function(TMDBPrimaryMedia media)? onTap;
   const ListTMDBMediaCard(
-      {super.key, required this.media, this.onTap, this.height = 100});
+      {super.key, required this.media, this.onTap, this.height = 120});
 
   @override
   Widget build(BuildContext context) {
@@ -53,33 +53,59 @@ class ListTMDBMediaCard extends StatelessWidget {
                                 minFontSize: 12,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w700),
+                                  fontSize: 17,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 5),
-                            FramedText(
-                              text: media.type.name.tr(context),
-                              color: Theme.of(context).primaryColor,
-                              style: const TextStyle(
-                                fontSize: 12,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                children: [
+                                  FramedText(
+                                    text: media.type.name.tr(context),
+                                    color: Colors.white,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                  if (media is TMDBMultiMedia &&
+                                      (media as TMDBMultiMedia)
+                                          .genres
+                                          .isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 5),
+                                      child: FramedText(
+                                        text: (media as TMDBMultiMedia)
+                                            .genres
+                                            .first
+                                            .tr(context),
+                                        color: Colors.white,
+                                        style: const TextStyle(
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 5),
                             Wrap(
+                              spacing: 5,
                               children: [
-                                if (media is TMDBMultiMedia &&
-                                    (media as TMDBMultiMedia).genres.isNotEmpty)
+                                if (media.popularityLevel != null)
                                   Text(
-                                    "${(media as TMDBMultiMedia).genres.first.tr(context)} - ",
+                                    media.popularityLevel!.tr(context),
                                     style: const TextStyle(
-                                        fontSize: 9,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic),
                                   ),
                                 if (media.date != null)
                                   Text(
                                     media.date!,
                                     style: const TextStyle(
-                                        fontSize: 9,
+                                        fontSize: 10,
                                         fontStyle: FontStyle.italic),
                                   )
                               ],

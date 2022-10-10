@@ -13,18 +13,15 @@ import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_banner.dart';
-import 'package:netflox/ui/widgets/easy_reponsive_layout_builder.dart';
+import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/rating_widget.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
-import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../router/router.gr.dart';
-import '../../widgets/tmdb/tmdb_image.dart';
 import '../../widgets/framed_text.dart';
-import '../error_screen.dart';
 import 'media_screen_components/components.dart';
 part 'movie_screen.dart';
 part 'tv_show_screen.dart';
@@ -46,7 +43,7 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
   Widget build(BuildContext context) {
     return BlocBuilder<TMDBPrimaryMediaCubit, BasicServerFetchState>(
       builder: (context, state) {
-        if (state.finished() && state.hasData()) {
+        if (state.success() && state.hasData()) {
           final media = state.result!;
           return MultiBlocProvider(providers: [
             if (media.type.isPeople())
@@ -76,9 +73,7 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
         if (state.isLoading()) {
           return const LoadingScreen();
         }
-        return ErrorScreen(
-          error: state.error,
-        );
+        return CustomErrorWidget.from(error: state.error);
       },
     );
   }
@@ -96,7 +91,7 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
           people: media as TMDBPerson,
         );
       default:
-        return const ErrorScreen();
+        return const CustomErrorWidget();
     }
   }
 

@@ -6,7 +6,7 @@ class NetfloxException implements Exception {
 
   const NetfloxException({this.errorCode = 'unknown-error'});
 
-  factory NetfloxException.from(Object o) {
+  factory NetfloxException.from(Object? o) {
     if (o is NetfloxException) {
       return o;
     } else if (o is FirebaseException) {

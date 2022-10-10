@@ -9,7 +9,7 @@ import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart'
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
-import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/profile_image.dart';
 import '../../data/blocs/account/auth/auth_cubit.dart';
 import '../router/router.gr.dart';
@@ -128,7 +128,7 @@ class SettingsScreen extends StatelessWidget {
                     final user = state.user!;
                     return _AccountDetailEditor(user);
                   } else {
-                    return const ErrorScreen(
+                    return CustomErrorWidget.from(
                       error: "not-authenticated",
                     );
                   }

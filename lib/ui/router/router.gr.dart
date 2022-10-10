@@ -14,6 +14,7 @@
 import 'package:auto_route/auto_route.dart' as _i17;
 import 'package:flutter/cupertino.dart' as _i19;
 import 'package:flutter/material.dart' as _i18;
+import 'package:netflox/data/models/exception.dart';
 
 import '../../data/blocs/account/auth/auth_form/auth_form_bloc.dart' as _i22;
 import '../../data/models/tmdb/media.dart' as _i21;
@@ -24,10 +25,11 @@ import '../screens/auths/auth_screen.dart' as _i8;
 import '../screens/auths/forgot_password_screen.dart' as _i9;
 import '../screens/auths/my_account_screen.dart' as _i16;
 import '../screens/auths/unverified_user_screen.dart' as _i3;
-import '../screens/discover_screen.dart' as _i14;
-import '../screens/error_screen.dart' as _i2;
-import '../screens/library_screen.dart' as _i15;
-import '../screens/search_screen.dart' as _i13;
+import '../screens/main/discover_screen.dart' as _i14;
+import '../widgets/error_widget.dart' as _i2;
+import '../screens/main/library_screen.dart' as _i15;
+import '../screens/main/search_screen.dart' as _i13;
+import '../screens/main/tab_home_screen.dart' as _i21;
 import '../screens/settings_screen.dart' as _i11;
 import '../screens/stream_media_screen.dart' as _i7;
 import '../screens/tmdb/media_screen.dart' as _i4;
@@ -52,9 +54,8 @@ class NetfloxRouter extends _i17.RootStackRouter {
           orElse: () => const ErrorRouteArgs());
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i2.ErrorScreen(
-          key: args.key,
-          error: args.error,
+        child: _i2.CustomErrorWidget.from(
+          error: NetfloxException.from(args.error),
           showTitle: args.showTitle,
         ),
       );
@@ -62,7 +63,7 @@ class NetfloxRouter extends _i17.RootStackRouter {
     TabHomeRoute.name: (routeData) {
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i1.TabHomeScreen(),
+        child: const _i21.TabHomeScreen(),
       );
     },
     UnverifiedUserRoute.name: (routeData) {
@@ -325,7 +326,7 @@ class StackRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i2.ErrorScreen]
+/// [_i2.CustomErrorWidget]
 class ErrorRoute extends _i17.PageRouteInfo<ErrorRouteArgs> {
   ErrorRoute({
     _i19.Key? key,

@@ -5,17 +5,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/data_fetcher/filter_parameter.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/faded_edge_widget.dart';
 import 'package:netflox/ui/widgets/search_bar.dart';
-import '../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
-import '../../data/blocs/data_fetcher/data_collection_fetch_bloc.dart';
-import '../../data/blocs/data_fetcher/paged_data_fetch_manager.dart';
-import '../router/router.gr.dart';
-import '../widgets/custom_awesome_dialog.dart';
-import '../widgets/default_sliver_grid.dart';
-import '../widgets/filters/filter_menu_dialog.dart';
-import '../widgets/paged_media_sliver_grid_view.dart';
-import '../widgets/tmdb/tmdb_media_card.dart';
+import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
+import '../../../data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
+import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
+import '../../router/router.gr.dart';
+import '../../widgets/custom_awesome_dialog.dart';
+import '../../widgets/default_sliver_grid.dart';
+import '../../widgets/filters/filter_menu_dialog.dart';
+import '../../widgets/paged_sliver_grid_view.dart';
+import '../../widgets/tmdb/tmdb_media_card.dart';
 
 class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
   SearchScreen({
@@ -43,8 +44,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
           },
           currentParameters: context
               .read<PagedDataFilterManager<SearchFilterParameter>>()
-              .state
-              .currentFilter,
+              .state,
         )).show();
   }
 
@@ -82,37 +82,45 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
           minimum: const EdgeInsets.only(left: 25, right: 25, top: 40),
           child: PagedSliverScrollViewWrapper(
             showFloatingReturnTopButton: true,
-            bloc: context.read<TMDBPrimaryMediaSearchBloc>(),
+            pagedScrollViewAsyncFeedback: PagedScrollViewAsyncFeedback(
+              controller: PagedScrollViewAsyncFeedbackController.from(
+                  context.read<TMDBPrimaryMediaSearchBloc>()),
+              errorBuilder: (context, [error]) {
+                if (_data.isNotEmpty) {
+                  return CustomErrorWidget.from(
+                    error: error,
+                    showDescription: false,
+                  );
+                }
+              },
+            ),
             onEndReached: () {
               context
-                  .read<PagedDataFilterManager<SearchFilterParameter>>()
-                  .nextPage();
+                  .read<TMDBPrimaryMediaSearchBloc>()
+                  .add(PagedDataCollectionFetchEvent.nextPage);
             },
             slivers: [
               _buildSearchBar(context),
-              SliverPadding(
-                  padding: const EdgeInsets.only(top: 10),
-                  sliver: BlocConsumer<TMDBPrimaryMediaSearchBloc,
-                      BasicServerFetchState>(listener: (context, state) {
-                    if (state.hasData()) {
-                      _data.addAll(state.result!);
-                    }
-                  }, builder: (context, state) {
-                    return DefaultSliverGrid(
-                      sliverChildBuilderDelegate:
-                          SliverChildBuilderDelegate(((context, index) {
-                        return TMDBMediaCard(
-                            media: _data.elementAt(index),
-                            showMediaType: true,
-                            showBottomTitle: true,
-                            onTap: (media) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-
-                              context.pushRoute(MediaRoute.fromMedia(media));
-                            });
-                      }), childCount: _data.length),
-                    );
-                  }))
+              BlocConsumer<TMDBPrimaryMediaSearchBloc, BasicServerFetchState>(
+                  listener: (context, state) {
+                if (state.hasData()) {
+                  _data.addAll(state.result!);
+                }
+              }, builder: (context, state) {
+                return DefaultSliverGrid(
+                  sliverChildBuilderDelegate:
+                      SliverChildBuilderDelegate(((context, index) {
+                    return TMDBMediaCard(
+                        media: _data.elementAt(index),
+                        showMediaType: true,
+                        showBottomTitle: true,
+                        onTap: (media) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          context.pushRoute(MediaRoute.fromMedia(media));
+                        });
+                  }), childCount: _data.length),
+                );
+              })
             ],
           )),
     );
@@ -123,21 +131,20 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
     return MultiBlocProvider(
         providers: [
           BlocProvider(
-              create: (context) => TMDBPrimaryMediaSearchBloc(context)
-                ..add(PagedRequestParameter(_searchFilterParameter))),
+              create: (context) => TMDBPrimaryMediaSearchBloc(context)),
           BlocProvider(
               create: (context) =>
                   PagedDataFilterManager<SearchFilterParameter>(
                       _searchFilterParameter))
         ],
         child: BlocListener<PagedDataFilterManager<SearchFilterParameter>,
-            PagedRequestParameter<SearchFilterParameter>>(
+            SearchFilterParameter>(
           child: this,
           listener: (context, state) {
-            if (state.isNewRequest()) {
-              _data.clear();
-            }
-            context.read<TMDBPrimaryMediaSearchBloc>().add(state);
+            _data.clear();
+            context
+                .read<TMDBPrimaryMediaSearchBloc>()
+                .add(PagedDataCollectionFetchEvent.updateParameter(state));
           },
         ));
   }

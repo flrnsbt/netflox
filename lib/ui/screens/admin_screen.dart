@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/widgets/buttons/back_button.dart';
 
 import '../../data/blocs/account/auth/auth_cubit.dart';
 import '../router/router.gr.dart';
+import '../widgets/error_widget.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class AdminScreen extends StatelessWidget {
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           if (state.user?.isAdmin() ?? true) {
-            return const ErrorScreen(
+            return CustomErrorWidget.from(
               error: 'permission-denied',
             );
           }

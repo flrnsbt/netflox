@@ -6,14 +6,11 @@ class DefaultShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer(
-        gradient: LinearGradient(colors: [
-          Theme.of(context).canvasColor,
-          Theme.of(context).highlightColor
-        ], stops: const [
-          0,
-          0.5
-        ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+    return Shimmer.fromColors(
+        direction: ShimmerDirection.ltr,
+        period: const Duration(seconds: 2),
+        highlightColor: Theme.of(context).disabledColor,
+        baseColor: Theme.of(context).highlightColor,
         child: const Material());
   }
 }

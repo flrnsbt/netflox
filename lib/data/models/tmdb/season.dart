@@ -72,7 +72,7 @@ class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
   LibraryMediaInformation libraryMediaInfo;
 
   @override
-  String get libraryId {
+  String get libraryPath {
     return "$showId/seasons/$seasonNumber";
   }
 }
@@ -137,7 +137,7 @@ class TMDBTVEpisode extends TMDBMedia
   }
 
   @override
-  String get libraryId {
+  String get libraryPath {
     return "$showId/seasons/$seasonNumber/episodes/$episodeNumber";
   }
 
@@ -146,6 +146,6 @@ class TMDBTVEpisode extends TMDBMedia
 
   @override
   String? get remoteFilePath {
-    return "tv/$libraryId";
+    return "tv/$libraryPath";
   }
 }

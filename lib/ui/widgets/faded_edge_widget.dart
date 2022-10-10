@@ -5,13 +5,20 @@ class FadedEdgeWidget extends StatelessWidget {
   final Axis axis;
   final EdgeInsets ratio;
   final bool show;
-  const FadedEdgeWidget(
+  final Color color;
+  FadedEdgeWidget(
       {Key? key,
       required this.child,
       this.show = true,
-      this.ratio = const EdgeInsets.symmetric(vertical: 0.1),
+      EdgeInsets? ratio,
+      this.color = Colors.black87,
       this.axis = Axis.vertical})
-      : super(key: key);
+      : ratio = ratio ??
+            EdgeInsets.symmetric(
+              vertical: axis == Axis.vertical ? 0.1 : 0,
+              horizontal: axis == Axis.horizontal ? 0.1 : 0,
+            ),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +28,7 @@ class FadedEdgeWidget extends StatelessWidget {
       final end = axis == Axis.vertical
           ? Alignment.bottomCenter
           : Alignment.centerRight;
-      final colors = [
-        Colors.black87,
-        Colors.transparent,
-        Colors.transparent,
-        Colors.black87
-      ];
+      final colors = [color, Colors.transparent, Colors.transparent, color];
       final beginStop = axis == Axis.horizontal ? ratio.left : ratio.top;
       final endStop = axis == Axis.horizontal ? ratio.right : ratio.bottom;
       return ShaderMask(

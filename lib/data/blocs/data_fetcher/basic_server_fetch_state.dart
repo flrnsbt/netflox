@@ -24,19 +24,19 @@ class BasicServerFetchState<T> extends Equatable
     return false;
   }
 
-  const BasicServerFetchState._(
-      {this.result, required this.status, this.error});
+  const BasicServerFetchState({this.result, required this.status, this.error});
+
+  factory BasicServerFetchState.init() =>
+      const BasicServerFetchState(status: BasicServerFetchStatus.init);
 
   factory BasicServerFetchState.loading() =>
-      const BasicServerFetchState._(status: BasicServerFetchStatus.loading);
+      const BasicServerFetchState(status: BasicServerFetchStatus.loading);
 
-  factory BasicServerFetchState.finished({T? result, Object? error}) =>
-      BasicServerFetchState._(
-          status: BasicServerFetchStatus.finished,
-          result: result,
-          error: error);
+  factory BasicServerFetchState.success({T? result, Object? error}) =>
+      BasicServerFetchState(
+          status: BasicServerFetchStatus.success, result: result, error: error);
 
-  factory BasicServerFetchState.failed(Object error) => BasicServerFetchState._(
+  factory BasicServerFetchState.failed(Object error) => BasicServerFetchState(
       status: BasicServerFetchStatus.failed, error: error);
 
   @override

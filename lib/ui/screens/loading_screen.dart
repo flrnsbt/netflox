@@ -17,8 +17,9 @@ class LoadingScreen extends StatelessWidget {
           const NetfloxLoadingIndicator(),
           if (loadingMessage != null)
             Padding(
-              padding: const EdgeInsets.only(top: 35),
-              child: Text(loadingMessage!).tr(),
+              padding: const EdgeInsets.only(top: 25),
+              child: Text(loadingMessage!, style: const TextStyle(fontSize: 12))
+                  .tr(),
             )
         ],
       ),

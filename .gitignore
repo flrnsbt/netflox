@@ -48,3 +48,4 @@ app.*.map.json
 assets/test_keys/
 
 lib/firebase_options.dart
+test/ssh_test_credentials.dart

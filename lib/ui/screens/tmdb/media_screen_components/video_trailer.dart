@@ -21,12 +21,14 @@ class VideoTrailer extends StatelessWidget {
       child: BlocBuilder<TMDBFetchVideosCubit,
           BasicServerFetchState<List<TMDBVideo>>>(builder: (context, state) {
         Widget? widget;
-        if (state.finished()) {
+        if (state.success()) {
           if (state.result?.isNotEmpty ?? false) {
             try {
               final video = state.result!.firstWhere((element) =>
                   element.isTrailer && element.site == VideoSite.youtube);
-              widget = CustomYoutubePlayer(videoId: video.key);
+              widget = ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 350),
+                  child: CustomYoutubePlayer(videoId: video.key));
             } catch (e) {
               widget = const Text("nothing-found").tr();
             }

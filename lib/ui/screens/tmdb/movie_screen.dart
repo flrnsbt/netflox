@@ -33,6 +33,7 @@ class TMDBMovieScreen extends StatelessWidget {
         TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>(
           title: 'credits'.tr(context),
           height: 200,
+          play: true,
         ),
         const SizedBox(
           height: 35,

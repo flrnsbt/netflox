@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class CustomYoutubePlayer extends StatefulWidget {
@@ -34,7 +35,7 @@ class _CustomYoutubePlayerState extends State<CustomYoutubePlayer> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(4.w(context)),
         child: AspectRatio(
             aspectRatio: 16 / 9,
             child: AbsorbPointer(

@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/constants/basic_fetch_status.dart';
 import '../../services/firestore_service.dart';
-import '../models/exception.dart';
 import '../models/server_configs/ssh_config.dart';
 import '../models/server_configs/tmdb_config.dart';
 
@@ -14,24 +12,21 @@ class AppConfigCubit extends Cubit<AppConfig> {
   }
 
   FutureOr<void> get([bool force = false]) async {
-    if (!state.finished() || force) {
+    if (!state.success() || force) {
       emit(const AppConfig());
       try {
-        final config = await FirestoreService.config
-            .get(const GetOptions(source: Source.server));
+        final config = await FirestoreService.config.get();
         if (config.size >= 2) {
           final docs = config.docs;
           final tmdbApiConfigData =
               docs.singleWhere((e) => e.id == 'tmdb_api_config');
           final sshConfigData = docs.singleWhere((e) => e.id == 'ssh_config');
-
           final tmdbApiConfig = TMDBApiConfig.fromMap(tmdbApiConfigData.data());
           final sshConfig = NetfloxSSHConfig.fromMap(sshConfigData.data());
           emit(AppConfig(
               tmdbApiConfig: tmdbApiConfig,
               sshConfig: sshConfig,
-              status: BasicServerFetchStatus.finished));
-          close();
+              status: BasicServerFetchStatus.success));
         }
       } catch (e) {
         emit(AppConfig(error: e, status: BasicServerFetchStatus.failed));

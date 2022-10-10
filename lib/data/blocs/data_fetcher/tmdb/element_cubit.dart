@@ -21,7 +21,7 @@ abstract class TMDBElementCubit<K> extends Cubit<BasicServerFetchState<K>> {
       bool autoFetch = true})
       : _tmdbService = context.read<TMDBService>(),
         _id = id,
-        super(BasicServerFetchState.loading()) {
+        super(BasicServerFetchState.init()) {
     if (autoFetch) {
       fetch();
     }
@@ -32,7 +32,7 @@ abstract class TMDBElementCubit<K> extends Cubit<BasicServerFetchState<K>> {
       emit(BasicServerFetchState.loading());
       try {
         final result = await _fetch();
-        emit(BasicServerFetchState.finished(result: result));
+        emit(BasicServerFetchState.success(result: result));
       } catch (e) {
         final exception = NetfloxException.from(e);
         emit(BasicServerFetchState.failed(exception));

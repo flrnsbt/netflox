@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import '../../../../data/blocs/theme/theme_cubit_cubit.dart';
 import '../../../../data/models/tmdb/element.dart';
 import '../../../../data/models/tmdb/media.dart';
 import '../../../widgets/background_image_widget.dart';
@@ -34,15 +34,20 @@ class TMDBScreenHeader extends StatelessWidget {
         aspectRatio: 2 / 3,
         child: InkWell(
           onTap: () => showDialog(
+              useRootNavigator: false,
               context: context,
-              builder: (context) => Card(
-                    margin: const EdgeInsets.all(25),
-                    child: InkWell(
-                      onTap: () {
-                        context.router.pop();
-                      },
-                      child: TMDBImageWidget(
-                        img: element.img,
+              builder: (context) => ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxWidth: 400, maxHeight: 500),
+                    child: Material(
+                      child: InkWell(
+                        onTap: () {
+                          context.router.pop();
+                        },
+                        child: TMDBImageWidget(
+                          fit: BoxFit.contain,
+                          img: element.img,
+                        ),
                       ),
                     ),
                   )),
@@ -61,10 +66,11 @@ class TMDBScreenHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return NetfloxBackgroundImage(
       color: Colors.black,
+      opacityStrength: 1,
       backgroundImage: _buildBackgroundImage,
       child: SafeArea(
-          minimum:
-              const EdgeInsets.only(left: 110, right: 25, top: 20, bottom: 20),
+          minimum: EdgeInsets.only(
+              left: 110, right: 4.w(context), top: 20, bottom: 20),
           child: Row(children: [
             Expanded(child: child),
             if (element.img != null &&

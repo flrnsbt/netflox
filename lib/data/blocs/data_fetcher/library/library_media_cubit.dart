@@ -9,8 +9,7 @@ import '../basic_server_fetch_state.dart';
 class LibraryMediaInfoFetchCubit
     extends Cubit<BasicServerFetchState<LibraryMediaInformation>> {
   final TMDBLibraryMedia media;
-  LibraryMediaInfoFetchCubit(this.media)
-      : super(BasicServerFetchState.loading()) {
+  LibraryMediaInfoFetchCubit(this.media) : super(BasicServerFetchState.init()) {
     var libraryMediaInformation = media.libraryMediaInfo;
     FirestoreService.media.doc(media.id).snapshots().listen((doc) {
       final data = doc.data();
@@ -18,7 +17,7 @@ class LibraryMediaInfoFetchCubit
         libraryMediaInformation = LibraryMediaInformation.fromMap(data);
         media.libraryMediaInfo = libraryMediaInformation;
       }
-      emit(BasicServerFetchState.finished(result: libraryMediaInformation));
+      emit(BasicServerFetchState.success(result: libraryMediaInformation));
     });
   }
 

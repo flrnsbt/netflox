@@ -1,11 +1,16 @@
-part of '../data_collection_fetch_bloc.dart';
+part of '../paged_data_collection_fetch_bloc.dart';
 
 class LibraryMediaExploreBloc
-    extends DataCollectionFetchBloc<LibraryFilterParameter> {
+    extends PagedDataCollectionFetchBloc<LibraryFilterParameter> {
   final TMDBService _tmdbService;
 
   LibraryMediaExploreBloc(BuildContext context)
       : _tmdbService = context.read<TMDBService>();
+
+  @override
+  void reset() {
+    _lastDoc = null;
+  }
 
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchFromFirestore(
       LibraryFilterParameter parameters) async {
@@ -31,36 +36,32 @@ class LibraryMediaExploreBloc
 
   DocumentSnapshot? _lastDoc;
 
-  void reset() {
-    _lastDoc = null;
-  }
-
   @override
   Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
-      PagedRequestParameter<LibraryFilterParameter> parameters) async {
-    if (parameters.currentPage == 1) {
-      reset();
-    }
-
-    final docs = await _fetchFromFirestore(parameters.currentFilter);
-    if (docs.isNotEmpty) {
-      _lastDoc = docs.last;
-    }
-    final allData = <TMDBMultiMedia>[];
-    for (final doc in docs) {
-      final data = doc.data();
-      dynamic libraryMediaInformation = LibraryMediaInformation.fromMap(data);
-      final result = await _tmdbService.getMultimedia(
-          id: libraryMediaInformation.id, type: libraryMediaInformation.type);
-
-      if (result.hasData()) {
-        final media = result.data!;
-        media.libraryMediaInfo = libraryMediaInformation;
-        allData.add(media);
+      LibraryFilterParameter parameters, int page) async {
+    try {
+      final docs = await _fetchFromFirestore(parameters);
+      if (docs.isNotEmpty) {
+        _lastDoc = docs.last;
       }
+      final allData = <TMDBMultiMedia>[];
+      for (final doc in docs) {
+        final data = doc.data();
+        dynamic libraryMediaInformation = LibraryMediaInformation.fromMap(data);
+        final result = await _tmdbService.getMultimedia(
+            id: libraryMediaInformation.id, type: libraryMediaInformation.type);
+
+        if (result.hasData()) {
+          final media = result.data!;
+          media.libraryMediaInfo = libraryMediaInformation;
+          allData.add(media);
+        }
+      }
+      return TMDBCollectionResult(
+        data: allData,
+      );
+    } catch (e) {
+      rethrow;
     }
-    return TMDBCollectionResult(
-      data: allData,
-    );
   }
 }
