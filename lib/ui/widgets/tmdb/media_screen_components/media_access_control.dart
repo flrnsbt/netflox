@@ -8,7 +8,8 @@ import '../../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../../data/models/tmdb/library_media_information.dart';
 import '../../../../data/models/tmdb/media.dart';
 import '../../../router/router.gr.dart';
-import '../../../widgets/custom_awesome_dialog.dart';
+import '../../custom_awesome_dialog.dart';
+import 'components.dart';
 
 class LibraryMediaControlLayout extends StatelessWidget {
   final TMDBLibraryMedia media;
@@ -17,22 +18,19 @@ class LibraryMediaControlLayout extends StatelessWidget {
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: BlocProvider(
-        create: (context) => LibraryMediaInfoFetchCubit(media),
-        child: BlocBuilder<LibraryMediaInfoFetchCubit,
-            BasicServerFetchState<LibraryMediaInformation>>(
-          builder: (context, state) {
-            if (state.success()) {
-              final mediaInfo = state.result;
-              if (mediaInfo != null) {
-                return _buildMediaLayout(mediaInfo, context);
-              }
+    return BlocProvider(
+      create: (context) => LibraryMediaInfoFetchCubit(media),
+      child: BlocBuilder<LibraryMediaInfoFetchCubit,
+          BasicServerFetchState<LibraryMediaInformation>>(
+        builder: (context, state) {
+          if (state.success()) {
+            final mediaInfo = state.result;
+            if (mediaInfo != null) {
+              return _buildMediaLayout(mediaInfo, context);
             }
-            return const SizedBox.shrink();
-          },
-        ),
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -40,40 +38,47 @@ class LibraryMediaControlLayout extends StatelessWidget {
   Widget _buildAvailableMediaLayout(
       BuildContext context, LibraryMediaInformation mediaInfo) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (media is TMDBPlayableMedia)
-              WatchButton(
-                media: media as TMDBPlayableMedia,
-              ),
-            DownloadButton(media: media)
-          ]
-              .map((e) => Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: e,
-                    ),
-                  ))
-              .toList(),
+        Flexible(
+          flex: 2,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              children: [
+                if (media is TMDBPlayableMedia)
+                  WatchButton(
+                    media: media as TMDBPlayableMedia,
+                  ),
+                DownloadButton(media: media)
+              ]
+                  .map((e) => Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: e,
+                      ))
+                  .toList(),
+            ),
+          ),
         ),
-        const SizedBox(
-          height: 5,
-        ),
-        Flexible(child: _buildPlayableMediaLanguageInfo(context, mediaInfo))
+        Flexible(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 5, bottom: 5),
+              child: _buildPlayableMediaLanguageInfo(context, mediaInfo),
+            ))
       ],
     );
   }
 
   Widget _buildPlayableMediaLanguageInfo(
       BuildContext context, LibraryMediaInformation mediaInfo) {
-    final languages = mediaInfo.languages?.map((e) => e.tr(context)).join(",");
-    final subtitles = mediaInfo.subtitles?.map((e) => e.tr(context)).join(",");
+    final languages = mediaInfo.languages?.map((e) => e.tr(context)).join(", ");
+    final subtitles = mediaInfo.subtitles?.map((e) => e.tr(context)).join(", ");
     return Wrap(
       spacing: 10,
-      runSpacing: 10,
+      runSpacing: 3,
       alignment: WrapAlignment.end,
       children: [
         if (subtitles?.isNotEmpty ?? false)
@@ -81,7 +86,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
             Text(
               "${"subtitles".tr(context)}:",
               style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: Colors.white),
             ),
@@ -90,7 +95,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
             ),
             Text(
               subtitles!,
-              style: const TextStyle(fontSize: 12, color: Colors.white),
+              style: const TextStyle(fontSize: 10, color: Colors.white),
             )
           ]),
         if (languages?.isNotEmpty ?? false)
@@ -100,7 +105,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
               Text(
                 "${"audio".tr(context)}:",
                 style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
@@ -109,7 +114,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
               ),
               Text(
                 languages!,
-                style: const TextStyle(fontSize: 12, color: Colors.white),
+                style: const TextStyle(fontSize: 10, color: Colors.white),
               )
             ],
           )
@@ -163,24 +168,10 @@ class WatchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: const MaterialStatePropertyAll(Colors.pink),
-        shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        )),
-      ),
-      onPressed: () =>
-          context.pushRoute(StreamMediaRoute(playableMedia: media)),
-      child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: const Text(
-            "watch",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          ).tr()),
-    );
+    return TMDBHeaderButton(
+        text: 'watch',
+        onPressed: () =>
+            context.pushRoute(StreamMediaRoute(playableMedia: media)));
   }
 }
 
@@ -191,27 +182,10 @@ class DownloadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-        style: ButtonStyle(
-            fixedSize: const MaterialStatePropertyAll(Size(100, 30)),
-            elevation: const MaterialStatePropertyAll(0),
-            shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-                side: BorderSide(
-                    color: Theme.of(context).colorScheme.onSurface))),
-            backgroundColor:
-                const MaterialStatePropertyAll(Colors.transparent)),
-        onPressed: () {},
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            "download",
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ).tr(),
-        ));
+    return const TMDBHeaderButton(
+      text: 'download',
+      color: Colors.white,
+      filled: false,
+    );
   }
 }

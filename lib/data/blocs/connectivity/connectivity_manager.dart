@@ -1,10 +1,9 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:universal_io/io.dart';
-
+import 'package:netflox/data/constants/default_app_timeout.dart';
 part 'connectivity_state.dart';
 
 class ConnectivityManager extends Cubit<ConnectivityState> {
@@ -39,6 +38,6 @@ class LocalHostHttpOverrides extends HttpOverrides {
         }
         return false;
       }
-      ..connectionTimeout = const Duration(seconds: 15);
+      ..connectionTimeout = kDefaultTimeout;
   }
 }

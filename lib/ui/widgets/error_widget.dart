@@ -7,11 +7,13 @@ class CustomErrorWidget extends StatelessWidget {
   final String? errorDescription;
   final Widget? bottom;
   final Widget image;
+  final double maxWidth;
   const CustomErrorWidget(
       {Key? key,
       this.errorTitle,
       this.errorDescription,
       this.bottom,
+      this.maxWidth = 400,
       Widget? image})
       : image =
             image ?? const Icon(Icons.warning, size: 48, color: Colors.white70),
@@ -44,9 +46,10 @@ class CustomErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         padding: const EdgeInsets.symmetric(horizontal: 35),
         child: Column(
+          textDirection: TextDirection.ltr,
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

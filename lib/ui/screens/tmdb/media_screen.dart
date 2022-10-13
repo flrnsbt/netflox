@@ -1,5 +1,3 @@
-library mediascreen;
-
 import 'package:auto_route/auto_route.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -13,16 +11,19 @@ import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_banner.dart';
-import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/rating_widget.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
+import 'package:netflox/utils/platform_mobile_extension.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../router/router.gr.dart';
+import '../../widgets/country_flag_icon.dart';
 import '../../widgets/framed_text.dart';
-import 'media_screen_components/components.dart';
+import '../../widgets/tmdb/media_screen_components/components.dart';
+import '../../widgets/tmdb/media_screen_components/info_component.dart';
+import '../error_screen.dart';
 part 'movie_screen.dart';
 part 'tv_show_screen.dart';
 part 'people_screen.dart';
@@ -73,7 +74,7 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
         if (state.isLoading()) {
           return const LoadingScreen();
         }
-        return CustomErrorWidget.from(error: state.error);
+        return ErrorScreen(errorCode: state.error);
       },
     );
   }
@@ -91,7 +92,7 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
           people: media as TMDBPerson,
         );
       default:
-        return const CustomErrorWidget();
+        return const ErrorScreen();
     }
   }
 

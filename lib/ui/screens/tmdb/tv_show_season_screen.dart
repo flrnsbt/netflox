@@ -3,7 +3,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/models/exception.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
@@ -14,8 +13,8 @@ import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../../data/models/tmdb/library_media_information.dart';
-import '../../widgets/error_widget.dart';
-import 'media_screen_components/components.dart';
+import '../../widgets/tmdb/media_screen_components/components.dart';
+import '../error_screen.dart';
 
 class TVShowSeasonScreen extends StatelessWidget {
   final int seasonNumber;
@@ -40,8 +39,7 @@ class TVShowSeasonScreen extends StatelessWidget {
           if (state.isLoading()) {
             return const LoadingScreen();
           }
-          return CustomErrorWidget.from(error: state.error);
-          ;
+          return ErrorScreen(errorCode: state.error);
         },
       ),
     );
@@ -104,7 +102,7 @@ class TVShowSeasonScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 25),
             child: MediaScreenComponent(
-              title: 'overview'.tr(context),
+              name: 'overview'.tr(context),
               child: Text(
                 season.overview!,
                 style: const TextStyle(fontSize: 12),
@@ -113,7 +111,8 @@ class TVShowSeasonScreen extends StatelessWidget {
           ),
         if (season.episodes.isNotEmpty)
           MediaScreenComponent(
-              title: 'episodes'.tr(context),
+              backgroundColor: Colors.transparent,
+              name: 'episodes'.tr(context),
               child: GridView.builder(
                 padding: EdgeInsets.zero,
                 gridDelegate: const ResponsiveGridDelegate(

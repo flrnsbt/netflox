@@ -8,7 +8,7 @@ class LibraryMediaExploreBloc
       : _tmdbService = context.read<TMDBService>();
 
   @override
-  void reset() {
+  void resetPage() {
     _lastDoc = null;
   }
 

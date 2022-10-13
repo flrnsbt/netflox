@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,8 @@ import 'package:netflox/services/tmdb_service.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
+import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/widgets/custom_snackbar.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
@@ -86,7 +89,7 @@ class NetfloxApp extends StatelessWidget {
                       ClampingScrollWrapper(child: child!),
                       breakpoints: [
                         const ResponsiveBreakpoint.resize(300, name: MOBILE),
-                        const ResponsiveBreakpoint.autoScale(600,
+                        const ResponsiveBreakpoint.autoScale(700,
                             scaleFactor: 1.1, name: TABLET),
                         const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
                         const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
@@ -96,7 +99,8 @@ class NetfloxApp extends StatelessWidget {
                             scaleFactor: 0.5, name: MOBILE),
                         const ResponsiveBreakpoint.autoScale(800,
                             scaleFactor: 0.7, name: TABLET),
-                        const ResponsiveBreakpoint.resize(1100, name: DESKTOP),
+                        const ResponsiveBreakpoint.autoScale(1100,
+                            name: DESKTOP),
                         const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
                       ],
                       defaultScale: false,
@@ -104,6 +108,15 @@ class NetfloxApp extends StatelessWidget {
                       background:
                           Container(color: Theme.of(context).backgroundColor));
                 },
+                scrollBehavior: const MaterialScrollBehavior().copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.stylus,
+                    PointerDeviceKind.trackpad,
+                    PointerDeviceKind.unknown
+                  },
+                ),
                 routerDelegate: _router.delegate(),
                 supportedLocales: AppLocalization.supportedLocales,
                 locale: state.currentLocale,
@@ -127,11 +140,6 @@ class StackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dialog = ErrorDialog(
-      'network-connection-problem',
-      'network-connection-problem-desc',
-      context: context,
-    ).tr();
     return MultiBlocProvider(
         providers: [
           BlocProvider<AuthCubit>(
@@ -139,14 +147,20 @@ class StackScreen extends StatelessWidget {
           ),
           BlocProvider(create: (context) => AppConfigCubit()),
         ],
-        child: BlocListener<ConnectivityManager, ConnectivityState>(
-          child: const ConnectedScreen(),
+        child: BlocConsumer<ConnectivityManager, ConnectivityState>(
+          builder: (context, state) {
+            return const ConnectedScreen();
+          },
           listener: (context, state) {
+            final String text;
+            Widget? icon;
             if (state.hasNetworkAccess()) {
-              dialog.dismiss();
+              text = 'network-connection-success'.tr(context);
             } else {
-              dialog.show();
+              text = 'network-connection-problem'.tr(context);
+              icon = const Icon(Icons.warning);
             }
+            showSnackBar(context, text: text, leading: icon);
           },
         ));
   }
@@ -200,7 +214,7 @@ class ConnectedScreen extends StatelessWidget {
             loadingMessage: 'fetching-app-config'.tr(context),
           );
         } else {
-          return CustomErrorWidget.from(error: state.error);
+          return ErrorScreen(errorCode: state.error);
         }
       },
     );

@@ -16,11 +16,11 @@ import '../../widgets/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
 
-class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
+class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
   final DiscoverFilterParameter _discoverFilterParameter;
   final Set<TMDBPrimaryMedia> _data;
 
-  DiscoverScreen({super.key, DiscoverFilterParameter? parameter})
+  ExploreScreen({super.key, DiscoverFilterParameter? parameter})
       : _discoverFilterParameter = parameter ?? const DiscoverFilterParameter(),
         _data = {},
         _controller = ScrollController();
@@ -28,9 +28,10 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
 
   Future<void> showFilterMenuDialog(BuildContext context) {
     return CustomAwesomeDialog(
+            width: 500,
             dialogType: DialogType.noHeader,
             bodyHeaderDistance: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
             body: FilterMenuDialog(
               currentParameters: context
                   .read<PagedDataFilterManager<DiscoverFilterParameter>>()
@@ -147,8 +148,8 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
   @override
   Widget build(BuildContext context) {
     return PagedSliverScrollViewWrapper(
-      pagedScrollViewAsyncFeedback: PagedScrollViewAsyncFeedback(
-        controller: PagedScrollViewAsyncFeedbackController.from(
+      loadingIndicator: LoadingIndicator(
+        controller: LoadingIndicatorController.from(
             context.read<TMDBMultimediaDiscoverBloc>()),
         errorBuilder: (context, [error]) {
           if (_data.isNotEmpty) {
@@ -160,29 +161,35 @@ class DiscoverScreen extends StatelessWidget with AutoRouteWrapper {
         },
       ),
       controller: _controller,
-      onEndReached: () {
-        context
-            .read<TMDBMultimediaDiscoverBloc>()
-            .add(const PagedDataCollectionFetchNextPage());
+      onEvent: (eventType) {
+        if (eventType == PagedSliverScrollViewEventType.load) {
+          context
+              .read<TMDBMultimediaDiscoverBloc>()
+              .add(PagedDataCollectionFetchEvent.nextPage);
+        } else {
+          _data.clear();
+
+          context
+              .read<TMDBMultimediaDiscoverBloc>()
+              .add(PagedDataCollectionFetchEvent.refresh);
+        }
       },
-      slivers: [
-        _buildAppBar(context),
-        BlocConsumer<TMDBMultimediaDiscoverBloc, BasicServerFetchState>(
-            listener: (context, state) {
-          if (state.hasData()) {
-            _data.addAll(state.result!);
-          }
-        }, builder: (context, state) {
-          return SliverList(
-              delegate: SliverChildBuilderDelegate(
-                  ((context, index) => ListTMDBMediaCard(
-                        media: _data.elementAt(index),
-                        onTap: (media) =>
-                            context.pushRoute(MediaRoute.fromMedia(media)),
-                      )),
-                  childCount: _data.length));
-        }),
-      ],
+      header: _buildAppBar(context),
+      child: BlocConsumer<TMDBMultimediaDiscoverBloc, BasicServerFetchState>(
+          listener: (context, state) {
+        if (state.hasData()) {
+          _data.addAll(state.result!);
+        }
+      }, builder: (context, state) {
+        return SliverList(
+            delegate: SliverChildBuilderDelegate(
+                ((context, index) => ListTMDBMediaCard(
+                      media: _data.elementAt(index),
+                      onTap: (media) =>
+                          context.pushRoute(MediaRoute.fromMedia(media)),
+                    )),
+                childCount: _data.length));
+      }),
     );
   }
 

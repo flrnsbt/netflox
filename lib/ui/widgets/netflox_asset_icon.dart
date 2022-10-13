@@ -9,7 +9,7 @@ class NetfloxAssetIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mode = context.read<ThemeDataCubit>().state.mode.name;
+    final mode = context.read<ThemeDataCubit>().state.data.brightness.name;
 
     return SizedBox(
       height: height,

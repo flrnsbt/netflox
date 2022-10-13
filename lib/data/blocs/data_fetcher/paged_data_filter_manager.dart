@@ -14,7 +14,9 @@ class PagedDataFilterManager<P extends FilterParameter> extends Cubit<P> {
     updateParameter(_initialParameter);
   }
 
-  void updateParameter(P filterParameter) {
+  void updateParameter(
+    P filterParameter,
+  ) {
     emit(filterParameter);
   }
 }

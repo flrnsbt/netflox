@@ -1,6 +1,9 @@
 part of 'http_server_cubit.dart';
 
-enum HttpServerStatus { off, on, loading }
+enum HttpServerStatus {
+  off,
+  on,
+}
 
 class HttpVideoBinderState extends Equatable {
   final HttpServerStatus status;
@@ -9,14 +12,11 @@ class HttpVideoBinderState extends Equatable {
 
   static const off = HttpVideoBinderState._(HttpServerStatus.off);
   static const on = HttpVideoBinderState._(HttpServerStatus.on);
-  static const loading = HttpVideoBinderState._(HttpServerStatus.loading);
   static fail(Object exception) =>
       HttpVideoBinderState._(HttpServerStatus.off, exception: exception);
 
   bool failed() => exception != null;
-
   bool isRunning() => status != HttpServerStatus.off;
-  bool isLoading() => status != HttpServerStatus.loading;
 
   String? get url {
     if (isRunning()) {

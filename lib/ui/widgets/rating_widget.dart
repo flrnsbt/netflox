@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-const kDefaultScoreWidgetHeight = 30.0;
+const kDefaultScoreWidgetHeight = 18.0;
 
 class RatingWidget extends StatelessWidget {
   final num score;
@@ -15,29 +16,18 @@ class RatingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Container(
-        decoration: BoxDecoration(
-            color: color ?? Theme.of(context).colorScheme.secondary,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.black26, width: 2)),
-        child: FittedBox(
-          fit: BoxFit.fitHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text(
-              score.toStringAsFixed(1),
-              maxLines: 1,
-              style: const TextStyle(
-                  color: Colors.black87,
-                  fontFamily: "ArialBlack",
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ),
+    return RatingBar.builder(
+      itemSize: kDefaultScoreWidgetHeight,
+      initialRating: score / 2,
+      minRating: 0,
+      direction: Axis.horizontal,
+      ignoreGestures: true,
+      allowHalfRating: true,
+      itemCount: 5,
+      itemPadding: const EdgeInsets.symmetric(horizontal: 2.0),
+      itemBuilder: (context, _) =>
+          Icon(Icons.star, color: Theme.of(context).primaryColor),
+      onRatingUpdate: (double value) {},
     );
   }
 }

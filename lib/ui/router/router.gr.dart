@@ -25,8 +25,8 @@ import '../screens/auths/auth_screen.dart' as _i8;
 import '../screens/auths/forgot_password_screen.dart' as _i9;
 import '../screens/auths/my_account_screen.dart' as _i16;
 import '../screens/auths/unverified_user_screen.dart' as _i3;
-import '../screens/main/discover_screen.dart' as _i14;
-import '../widgets/error_widget.dart' as _i2;
+import '../screens/error_screen.dart' as _i2;
+import '../screens/main/explore_screen.dart' as _i14;
 import '../screens/main/library_screen.dart' as _i15;
 import '../screens/main/search_screen.dart' as _i13;
 import '../screens/main/tab_home_screen.dart' as _i21;
@@ -54,9 +54,8 @@ class NetfloxRouter extends _i17.RootStackRouter {
           orElse: () => const ErrorRouteArgs());
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i2.CustomErrorWidget.from(
-          error: NetfloxException.from(args.error),
-          showTitle: args.showTitle,
+        child: _i2.ErrorScreen(
+          errorCode: args.errorCode ?? 'unknown-error',
         ),
       );
     },
@@ -175,7 +174,7 @@ class NetfloxRouter extends _i17.RootStackRouter {
           orElse: () => const DiscoverRouteArgs());
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i17.WrappedRoute(child: _i14.DiscoverScreen(key: args.key)),
+        child: _i17.WrappedRoute(child: _i14.ExploreScreen(key: args.key)),
       );
     },
     LibraryRoute.name: (routeData) {
@@ -326,41 +325,34 @@ class StackRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i2.CustomErrorWidget]
+/// [_i2.ErrorScreen]
 class ErrorRoute extends _i17.PageRouteInfo<ErrorRouteArgs> {
-  ErrorRoute({
-    _i19.Key? key,
-    Object? error,
-    bool showTitle = true,
-  }) : super(
+  ErrorRoute({_i19.Key? key, String? error})
+      : super(
           ErrorRoute.name,
           path: 'error/:error',
           args: ErrorRouteArgs(
             key: key,
-            error: error,
-            showTitle: showTitle,
+            errorCode: error,
           ),
+          rawPathParams: {
+            'error': error,
+          },
         );
 
   static const String name = 'ErrorRoute';
 }
 
 class ErrorRouteArgs {
-  const ErrorRouteArgs({
-    this.key,
-    this.error,
-    this.showTitle = true,
-  });
+  const ErrorRouteArgs({this.key, this.errorCode});
 
   final _i19.Key? key;
 
-  final Object? error;
-
-  final bool showTitle;
+  final String? errorCode;
 
   @override
   String toString() {
-    return 'ErrorRouteArgs{key: $key, error: $error, showTitle: $showTitle}';
+    return 'ErrorRouteArgs{key: $key, error: $errorCode}';
   }
 }
 
@@ -659,7 +651,7 @@ class SearchRouteArgs {
 }
 
 /// generated route for
-/// [_i14.DiscoverScreen]
+/// [_i14.ExploreScreen]
 class DiscoverRoute extends _i17.PageRouteInfo<DiscoverRouteArgs> {
   DiscoverRoute({_i19.Key? key})
       : super(

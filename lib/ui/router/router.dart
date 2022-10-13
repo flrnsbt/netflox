@@ -5,7 +5,8 @@ import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/forgot_password_screen.dart';
 import 'package:netflox/ui/screens/auths/my_account_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
-import 'package:netflox/ui/screens/main/discover_screen.dart';
+import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/screens/main/explore_screen.dart';
 import 'package:netflox/ui/screens/download_screen.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/main/search_screen.dart';
@@ -34,7 +35,7 @@ import '../screens/tmdb/tv_show_season_screen.dart';
               initial: true,
             ),
             AutoRoute(
-              page: DiscoverScreen,
+              page: ExploreScreen,
               path: "discover",
             ),
             AutoRoute(
@@ -85,7 +86,7 @@ import '../screens/tmdb/tv_show_season_screen.dart';
     ]),
     AutoRoute(
       path: 'error/:error',
-      page: CustomErrorWidget,
+      page: ErrorScreen,
     ),
     RedirectRoute(path: '*', redirectTo: 'error/404-not-found'),
   ],

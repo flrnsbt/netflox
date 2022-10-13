@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/constants/basic_fetch_status.dart';
+import 'package:netflox/data/constants/default_app_timeout.dart';
 import '../../services/firestore_service.dart';
 import '../models/server_configs/ssh_config.dart';
 import '../models/server_configs/tmdb_config.dart';
@@ -15,7 +17,8 @@ class AppConfigCubit extends Cubit<AppConfig> {
     if (!state.success() || force) {
       emit(const AppConfig());
       try {
-        final config = await FirestoreService.config.get();
+        final config =
+            await FirestoreService.config.get().timeout(kDefaultTimeout);
         if (config.size >= 2) {
           final docs = config.docs;
           final tmdbApiConfigData =

@@ -7,7 +7,7 @@ import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/widgets/default_sliver_grid.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
 
-import 'media_screen_components/components.dart';
+import '../../widgets/tmdb/media_screen_components/components.dart';
 
 class TVShowEpisodeScreen extends StatelessWidget {
   final TMDBTVEpisode episode;
@@ -19,19 +19,17 @@ class TVShowEpisodeScreen extends StatelessWidget {
       element: episode,
       content: [
         if (episode.overview?.isNotEmpty ?? false)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 35),
-            child: MediaScreenComponent(
-              title: 'overview'.tr(context),
-              child: Text(
-                episode.overview!,
-                style: const TextStyle(fontSize: 13),
-              ),
+          MediaScreenComponent(
+            name: 'overview'.tr(context),
+            child: Text(
+              episode.overview!,
+              style: const TextStyle(fontSize: 13),
             ),
           ),
         if (episode.guests?.isNotEmpty ?? false)
           MediaScreenComponent(
-            title: 'guest_stars'.tr(context),
+            name: 'guest_stars'.tr(context),
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
             child: GridView.custom(
               padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),

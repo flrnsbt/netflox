@@ -55,7 +55,7 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     try {
       final remoteFile = await _sftpClient.open(filePath);
       final bytes = await remoteFile.readBytes();
-      final content = utf8.decode(bytes, allowMalformed: false);
+      final content = utf8.decode(bytes, allowMalformed: true);
       return content;
     } catch (e) {
       return null;

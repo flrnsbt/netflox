@@ -77,32 +77,43 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
   Widget build(BuildContext context) {
     return FadedEdgeWidget(
       show: context.read<ThemeDataCubit>().state.mode == ThemeMode.dark,
-      ratio: const EdgeInsets.only(top: 0.05),
+      startStop: 0.05,
+      endStop: 0,
       child: SafeArea(
           minimum: const EdgeInsets.only(left: 25, right: 25, top: 40),
           child: PagedSliverScrollViewWrapper(
-            showFloatingReturnTopButton: true,
-            pagedScrollViewAsyncFeedback: PagedScrollViewAsyncFeedback(
-              controller: PagedScrollViewAsyncFeedbackController.from(
-                  context.read<TMDBPrimaryMediaSearchBloc>()),
-              errorBuilder: (context, [error]) {
-                if (_data.isNotEmpty) {
-                  return CustomErrorWidget.from(
-                    error: error,
-                    showDescription: false,
-                  );
+              showFloatingReturnTopButton: true,
+              loadingIndicator: LoadingIndicator(
+                controller: LoadingIndicatorController.from(
+                    context.read<TMDBPrimaryMediaSearchBloc>()),
+                errorBuilder: (context, [error]) {
+                  if (_data.isNotEmpty) {
+                    return CustomErrorWidget.from(
+                      error: error,
+                      showDescription: false,
+                    );
+                  }
+                },
+              ),
+              onEvent: (eventType) {
+                switch (eventType) {
+                  case PagedSliverScrollViewEventType.refresh:
+                    _data.clear();
+
+                    context
+                        .read<TMDBPrimaryMediaSearchBloc>()
+                        .add(PagedDataCollectionFetchEvent.refresh);
+                    break;
+                  case PagedSliverScrollViewEventType.load:
+                    context
+                        .read<TMDBPrimaryMediaSearchBloc>()
+                        .add(PagedDataCollectionFetchEvent.nextPage);
+                    break;
                 }
               },
-            ),
-            onEndReached: () {
-              context
-                  .read<TMDBPrimaryMediaSearchBloc>()
-                  .add(PagedDataCollectionFetchEvent.nextPage);
-            },
-            slivers: [
-              _buildSearchBar(context),
-              BlocConsumer<TMDBPrimaryMediaSearchBloc, BasicServerFetchState>(
-                  listener: (context, state) {
+              header: _buildSearchBar(context),
+              child: BlocConsumer<TMDBPrimaryMediaSearchBloc,
+                  BasicServerFetchState>(listener: (context, state) {
                 if (state.hasData()) {
                   _data.addAll(state.result!);
                 }
@@ -120,9 +131,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
                         });
                   }), childCount: _data.length),
                 );
-              })
-            ],
-          )),
+              }))),
     );
   }
 

@@ -12,17 +12,8 @@ class TMDBPeopleScreen extends StatelessWidget {
         const SizedBox(
           height: 20,
         ),
-        if (people.overview?.isNotEmpty ?? false)
-          MediaScreenComponent(
-              title: "overview".tr(context),
-              child: Text(
-                people.overview!,
-                style: const TextStyle(
-                  fontSize: 12,
-                ),
-              )),
-        const SizedBox(
-          height: 35,
+        OverviewComponent(
+          overview: people.overview,
         ),
         const PersonCastingGridLayout()
       ],

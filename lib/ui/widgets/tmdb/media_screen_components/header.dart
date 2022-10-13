@@ -1,17 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../../data/models/tmdb/element.dart';
 import '../../../../data/models/tmdb/media.dart';
-import '../../../widgets/background_image_widget.dart';
-import '../../../widgets/tmdb/tmdb_image.dart';
+import '../../background_image_widget.dart';
+import '../tmdb_image.dart';
 
 class TMDBScreenHeader extends StatelessWidget {
   final TMDBImageProvider element;
   final Widget child;
-  const TMDBScreenHeader({Key? key, required this.child, required this.element})
-      : super(key: key);
+  const TMDBScreenHeader({
+    Key? key,
+    required this.child,
+    required this.element,
+  }) : super(key: key);
 
   Widget? _buildBackgroundImage(BuildContext context) {
     if (element.type.isMultimedia()) {
@@ -65,18 +67,20 @@ class TMDBScreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NetfloxBackgroundImage(
-      color: Colors.black,
-      opacityStrength: 1,
-      backgroundImage: _buildBackgroundImage,
-      child: SafeArea(
-          minimum: EdgeInsets.only(
-              left: 110, right: 4.w(context), top: 20, bottom: 20),
-          child: Row(children: [
-            Expanded(child: child),
-            if (element.img != null &&
-                ResponsiveWrapper.of(context).isLargerThan(MOBILE))
+        color: Colors.black,
+        opacityStrength: 0.9,
+        backgroundImage: _buildBackgroundImage,
+        child: SafeArea(
+          minimum:
+              const EdgeInsets.only(left: 120, right: 25, top: 10, bottom: 20),
+          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            Flexible(
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: child)),
+            if (ResponsiveWrapper.of(context).isLargerThan(TABLET))
               _buildImg(context)
-          ])),
-    );
+          ]),
+        ));
   }
 }

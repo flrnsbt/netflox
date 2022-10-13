@@ -38,10 +38,10 @@ class NetfloxBackgroundImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundImage = this.backgroundImage?.call(context);
     return Stack(fit: StackFit.expand, children: [
-      if (backgroundImage != null && backgroundImage!(context) != null)
-        backgroundImage!(context)!,
-      if (overlay) _buildOverlay(context),
+      if (backgroundImage != null) backgroundImage,
+      if (overlay && backgroundImage != null) _buildOverlay(context),
       child
     ]);
   }

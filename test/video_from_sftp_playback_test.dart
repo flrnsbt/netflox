@@ -1,7 +1,7 @@
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:netflox/data/blocs/http_server/http_server_cubit.dart';
+import 'package:netflox/data/blocs/http_video_server/http_server_cubit.dart';
 import 'package:netflox/data/blocs/sftp_server/media_remote_file_access/sftp_media_file_access_cubit.dart';
 import 'package:netflox/utils/rsa_key_helper.dart';
 import 'ssh_test_credentials.dart';
@@ -23,8 +23,8 @@ Future<void> main() async {
       debugPrint(state.toString());
       if (state is SFTPMediaOpenedState) {
         final video = state.video;
-        final server = LocalServerVideoBinderCubit();
-        server.bind(video);
+        final server = HTTPServerVideoBinderCubit();
+        server.init(video);
         server.stream.listen((state) {
           debugPrint(state.toString());
         });

@@ -6,7 +6,7 @@ import '../../models/tmdb/library_media_information.dart';
 import '../../models/tmdb/media.dart';
 import '../../models/tmdb/type.dart';
 
-class FilterParameter<T extends TMDBPrimaryMedia> extends Equatable {
+abstract class FilterParameter<T extends TMDBPrimaryMedia> extends Equatable {
   const FilterParameter();
 
   @override

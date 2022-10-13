@@ -13,6 +13,7 @@ class TMDBTvScreen extends StatelessWidget {
     }
     return GridView.custom(
       shrinkWrap: true,
+      padding: const EdgeInsets.only(bottom: 15),
       clipBehavior: Clip.none,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: ResponsiveGridDelegate(
@@ -97,96 +98,47 @@ class TMDBTvScreen extends StatelessWidget {
     return TMDBScreenBuilder(
       element: tv,
       content: [
-        // if (tv.productionCountries != null)
-        //   Padding(
-        //     padding: const EdgeInsets.only(bottom: 15),
-        //     child: Wrap(
-        //       spacing: 10,
-        //       children: tv.productionCountries!
-        //           .map((e) => CountryFlagIcon(countryCode: e))
-        //           .toList(),
-        //     ),
-        //   ),
-        const SizedBox(
-          height: 35,
-        ),
-        if (tv.overview?.isNotEmpty ?? false)
-          MediaScreenComponent(
-              title: 'overview'.tr(context),
-              child: Text(
-                tv.overview!,
-                style: const TextStyle(fontSize: 13),
-              )),
-        const SizedBox(
-          height: 15,
-        ),
-        if (tv.date != null)
-          Text(
-            tv.date!,
-            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-          ),
-        const SizedBox(
-          height: 35,
+        TMDBInfoComponent(
+          media: tv,
         ),
         if (tv.seasons.isNotEmpty)
           MediaScreenComponent(
-              title: 'season'.tr(context), child: _buildSeasonLayout(context)),
-        const SizedBox(
-          height: 35,
-        ),
-        TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>(
-          title: 'credits'.tr(context),
-          play: true,
-          height: 150,
-        ),
-        const SizedBox(
-          height: 35,
-        ),
-        VideoTrailer(
-          media: tv,
-        ),
-
-        const SizedBox(
-          height: 35,
-        ),
+              padding: const EdgeInsets.only(left: 25, top: 15, right: 25),
+              name: 'season'.tr(context),
+              child: _buildSeasonLayout(context)),
+        if (ResponsiveWrapper.of(context).isSmallerThan(DESKTOP))
+          VideoTrailer(
+            media: tv,
+          ),
         TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<RecommendationRequestType>>(
+            TMDBFetchMultimediaCollection<
+                RecommendationRequestType>>.responsive(
           title: 'recommendations'.tr(context),
-          height: 200,
-        ),
-        const SizedBox(
-          height: 25,
+          context: context,
         ),
         TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<SimilarRequestType>>(
+            TMDBFetchMultimediaCollection<SimilarRequestType>>.responsive(
           title: 'similars'.tr(context),
-          height: 200,
-        ),
-        const SizedBox(
-          height: 55,
+          context: context,
         ),
       ],
       header: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: AutoSizeText(
-                tv.name,
-                wrapWords: false,
-                maxLines: 3,
-                textAlign: TextAlign.end,
-                minFontSize: 25,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontSize: 55, fontWeight: FontWeight.bold),
-              ),
+            flex: 4,
+            child: AutoSizeText(
+              tv.name,
+              wrapWords: false,
+              maxLines: 3,
+              textAlign: TextAlign.end,
+              minFontSize: 20,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 55, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(
-            height: 5,
+            height: 15,
           ),
           Flexible(
             flex: 1,
@@ -195,14 +147,6 @@ class TMDBTvScreen extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: Row(
                 children: [
-                  if (tv.voteAverage != null)
-                    RatingWidget(
-                      score: tv.voteAverage!,
-                    ),
-                  if (tv.popularityLevel != null)
-                    FramedText(
-                      text: tv.popularityLevel!.tr(context).toUpperCase(),
-                    ),
                   if (tv.genres.isNotEmpty)
                     FramedText(
                       text: tv.genres.first.tr(context),
@@ -219,6 +163,15 @@ class TMDBTvScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 7), child: e))
                     .toList(),
               ),
+            ),
+          ),
+          const SizedBox(
+            height: 15,
+          ),
+          Flexible(
+            flex: 1,
+            child: RatingWidget(
+              score: tv.voteAverage!,
             ),
           ),
           const SizedBox(

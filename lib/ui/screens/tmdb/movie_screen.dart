@@ -3,67 +3,37 @@ part of 'media_screen.dart';
 class TMDBMovieScreen extends StatelessWidget {
   final TMDBMovie movie;
   const TMDBMovieScreen({Key? key, required this.movie}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return TMDBScreenBuilder(
       element: movie,
       content: [
-        const SizedBox(
-          height: 20,
-        ),
-        if (movie.overview?.isNotEmpty ?? false)
-          MediaScreenComponent(
-            title: "overview".tr(context),
-            child: Text(
-              movie.overview!,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-        const SizedBox(
-          height: 15,
-        ),
-        if (movie.date != null)
-          Text(
-            movie.date!,
-            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-          ),
-        const SizedBox(
-          height: 35,
-        ),
-        TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>(
-          title: 'credits'.tr(context),
-          height: 200,
-          play: true,
-        ),
-        const SizedBox(
-          height: 35,
-        ),
-        VideoTrailer(
+        TMDBInfoComponent(
           media: movie,
         ),
-        const SizedBox(
-          height: 25,
-        ),
+        if (ResponsiveWrapper.of(context).isSmallerThan(DESKTOP))
+          VideoTrailer(
+            media: movie,
+          ),
         TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<RecommendationRequestType>>(
+            TMDBFetchMultimediaCollection<
+                RecommendationRequestType>>.responsive(
           title: 'recommendations'.tr(context),
-          height: 200,
-        ),
-        const SizedBox(
-          height: 25,
+          context: context,
         ),
         TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<SimilarRequestType>>(
+            TMDBFetchMultimediaCollection<SimilarRequestType>>.responsive(
           title: 'similars'.tr(context),
-          height: 200,
+          context: context,
         ),
       ],
       header: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            flex: 3,
+            flex: 5,
             child: Padding(
               padding: const EdgeInsets.only(left: 15),
               child: AutoSizeText(
@@ -81,19 +51,15 @@ class TMDBMovieScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(
-            height: 5,
+            height: 10,
           ),
           Flexible(
-            flex: 1,
+            flex: 2,
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
               child: Row(
                   children: [
-                if (movie.voteAverage != null)
-                  RatingWidget(
-                    score: movie.voteAverage!,
-                  ),
                 if (movie.popularityLevel != null)
                   FramedText(
                     text: movie.popularityLevel!.tr(context).toUpperCase(),
@@ -115,10 +81,20 @@ class TMDBMovieScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(
-            height: 10,
+            height: 15,
+          ),
+          if (movie.voteAverage != null)
+            Flexible(
+              flex: 1,
+              child: RatingWidget(
+                score: movie.voteAverage!,
+              ),
+            ),
+          const SizedBox(
+            height: 15,
           ),
           Flexible(
-            flex: 2,
+            flex: 4,
             child: LibraryMediaControlLayout(
               media: movie,
             ),

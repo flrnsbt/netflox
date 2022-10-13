@@ -9,6 +9,7 @@ import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart'
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
+import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/profile_image.dart';
 import '../../data/blocs/account/auth/auth_cubit.dart';
@@ -104,48 +105,41 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NetfloxCustomDialog? dialog;
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text(
-          "settings",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ).tr(),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
-      body: SafeArea(
-          child: Center(
-        child: SingleChildScrollView(
-            child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
-          child: Column(
-            children: [
-              BlocBuilder<AuthCubit, AuthState>(
-                builder: (context, state) {
-                  if (state.isAuthenticated()) {
-                    final user = state.user!;
-                    return _AccountDetailEditor(user);
-                  } else {
-                    return CustomErrorWidget.from(
-                      error: "not-authenticated",
-                    );
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              _buildAppSettings(context),
-              const SizedBox(
-                height: 20,
-              ),
-            ],
-          ),
-        )),
-      )),
-    );
+    return ConstrainedLargeScreenWidget(
+        child: Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              title: const Text(
+                "settings",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ).tr(),
+              backgroundColor: Colors.transparent,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+            ),
+            body: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              children: [
+                BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, state) {
+                    if (state.isAuthenticated()) {
+                      final user = state.user!;
+                      return _AccountDetailEditor(user);
+                    } else {
+                      return CustomErrorWidget.from(
+                        error: "not-authenticated",
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                _buildAppSettings(context),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            )));
   }
 }
 

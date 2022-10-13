@@ -65,14 +65,14 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
 
   Widget _buildCard(BuildContext context) {
     final borderRadius =
-        this.borderRadius ?? BorderRadius.circular(2.hw(context));
+        this.borderRadius ?? BorderRadius.circular(1.hw(context));
     return ClipPath(
         clipper: ShapeBorderClipper(
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
           textDirection: Directionality.maybeOf(context),
         ),
         child: Material(
-            color: Theme.of(context).cardColor,
+            color: Theme.of(context).canvasColor,
             child: InkWell(
               onHover: (value) {
                 hovered.value = value;

@@ -3,25 +3,23 @@ import 'package:flutter/material.dart';
 class FadedEdgeWidget extends StatelessWidget {
   final Widget child;
   final Axis axis;
-  final EdgeInsets ratio;
+  final double startStop;
+  final double endStop;
   final bool show;
-  final Color color;
-  FadedEdgeWidget(
+  final Color? color;
+  const FadedEdgeWidget(
       {Key? key,
       required this.child,
       this.show = true,
-      EdgeInsets? ratio,
-      this.color = Colors.black87,
+      this.startStop = 0.1,
+      this.endStop = 0.1,
+      this.color,
       this.axis = Axis.vertical})
-      : ratio = ratio ??
-            EdgeInsets.symmetric(
-              vertical: axis == Axis.vertical ? 0.1 : 0,
-              horizontal: axis == Axis.horizontal ? 0.1 : 0,
-            ),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? Theme.of(context).backgroundColor;
     if (show) {
       final begin =
           axis == Axis.vertical ? Alignment.topCenter : Alignment.centerLeft;
@@ -29,15 +27,13 @@ class FadedEdgeWidget extends StatelessWidget {
           ? Alignment.bottomCenter
           : Alignment.centerRight;
       final colors = [color, Colors.transparent, Colors.transparent, color];
-      final beginStop = axis == Axis.horizontal ? ratio.left : ratio.top;
-      final endStop = axis == Axis.horizontal ? ratio.right : ratio.bottom;
       return ShaderMask(
           shaderCallback: (Rect rect) {
             return LinearGradient(
               begin: begin,
               end: end,
               colors: colors,
-              stops: [0.0, beginStop, 1 - endStop, 1.0],
+              stops: [0.0, startStop, 1 - endStop, 1.0],
             ).createShader(rect);
           },
           blendMode: BlendMode.dstOut,

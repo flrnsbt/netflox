@@ -4,22 +4,21 @@ import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/widgets/framed_text.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_image.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 class ListTMDBMediaCard extends StatelessWidget {
   final TMDBPrimaryMedia media;
-  final double height;
+  final double? height;
   final void Function(TMDBPrimaryMedia media)? onTap;
   const ListTMDBMediaCard(
-      {super.key, required this.media, this.onTap, this.height = 120});
+      {super.key, required this.media, this.onTap, this.height});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        shape: Border(
-            bottom:
-                BorderSide(width: 1, color: Theme.of(context).highlightColor)),
+    return Card(
+        color: Theme.of(context).canvasColor,
+        margin: const EdgeInsets.symmetric(vertical: 5),
         child: InkWell(
             onTap: () {
               if (onTap != null) {
@@ -27,7 +26,7 @@ class ListTMDBMediaCard extends StatelessWidget {
               }
             },
             child: Container(
-              height: height,
+              height: height ?? 15.h(context).clamp(100, 250),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,6 +35,7 @@ class ListTMDBMediaCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15),
                       child: TMDBImageWidget(
                         img: media.img,
+                        showError: false,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -64,7 +64,6 @@ class ListTMDBMediaCard extends StatelessWidget {
                                 children: [
                                   FramedText(
                                     text: media.type.name.tr(context),
-                                    color: Colors.white,
                                     style: const TextStyle(
                                       fontSize: 9,
                                     ),
@@ -80,7 +79,6 @@ class ListTMDBMediaCard extends StatelessWidget {
                                             .genres
                                             .first
                                             .tr(context),
-                                        color: Colors.white,
                                         style: const TextStyle(
                                           fontSize: 9,
                                         ),
@@ -116,8 +114,9 @@ class ListTMDBMediaCard extends StatelessWidget {
                     if (ResponsiveWrapper.of(context).isLargerThan(MOBILE) &&
                         media.overview != null)
                       Flexible(
-                          flex: 4,
-                          child: Center(
+                          flex: 5,
+                          child: Align(
+                            alignment: Alignment.centerRight,
                             child: Text(
                               media.overview!,
                               softWrap: false,
@@ -126,7 +125,7 @@ class ListTMDBMediaCard extends StatelessWidget {
                                   fontSize: 12),
                               maxLines: 4,
                               overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.justify,
+                              textAlign: TextAlign.end,
                             ),
                           )),
                     const SizedBox(

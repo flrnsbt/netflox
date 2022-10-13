@@ -5,6 +5,7 @@ import 'package:netflox/data/models/exception.dart';
 import 'package:netflox/ui/screens/auths/reauthenticate_screen.dart';
 import 'package:netflox/ui/screens/auths/sign_in_screen.dart';
 import 'package:netflox/ui/screens/auths/sign_up_screen.dart';
+import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';
 import '../../../data/blocs/account/auth/auth_form/auth_form_bloc.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 
@@ -21,15 +22,15 @@ class AuthScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
         ),
-        body: Center(
-            child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: AuthFormScreen(
-                      mode: mode,
-                      onFinish: onFinish,
-                    )))));
+        body: ConstrainedLargeScreenWidget(
+          child: Center(
+              child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: AuthFormScreen(
+                    mode: mode,
+                    onFinish: onFinish,
+                  ))),
+        ));
   }
 }
 

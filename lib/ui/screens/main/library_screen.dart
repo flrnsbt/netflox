@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,16 +62,20 @@ class LibraryScreen extends StatelessWidget with AutoRouteWrapper {
       bottom: PreferredSize(
           preferredSize: const Size.fromHeight(40),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: BlocBuilder<PagedDataFilterManager<LibraryFilterParameter>,
                 LibraryFilterParameter>(builder: (context, state) {
               return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "${state.status}-media",
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ).tr(),
-                  const Spacer(),
+                  Flexible(
+                    child: AutoSizeText(
+                      "${state.status}-media".tr(context),
+                      minFontSize: 10,
+                      maxLines: 2,
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                  ),
                   IconButton(
                       onPressed: () => showFilterMenuDialog(context, state),
                       icon: const Icon(Icons.filter_list))
@@ -84,8 +89,8 @@ class LibraryScreen extends StatelessWidget with AutoRouteWrapper {
   @override
   Widget build(BuildContext context) {
     return PagedSliverScrollViewWrapper(
-      pagedScrollViewAsyncFeedback: PagedScrollViewAsyncFeedback(
-        controller: PagedScrollViewAsyncFeedbackController.from(
+      loadingIndicator: LoadingIndicator(
+        controller: LoadingIndicatorController.from(
             context.read<LibraryMediaExploreBloc>()),
         errorBuilder: (context, [error]) {
           if (_data.isNotEmpty) {
@@ -96,45 +101,43 @@ class LibraryScreen extends StatelessWidget with AutoRouteWrapper {
           }
         },
       ),
-      onEndReached: () {
-        context
-            .read<LibraryMediaExploreBloc>()
-            .add(PagedDataCollectionFetchEvent.nextPage);
+      onEvent: (eventType) {
+        if (eventType == PagedSliverScrollViewEventType.load) {
+          context
+              .read<LibraryMediaExploreBloc>()
+              .add(PagedDataCollectionFetchEvent.nextPage);
+        } else {
+          _data.clear();
+          context
+              .read<LibraryMediaExploreBloc>()
+              .add(PagedDataCollectionFetchEvent.refresh);
+        }
       },
-      slivers: [
-        _buildAppBar(context),
-        SliverPadding(
-            padding: const EdgeInsets.only(
-              left: 25,
-              right: 25,
-            ),
-            sliver:
-                BlocConsumer<LibraryMediaExploreBloc, BasicServerFetchState>(
-                    listener: (context, state) {
-              if (state.hasData()) {
-                _data.addAll(state.result);
-              }
-            }, builder: (context, state) {
-              return DefaultSliverGrid(
-                gridDelegate: const ResponsiveGridDelegate(
-                    childAspectRatio: 2 / 3,
-                    minCrossAxisExtent: 100,
-                    maxCrossAxisExtent: 150,
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 10),
-                sliverChildBuilderDelegate:
-                    SliverChildBuilderDelegate(((context, index) {
-                  return TMDBMediaCard(
-                    media: _data.elementAt(index),
-                    showMediaType: true,
-                    showBottomTitle: true,
-                    onTap: (media) =>
-                        context.pushRoute(MediaRoute.fromMedia(media)),
-                  );
-                }), childCount: _data.length),
-              );
-            }))
-      ],
+      header: _buildAppBar(context),
+      child: SliverPadding(
+          padding: const EdgeInsets.only(
+            left: 25,
+            right: 25,
+          ),
+          sliver: BlocConsumer<LibraryMediaExploreBloc, BasicServerFetchState>(
+              listener: (context, state) {
+            if (state.hasData()) {
+              _data.addAll(state.result);
+            }
+          }, builder: (context, state) {
+            return DefaultSliverGrid(
+              sliverChildBuilderDelegate:
+                  SliverChildBuilderDelegate(((context, index) {
+                return TMDBMediaCard(
+                  media: _data.elementAt(index),
+                  showMediaType: true,
+                  showBottomTitle: true,
+                  onTap: (media) =>
+                      context.pushRoute(MediaRoute.fromMedia(media)),
+                );
+              }), childCount: _data.length),
+            );
+          })),
     );
   }
 

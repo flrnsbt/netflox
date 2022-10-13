@@ -18,20 +18,21 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
     extends Bloc<PagedDataCollectionFetchEvent,
         BasicServerFetchState<List<TMDBPrimaryMedia>>> {
   final Duration _minimumFetchDelay;
-  P? _previousParameter;
+  P? _parameter;
   int _currentPage = 1;
   PagedDataCollectionFetchBloc(
       [this._minimumFetchDelay = const Duration(seconds: 1)])
       : super(BasicServerFetchState.init()) {
-    Future<void> fetch(
-        P parameter,
+    Future<TMDBCollectionResult<TMDBPrimaryMedia>?> fetch(
         Emitter<BasicServerFetchState<List<TMDBPrimaryMedia>>> emit,
-        int page) async {
+        P parameter,
+        [int page = 1]) async {
       emit(BasicServerFetchState.loading());
       await Future.delayed(_minimumFetchDelay);
+      TMDBCollectionResult<TMDBPrimaryMedia>? result;
       try {
-        TMDBCollectionResult<TMDBPrimaryMedia> result;
         result = await __fetch(parameter, page);
+        _parameter = parameter;
         _currentPage = result.currentPage;
         emit(BasicServerFetchState.success(
             result: result.data, error: result.error));
@@ -39,14 +40,21 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
         final exception = NetfloxException.from(e);
         emit(BasicServerFetchState.failed(exception));
       }
+      return result;
     }
+
+    on<PagedDataCollectionRefreshEvent>((event, emit) async {
+      if (_parameter != null) {
+        resetPage();
+        await fetch(emit, _parameter!);
+      }
+    });
 
     on<_PagedDataCollectionFetch>((event, emit) async {
       if (event is PagedDataCollectionUpdateParameter<P>) {
         final newParameter = event.parameter;
         reset();
-        _previousParameter = newParameter;
-        await fetch(newParameter, emit, _currentPage);
+        await fetch(emit, newParameter, _currentPage);
       } else {
         emit(BasicServerFetchState.success(error: 'event-canceled'));
       }
@@ -54,16 +62,24 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
 
     on<PagedDataCollectionFetchNextPage>(
       (event, emit) async {
-        if (_previousParameter != null) {
-          await fetch(_previousParameter!, emit, _currentPage + 1);
+        if (_parameter != null) {
+          await fetch(emit, _parameter!, _currentPage + 1);
         }
       },
     );
   }
 
-  void reset() {
+  void resetParameter() {
+    _parameter = null;
+  }
+
+  void resetPage() {
     _currentPage = 1;
-    _previousParameter = null;
+  }
+
+  void reset() {
+    resetPage();
+    resetParameter();
   }
 
   Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
@@ -73,7 +89,8 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
 abstract class PagedDataCollectionFetchEvent {
   const PagedDataCollectionFetchEvent();
   static const nextPage = PagedDataCollectionFetchNextPage();
-  static const cancel = PagedDataCollectionCancel();
+  static const refresh = PagedDataCollectionRefreshEvent();
+  static const cancel = PagedDataCollectionCancelEvent();
   static PagedDataCollectionUpdateParameter<P>
       updateParameter<P extends FilterParameter>(P parameter) =>
           PagedDataCollectionUpdateParameter(parameter);
@@ -90,10 +107,14 @@ class PagedDataCollectionUpdateParameter<P extends FilterParameter>
   const PagedDataCollectionUpdateParameter(this.parameter);
 }
 
-class PagedDataCollectionCancel extends _PagedDataCollectionFetch {
-  const PagedDataCollectionCancel();
+class PagedDataCollectionCancelEvent extends _PagedDataCollectionFetch {
+  const PagedDataCollectionCancelEvent();
 }
 
 class PagedDataCollectionFetchNextPage extends PagedDataCollectionFetchEvent {
   const PagedDataCollectionFetchNextPage();
+}
+
+class PagedDataCollectionRefreshEvent extends PagedDataCollectionFetchEvent {
+  const PagedDataCollectionRefreshEvent();
 }

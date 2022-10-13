@@ -5,17 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/models/tmdb/parameters.dart';
 import 'package:netflox/ui/widgets/netflox_loading_indicator.dart';
-import 'package:netflox/utils/reponsive_size_helper.dart';
-import 'package:responsive_framework/responsive_grid.dart';
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/filter_parameter.dart';
 import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../../../data/models/tmdb/media.dart';
 import '../../../router/router.gr.dart';
-import '../../../widgets/custom_awesome_dialog.dart';
-import '../../../widgets/default_sliver_grid.dart';
-import '../../../widgets/filters/filter_menu_dialog.dart';
-import '../../../widgets/tmdb/tmdb_media_card.dart';
+import '../../custom_awesome_dialog.dart';
+import '../../default_sliver_grid.dart';
+import '../../filters/filter_menu_dialog.dart';
+import '../tmdb_media_card.dart';
 import 'components.dart';
 
 class PersonCastingGridLayout extends StatefulWidget {
@@ -49,7 +47,9 @@ class _PersonCastingGridLayoutState extends State<PersonCastingGridLayout> {
   @override
   Widget build(BuildContext context) {
     return MediaScreenComponent(
-      title: "known-for".tr(context),
+      titleSpacing: 5,
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+      name: "known-for".tr(context),
       action: IconButton(
           onPressed: () {
             showFilterMenuDialog(context);
@@ -71,6 +71,7 @@ class _PersonCastingGridLayoutState extends State<PersonCastingGridLayout> {
                 .toList();
             data.sort(sortParameter.comparator);
             return GridView.custom(
+                padding: EdgeInsets.zero,
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 childrenDelegate: SliverChildBuilderDelegate(

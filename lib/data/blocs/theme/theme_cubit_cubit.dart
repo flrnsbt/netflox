@@ -10,7 +10,7 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
 
   static final lightThemeData = ThemeData(
     backgroundColor: Colors.white,
-    cardColor: Colors.grey[300],
+    cardColor: Colors.grey[200],
     primaryColor: Colors.pink,
     primaryColorDark: const Color.fromARGB(255, 38, 38, 38),
     colorScheme: ColorScheme.fromSwatch(
@@ -35,7 +35,7 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
         showUnselectedLabels: true,
         landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
         backgroundColor: Color.fromARGB(255, 239, 239, 239)),
-    scaffoldBackgroundColor: const Color.fromARGB(255, 244, 244, 244),
+    scaffoldBackgroundColor: const Color.fromARGB(255, 249, 249, 249),
   );
 
   static final darkThemeData = ThemeData(
@@ -44,7 +44,7 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
           elevation: 0,
           backgroundColor: Color.fromARGB(255, 5, 5, 5),
           foregroundColor: Colors.white),
-      cardColor: const Color.fromARGB(255, 30, 30, 30),
+      cardColor: const Color.fromARGB(255, 20, 20, 20),
       canvasColor: const Color.fromARGB(255, 10, 10, 10),
       primaryColor: Colors.pinkAccent,
       colorScheme: ColorScheme.fromSwatch(
@@ -61,7 +61,7 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
           showSelectedLabels: true,
           showUnselectedLabels: true,
           landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
-          backgroundColor: Color.fromARGB(255, 20, 20, 20)),
+          backgroundColor: Color.fromARGB(255, 15, 15, 15)),
       scaffoldBackgroundColor: const Color.fromARGB(255, 5, 5, 5),
       backgroundColor: Colors.black);
 

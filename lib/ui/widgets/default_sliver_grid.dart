@@ -23,10 +23,19 @@ class DefaultSliverGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var gridDelegate = this.gridDelegate ?? defaultGridDelegate;
+    var gridDelegate = this.gridDelegate;
     if (_pageSize != null) {
       gridDelegate =
           defaultPagedGridDelegate(context, pageItemNumber: _pageSize!);
+    }
+    if (gridDelegate == null) {
+      final crossAxisCount =
+          (MediaQuery.of(context).size.width ~/ 200).clamp(2, 7);
+      gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: 2 / 3,
+          mainAxisSpacing: 15,
+          crossAxisSpacing: 20);
     }
     return SliverPadding(
       padding: padding,
