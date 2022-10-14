@@ -64,7 +64,9 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
 
   @override
   Future<void> close() {
-    _sftpClient.close();
+    try {
+      _sftpClient.close();
+    } catch (e) {}
     return super.close();
   }
 }

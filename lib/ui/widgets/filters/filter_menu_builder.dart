@@ -74,11 +74,19 @@ abstract class TypedFilterMenuBuilder<T extends TMDBPrimaryMedia,
 
   @override
   void _init() {
-    _mediaTypePicker.controller.addListener(() {
-      final newType = _mediaTypePicker.controller.currentValue!;
-      _currentType = newType as TMDBType<T>;
-      _build();
-    });
+    _mediaTypePicker.controller.addListener(_onTypeChanged);
+    _build();
+  }
+
+  @override
+  Future<void> close() {
+    _mediaTypePicker.controller.removeListener(_onTypeChanged);
+    return super.close();
+  }
+
+  void _onTypeChanged() {
+    final newType = _mediaTypePicker.controller.currentValue!;
+    _currentType = newType as TMDBType<T>;
     _build();
   }
 

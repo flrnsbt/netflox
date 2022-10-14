@@ -100,17 +100,20 @@ class _PagedSliverScrollViewWrapperState
       }
     });
 
-    _currentEventType.addListener(() {
-      final value = _currentEventType.value;
-      if (value != null) {
-        widget.onEvent?.call(value);
-      }
-    });
+    _currentEventType.addListener(_eventChanged);
+  }
+
+  void _eventChanged() {
+    final value = _currentEventType.value;
+    if (value != null) {
+      widget.onEvent?.call(value);
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _currentEventType.removeListener(_eventChanged);
     super.dispose();
   }
 

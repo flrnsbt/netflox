@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/ui/widgets/netflox_loading_indicator.dart';
 import 'package:netflox/ui/widgets/youtube_player.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:nil/nil.dart';
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
@@ -30,9 +31,10 @@ class VideoTrailer extends StatelessWidget {
               try {
                 final video = state.result!.firstWhere((element) =>
                     element.isTrailer && element.site == VideoSite.youtube);
-                widget = ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: CustomYoutubePlayer(videoId: video.key));
+                widget = CustomYoutubePlayer(
+                  videoId: video.key,
+                  maxHeight: 100.h(context),
+                );
               } catch (e) {
                 widget = const Text("nothing-found").tr();
               }

@@ -29,7 +29,7 @@ class TVShowEpisodeScreen extends StatelessWidget {
         if (episode.guests?.isNotEmpty ?? false)
           MediaScreenComponent(
             name: 'guest_stars'.tr(context),
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
             child: GridView.custom(
               padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),

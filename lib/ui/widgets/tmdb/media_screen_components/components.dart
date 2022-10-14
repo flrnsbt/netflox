@@ -36,13 +36,13 @@ class MediaScreenComponent extends StatelessWidget {
       required this.name,
       this.action,
       this.titleSpacing = 10,
-      this.padding = const EdgeInsets.all(10),
+      this.padding = const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       this.leftMargin = 10,
-      this.titleSize = 14,
+      this.titleSize = 15,
       this.rightMargin = 10,
-      this.topMargin = 20,
+      this.topMargin = 16,
       this.backgroundColor,
-      this.bottomMargin = 20,
+      this.bottomMargin = 16,
       required this.child,
       this.heightConstraint});
   @override
