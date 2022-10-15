@@ -7,31 +7,16 @@ class TMDBTvScreen extends StatelessWidget {
   Widget _buildSeasonLayout(BuildContext context) {
     final seasons = tv.seasons.reversed;
     final count = seasons.length;
-    var maxCrossAxisExtent = 200.0;
-    if (count > 6) {
-      maxCrossAxisExtent = 120;
-    }
-    return GridView.custom(
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(bottom: 15),
-      clipBehavior: Clip.none,
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: ResponsiveGridDelegate(
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          maxCrossAxisExtent: maxCrossAxisExtent,
-          minCrossAxisExtent: 100,
-          childAspectRatio: 1),
-      childrenDelegate: SliverChildBuilderDelegate(
-          (context, index) => AspectRatio(
-                aspectRatio: 1,
-                child: _buildCard(
-                  context,
-                  seasons.elementAt(index),
-                ),
-              ),
-          childCount: seasons.length),
-      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
+      itemBuilder: (context, index) => _buildCard(
+        context,
+        seasons.elementAt(index),
+      ),
+      itemCount: count,
     );
   }
 
@@ -43,49 +28,43 @@ class TMDBTvScreen extends StatelessWidget {
         builder: (context, state) {
           final mediaStatus =
               state.result?.mediaStatus ?? MediaStatus.unavailable;
-          return TMDBMediaCard(
-            media: season,
-            showImageError: false,
-            showHover: false,
-            bannerOptions:
-                CustomBannerOptions.mediaStatusBanner(context, mediaStatus),
-            insetPadding: const EdgeInsets.all(15),
-            contentBuilder: (context, media) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AutoSizeText(
-                    ("${"season".tr(context)} ${season.seasonNumber}"),
-                    maxLines: 1,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+          return TMDBListCard(
+            image: AspectRatio(
+              aspectRatio: 1,
+              child: TMDBImageWidget(
+                img: season.img,
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.only(right: 10),
+                showError: false,
+              ),
+            ),
+            title:
+                season.name ?? "${"season".tr(context)} ${season.seasonNumber}",
+            subtitle: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                AutoSizeText(
+                  "S${season.seasonNumber} - E${season.episodeCount}",
+                  maxLines: 1,
+                  style: const TextStyle(
+                      fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+                if (season.date != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Text(season.date!,
+                        style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 8,
+                            color: Colors.white)),
                   ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  Text(
-                    "${season.episodeCount} ${"episodes".tr(context)}",
-                    maxLines: 1,
-                    style: const TextStyle(fontSize: 12, color: Colors.white),
-                  ),
-                  const Spacer(),
-                  if (season.date != null)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(season.date!,
-                            style: const TextStyle(
-                                fontStyle: FontStyle.italic,
-                                fontSize: 8,
-                                color: Colors.white))
-                      ],
-                    )
-                ],
-              );
-            },
-            onTap: (season) => context.pushRoute(TVShowSeasonRoute(
+              ],
+            ),
+            bottom: FramedText(
+              text: mediaStatus.tr(context),
+              color: mediaStatusColor(mediaStatus),
+            ),
+            onTap: () => context.pushRoute(TVShowSeasonRoute(
                 seasonNumber: season.seasonNumber, tvShowId: tv.id)),
           );
         },
@@ -103,7 +82,9 @@ class TMDBTvScreen extends StatelessWidget {
         ),
         if (tv.seasons.isNotEmpty)
           MediaScreenComponent(
-              padding: const EdgeInsets.only(left: 25, top: 15, right: 25),
+              bottomMargin: 0,
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.only(left: 0, right: 0),
               name: 'season'.tr(context),
               child: _buildSeasonLayout(context)),
         if (ResponsiveWrapper.of(context).isSmallerThan(DESKTOP))

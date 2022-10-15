@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:netflox/data/models/tmdb/people.dart';
 import 'package:netflox/data/models/tmdb/img.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
@@ -146,10 +146,16 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
   Locale? get originalLanguage;
   List<String>? get productionCountries;
 
-  bool isRecent() {
+  MediaNewness? newness() {
     final d = DateTime.tryParse(date ?? "");
     final now = DateTime.now();
-    return d?.isAfter(now.subtract(const Duration(days: 30))) ?? false;
+    if (d?.isAfter(now) ?? false) {
+      return MediaNewness.coming;
+    }
+    if (d?.isAfter(now.subtract(const Duration(days: 30))) ?? false) {
+      return MediaNewness.recent;
+    }
+    return null;
   }
 
   get(String key) => toMap()[key];
@@ -176,4 +182,15 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
 
   @override
   String? get placeOfOrigin => originalLanguage?.countryCode;
+}
+
+enum MediaNewness { recent, coming }
+
+Color colorByMediaNewness(MediaNewness date) {
+  switch (date) {
+    case MediaNewness.coming:
+      return Colors.yellow;
+    case MediaNewness.recent:
+      return Colors.pink;
+  }
 }

@@ -16,7 +16,7 @@ class TMDBPrimaryMediaSearchBloc
     final searchTerms = parameters.searchTerms;
     final year = parameters.year;
     final type = parameters.type;
-    if ((searchTerms?.isEmpty ?? true) && !type.isPeople()) {
+    if ((searchTerms?.isEmpty ?? true) && !type.isPeople() && year == null) {
       return _tmdbService.trending(mediaType: type, page: page);
     } else {
       return _tmdbService.search(searchTerms ?? "",

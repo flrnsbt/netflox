@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
+import 'package:chewie/chewie.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_state.dart';
+
+import '../../../../utils/subtitle_helper.dart';
 
 part 'sftp_media_file_state.dart';
 
@@ -22,16 +26,16 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     if (!state.opened()) {
       emit(SFTPMediaFileAccessState.waiting);
       SftpFile? videoRemoteFile;
-      Map<String, String>? subtitles;
+      Map<String, Subtitles>? subtitles;
       Object? exception;
       try {
         final subFiles = (await _sftpClient.readdir(remoteFilePath).first)
-            .where((e) => e.filename.split(".").last == "srt");
-        subtitles = <String, String>{};
+            .where((e) => e.filename.split(".").last == SubtitleType.srt.name);
+        subtitles = <String, Subtitles>{};
         videoRemoteFile = await _sftpClient.open("$remoteFilePath/video.mp4");
         for (var sub in subFiles) {
           final filePath = "$remoteFilePath/${sub.filename}";
-          final content = await _getSubtitle(filePath);
+          final content = await _getSubtitles(filePath);
           if (content != null) {
             final key = sub.filename.split(".").first;
             subtitles.putIfAbsent(key, () => content);
@@ -51,15 +55,22 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     }
   }
 
-  Future<String?> _getSubtitle(String filePath) async {
+  FutureOr<Subtitles?> _getSubtitles(String filePath) async {
     try {
       final remoteFile = await _sftpClient.open(filePath);
       final bytes = await remoteFile.readBytes();
-      final content = utf8.decode(bytes, allowMalformed: true);
-      return content;
+      for (final codec in codecs) {
+        try {
+          final content = codec.decode(bytes);
+          return getSubtitlesData(content, SubtitleType.srt);
+        } catch (e) {
+          //
+        }
+      }
     } catch (e) {
       return null;
     }
+    return null;
   }
 
   @override
@@ -70,3 +81,5 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     return super.close();
   }
 }
+
+const codecs = <Encoding>[utf8, latin1, ascii];

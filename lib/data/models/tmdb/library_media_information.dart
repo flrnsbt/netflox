@@ -1,6 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/type.dart';
+
+Color mediaStatusColor(MediaStatus mediaStatus) {
+  switch (mediaStatus) {
+    case MediaStatus.available:
+      return Colors.green;
+    case MediaStatus.pending:
+      return Colors.amber;
+    case MediaStatus.unavailable:
+      return Colors.white30;
+    case MediaStatus.rejected:
+      return Colors.red;
+  }
+}
 
 enum MediaStatus {
   available,

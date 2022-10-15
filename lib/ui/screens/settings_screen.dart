@@ -12,6 +12,7 @@ import 'package:netflox/data/models/user/user.dart';
 import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/profile_image.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import '../../data/blocs/account/auth/auth_cubit.dart';
 import '../router/router.gr.dart';
 import '../widgets/custom_awesome_dialog.dart';
@@ -22,7 +23,10 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildLanguagePicker(BuildContext context) {
     final locales = <Locale, Widget>{};
     for (var locale in AppLocalization.supportedLocales) {
-      final widget = Text(locale.languageCode).tr();
+      final widget = Text(
+        "language-${locale.languageCode}".tr(context),
+        style: TextStyle(fontSize: 5.sp(context)),
+      );
       locales.putIfAbsent(locale, () => widget);
     }
     return StatefulBuilder(
@@ -84,7 +88,10 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildThemePicker(BuildContext context) {
     final themes = <ThemeMode, Widget>{};
     for (var theme in ThemeMode.values) {
-      final widget = Text(theme.name).tr();
+      final widget = Text(
+        theme.name,
+        style: TextStyle(fontSize: 5.sp(context)),
+      ).tr();
       themes.putIfAbsent(theme, () => widget);
     }
     return BlocBuilder<ThemeDataCubit, ThemeDataState>(
@@ -283,14 +290,17 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                 onPressed: () => context.read<AuthCubit>().signOut(),
               ),
               ElevatedButton(
-                style: const ButtonStyle(
-                    fixedSize: MaterialStatePropertyAll(Size.fromHeight(40))),
+                style: ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(
+                        Theme.of(context).disabledColor),
+                    fixedSize:
+                        const MaterialStatePropertyAll(Size.fromHeight(40))),
                 child: AutoSizeText(
                   "delete-account".tr(context),
                   maxLines: 2,
                   wrapWords: false,
                   textAlign: TextAlign.center,
-                  minFontSize: 10,
+                  minFontSize: 8,
                 ),
                 onPressed: () {
                   context.read<AuthCubit>().deleteAccount();

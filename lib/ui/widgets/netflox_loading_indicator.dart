@@ -40,8 +40,6 @@ class _NetfloxLoadingIndicatorState extends State<NetfloxLoadingIndicator>
       child: Image.asset(
         "assets/icons/netflox_letter.png",
         fit: BoxFit.scaleDown,
-        // color: Theme.of(context).primaryColor,
-        // colorBlendMode: BlendMode.modulate,
       ),
       builder: (context, child) {
         return Transform(

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +41,7 @@ class _CustomYoutubePlayerState extends State<CustomYoutubePlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && _alreadyPlayed) {
       _controller?.playVideo();
     } else {
       _controller?.pauseVideo();
@@ -51,12 +50,11 @@ class _CustomYoutubePlayerState extends State<CustomYoutubePlayer>
 
   @override
   void dispose() {
-    _controller?.close();
     if (_visibilityKey != null) {
       VisibilityDetectorController.instance.forget(_visibilityKey!);
     }
     WidgetsBinding.instance.removeObserver(this);
-
+    _controller?.close();
     super.dispose();
   }
 
@@ -67,10 +65,6 @@ class _CustomYoutubePlayerState extends State<CustomYoutubePlayer>
         onVisibilityChanged: (info) {
           if (info.visibleFraction == 0) {
             _controller!.pauseVideo();
-          } else {
-            if (_alreadyPlayed) {
-              _controller!.playVideo();
-            }
           }
         },
         child: ConstrainedBox(

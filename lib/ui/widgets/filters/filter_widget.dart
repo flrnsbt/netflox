@@ -1,17 +1,22 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
+import 'package:language_picker/language_picker_dialog.dart';
+import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/models/language.dart';
 import 'package:netflox/data/models/tmdb/genre.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
-import 'package:netflox/data/models/tmdb/parameters.dart';
+import 'package:netflox/ui/widgets/country_flag_icon.dart';
 import 'package:netflox/ui/widgets/see_more_widget.dart';
-
-import '../../../data/blocs/data_fetcher/filter_parameter.dart';
+import 'package:provider/provider.dart';
+import '../../../data/models/tmdb/filter_parameter.dart';
 import '../../../data/models/tmdb/type.dart';
 
-mixin FilterMenuItem<T> on Widget {
+mixin FilterWidget<T> on Widget {
   String get name;
-  FilterMenuItemController<T> get controller;
+  FilterWidgetController<T> get controller;
 
   Widget _buildTitle(BuildContext context) {
     return Text(
@@ -24,14 +29,105 @@ mixin FilterMenuItem<T> on Widget {
   }
 }
 
-class NumberPickerFilterMenuItem extends StatelessWidget
-    with FilterMenuItem<int?> {
+class LanguagePickerFilterWidget extends StatelessWidget
+    with FilterWidget<Language?> {
+  LanguagePickerFilterWidget(
+      {super.key, Language? selectedLanguage, required this.name})
+      : controller = LanguageWidgetController(currentValue: selectedLanguage);
+
+  void _showPicker(BuildContext context) => showDialog(
+        context: context,
+        builder: (context) => Theme(
+          data: context.read<ThemeDataCubit>().state.data.copyWith(
+              dialogBackgroundColor: Theme.of(context).scaffoldBackgroundColor),
+          child: LanguagePickerDialog(
+              contentPadding: EdgeInsets.zero,
+              isDividerEnabled: true,
+              languages: LocalizedLanguage.sortedLocalizedLanguage(context),
+              titlePadding: const EdgeInsets.all(8.0),
+              itemBuilder: (language) {
+                final countryCode = language.countryCode();
+                return SizedBox(
+                  height: 25,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: AutoSizeText(
+                            language.tr(context),
+                            maxLines: 1,
+                            minFontSize: 8,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        if (countryCode != null)
+                          CountryFlagIcon(
+                            countryCode: countryCode,
+                          ),
+                      ]),
+                );
+              },
+              isSearchable: false,
+              title: const Text('select-language').tr(),
+              onValuePicked: (Language language) {
+                (controller as LanguageWidgetController).currentValue =
+                    language;
+              }),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _buildTitle(context),
+        const Spacer(),
+        ChangeNotifierProvider<LanguageWidgetController>(
+            create: (context) => controller as LanguageWidgetController,
+            builder: (context, child) => Consumer<LanguageWidgetController>(
+                    builder: (context, _, child) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_.currentValue != null)
+                        CloseButton(
+                          color: Theme.of(context).highlightColor,
+                          onPressed: () => _.reset(),
+                        ),
+                      TextButton(
+                          style: ButtonStyle(
+                              padding: const MaterialStatePropertyAll(
+                                  EdgeInsets.symmetric(horizontal: 10)),
+                              shape: MaterialStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      side: BorderSide(
+                                          width: 1.5,
+                                          color: Theme.of(context)
+                                              .highlightColor)))),
+                          onPressed: () => _showPicker(context),
+                          child: Text(_.currentValue?.tr(context) ?? ''))
+                    ],
+                  );
+                }))
+      ],
+    );
+  }
+
+  @override
+  final FilterWidgetController<Language?> controller;
+
+  @override
+  final String name;
+}
+
+class NumberPickerFilterWidget extends StatelessWidget with FilterWidget<int?> {
   @override
   final String name;
   final int minValue;
   final int maxValue;
 
-  NumberPickerFilterMenuItem(this.name,
+  NumberPickerFilterWidget(this.name,
       {super.key, int? value, this.minValue = 1900, int? maxValue})
       : maxValue = maxValue ?? DateTime.now().year,
         controller = NumberFilterController(value);
@@ -68,15 +164,17 @@ class NumberPickerFilterMenuItem extends StatelessWidget
                 fontFamily: "Verdana"),
             decoration: InputDecoration(
                 isDense: true,
+                alignLabelWithHint: true,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 counterText: "",
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white, width: 2),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).highlightColor),
                   borderRadius: BorderRadius.circular(10),
                 )),
             controller: controller,
@@ -92,7 +190,7 @@ class NumberPickerFilterMenuItem extends StatelessWidget
 
 const kFilterCheckBoxButtonHeight = 30.0;
 
-class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
+class FilterCheckBoxWidget<T> extends StatelessWidget with FilterWidget<T> {
   @override
   final String name;
   final bool inverted;
@@ -107,7 +205,7 @@ class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
   final FilterCheckBoxController<T> controller;
   final bool enableDeselect;
 
-  FilterCheckBoxMenuItem._(this.name,
+  FilterCheckBoxWidget._(this.name,
       {super.key,
       this.onSelected,
       this.enableDeselect = false,
@@ -117,7 +215,7 @@ class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
       : _isRadio = isRadio,
         assert(controller.items.isNotEmpty);
 
-  factory FilterCheckBoxMenuItem(
+  factory FilterCheckBoxWidget(
       {required String name,
       bool enableDeselect = true,
       bool inverted = false,
@@ -133,7 +231,7 @@ class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
       assert(selectedItems is List<T>?);
       controller = FilterMultiCheckBoxController(items, selectedItems);
     }
-    return FilterCheckBoxMenuItem._(
+    return FilterCheckBoxWidget._(
       name,
       enableDeselect: enableDeselect,
       inverted: inverted,
@@ -142,25 +240,25 @@ class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
     );
   }
 
-  static FilterCheckBoxMenuItem<List<T>> multi<T>(
+  static FilterCheckBoxWidget<List<T>> multi<T>(
       {required String name,
       bool enableDeselect = true,
       bool inverted = false,
       required List<T> items,
       List<T> selectedItems = const []}) {
-    return FilterCheckBoxMenuItem._(name,
+    return FilterCheckBoxWidget._(name,
         enableDeselect: enableDeselect,
         isRadio: false,
         inverted: inverted,
         controller: FilterMultiCheckBoxController<T>(items, selectedItems));
   }
 
-  static FilterCheckBoxMenuItem<T> radio<T>(
+  static FilterCheckBoxWidget<T> radio<T>(
       {required String name,
       bool enableDeselect = false,
       T? selectedItem,
       required List<T> items}) {
-    return FilterCheckBoxMenuItem._(name,
+    return FilterCheckBoxWidget._(name,
         enableDeselect: enableDeselect,
         isRadio: true,
         inverted: false,
@@ -233,7 +331,7 @@ class FilterCheckBoxMenuItem<T> extends StatelessWidget with FilterMenuItem<T> {
 }
 
 class NumberFilterController extends TextEditingController
-    with FilterMenuItemController<int> {
+    with FilterWidgetController<int> {
   @override
   int? get currentValue => int.tryParse(text);
 
@@ -250,7 +348,7 @@ class NumberFilterController extends TextEditingController
 }
 
 mixin FilterCheckBoxController<T> on GroupButtonController
-    implements FilterMenuItemController<T> {
+    implements FilterWidgetController<T> {
   List get items;
 }
 
@@ -314,7 +412,41 @@ class FilterMultiCheckBoxController<T> extends GroupButtonController
   }
 }
 
-mixin FilterMenuItemController<T> on ChangeNotifier {
+class LanguageWidgetController extends ChangeNotifier
+    with FilterWidgetController<Language?> {
+  Language? _currentValue;
+
+  set currentValue(Language? value) {
+    _currentValue = value;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    try {
+      super.dispose();
+    } catch (e) {
+      //
+    }
+  }
+
+  @override
+  final Language? defaultValue;
+
+  LanguageWidgetController({Language? currentValue})
+      : _currentValue = currentValue,
+        defaultValue = null;
+
+  @override
+  void reset() {
+    currentValue = defaultValue;
+  }
+
+  @override
+  Language? get currentValue => _currentValue;
+}
+
+mixin FilterWidgetController<T> on ChangeNotifier {
   T? get currentValue;
   T? get defaultValue;
 
@@ -322,10 +454,10 @@ mixin FilterMenuItemController<T> on ChangeNotifier {
 }
 
 class NetfloxFilters {
-  static FilterCheckBoxMenuItem<TMDBType<TMDBMedia>>
+  static FilterCheckBoxWidget<TMDBType<TMDBMedia>>
       mediaType<P extends SingleTypeFilterParameter>(
               {TMDBType<TMDBMedia>? type}) =>
-          FilterCheckBoxMenuItem.radio<TMDBType<TMDBMedia>>(
+          FilterCheckBoxWidget.radio<TMDBType<TMDBMedia>>(
               name: 'media_type',
               items: (P == DiscoverFilterParameter
                       ? TMDBMultiMediaType.all
@@ -333,10 +465,10 @@ class NetfloxFilters {
                   .cast(),
               selectedItem: type);
 
-  static FilterCheckBoxMenuItem<TMDBSortCriterion>
+  static FilterCheckBoxWidget<TMDBSortCriterion>
       sortBy<T extends TMDBMultiMedia>(TMDBType<T> type,
               {TMDBSortCriterion<T>? sortCriterion}) =>
-          FilterCheckBoxMenuItem.radio(
+          FilterCheckBoxWidget.radio(
               name: "sort_by",
               selectedItem: sortCriterion ?? TMDBSortCriterion.popularity,
               items: [
@@ -346,17 +478,21 @@ class NetfloxFilters {
                   ...TMDBTVSortCriterion.all
               ]);
 
-  static FilterCheckBoxMenuItem<SortOrder> orderBy<T extends TMDBMultiMedia>(
+  static FilterCheckBoxWidget<SortOrder> orderBy<T extends TMDBMultiMedia>(
           {SortOrder? sortOrder}) =>
-      FilterCheckBoxMenuItem.radio(
+      FilterCheckBoxWidget.radio(
           name: "order_by",
           selectedItem: sortOrder ?? SortOrder.desc,
           items: SortOrder.values);
 
-  static FilterCheckBoxMenuItem<List<TMDBMultiMediaGenre>>
+  static LanguagePickerFilterWidget language({Language? selectedLanguage}) =>
+      LanguagePickerFilterWidget(
+          selectedLanguage: selectedLanguage, name: "language");
+
+  static FilterCheckBoxWidget<List<TMDBMultiMediaGenre>>
       genres<T extends TMDBMultiMedia>(TMDBType<T> type,
               {List<TMDBMultiMediaGenre<T>> selectedValues = const []}) =>
-          FilterCheckBoxMenuItem.multi(
+          FilterCheckBoxWidget.multi(
               name: "genres",
               items: [
                 if (type.isMovie())
@@ -366,8 +502,8 @@ class NetfloxFilters {
               ],
               selectedItems: selectedValues);
 
-  static NumberPickerFilterMenuItem year({int? value}) =>
-      NumberPickerFilterMenuItem(
+  static NumberPickerFilterWidget year({int? value}) =>
+      NumberPickerFilterWidget(
         'year',
         value: value,
       );

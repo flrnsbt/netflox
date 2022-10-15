@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:equatable/equatable.dart';
+import 'package:language_picker/languages.dart';
 import 'package:netflox/data/models/tmdb/genre.dart';
-import 'package:netflox/data/models/tmdb/parameters.dart';
-import '../../models/tmdb/library_media_information.dart';
-import '../../models/tmdb/media.dart';
-import '../../models/tmdb/type.dart';
+import 'package:netflox/data/models/tmdb/tv.dart';
+import 'library_media_information.dart';
+import 'media.dart';
+import 'movie.dart';
+import 'type.dart';
 
 abstract class FilterParameter<T extends TMDBPrimaryMedia> extends Equatable {
   const FilterParameter();
@@ -83,6 +85,7 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
   final List<TMDBMultiMediaGenre<T>> genres;
   final TMDBSortCriterion sortCriterion;
   final SortOrder sortOrder;
+  final Language? originalLanguage;
 
   SortParameter get sortParameter =>
       SortParameter(criterion: sortCriterion, order: sortOrder);
@@ -91,6 +94,7 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
       {TMDBType<T>? type,
       this.genres = const [],
       this.year,
+      this.originalLanguage,
       TMDBSortCriterion? sortCriterion,
       this.sortOrder = SortOrder.desc})
       : assert(type != TMDBMultiMediaType.any),
@@ -103,6 +107,7 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
     return DiscoverFilterParameter(
       type: map['media_type'],
       year: map['year'],
+      originalLanguage: map['language'],
       sortCriterion: map['sort_by'],
       sortOrder: map['order_by'],
       genres: map['genres'],
@@ -114,6 +119,7 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
     return {
       'sort_by': sortCriterion,
       'order_by': sortOrder,
+      'language': originalLanguage,
       'genres': genres,
       'year': year,
       ...super.toMap()
@@ -123,11 +129,13 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
   DiscoverFilterParameter copyWith(
       {TMDBType<TMDBMultiMedia>? type,
       int? year,
+      Language? originalLanguage,
       List<TMDBMultiMediaGenre>? genres,
       TMDBSortCriterion? sortCriterion,
       SortOrder? sortOrder}) {
     return DiscoverFilterParameter(
       type: type ?? this.type,
+      originalLanguage: originalLanguage ?? this.originalLanguage,
       year: year ?? this.year,
       sortCriterion: sortCriterion,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -136,8 +144,14 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
   }
 
   @override
-  List<Object?> get props =>
-      [...super.props, genres, year, sortCriterion, sortOrder];
+  List<Object?> get props => [
+        ...super.props,
+        genres,
+        year,
+        sortCriterion,
+        sortOrder,
+        originalLanguage
+      ];
 }
 
 class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
@@ -220,5 +234,88 @@ class SimpleMultimediaFilterParameter extends FilterParameter<TMDBMultiMedia> {
         sortCriterion: map['sort_by'],
         types: map['media_type'],
         order: map['order_by']);
+  }
+}
+
+abstract class SortCriterion<T extends TMDBMultiMedia> {
+  final String key;
+
+  const SortCriterion(this.key);
+
+  Comparable of(T object) {
+    return object.get(key);
+  }
+
+  @override
+  String toString() {
+    return key;
+  }
+}
+
+class LibrarySortCriterion extends SortCriterion<TMDBMultiMedia> {
+  const LibrarySortCriterion._(super.key);
+  static const addedOn = LibrarySortCriterion._('added_on');
+}
+
+class TMDBSortCriterion<T extends TMDBMultiMedia> extends SortCriterion<T> {
+  static const popularity = TMDBSortCriterion._('popularity');
+  static const releaseDate = TMDBSortCriterion._('release_date');
+  static const voteAverage = TMDBSortCriterion._('vote_average');
+  static const all = [popularity, releaseDate, voteAverage];
+
+  const TMDBSortCriterion._(super.key);
+}
+
+class TMDBMovieSortCriterion extends TMDBSortCriterion<TMDBMovie> {
+  const TMDBMovieSortCriterion._(String key) : super._(key);
+  static const voteCount = TMDBMovieSortCriterion._('vote_count');
+  static const title = TMDBMovieSortCriterion._('original_title');
+  static const popularity = TMDBSortCriterion.popularity;
+  static const releaseDate = TMDBSortCriterion.releaseDate;
+  static const voteAverage = TMDBSortCriterion.voteAverage;
+  static const all = [voteCount, title, ...TMDBSortCriterion.all];
+}
+
+mixin TMDBTVSortCriterion implements TMDBSortCriterion<TMDBTv> {
+  static const popularity = TMDBSortCriterion.popularity;
+  static const releaseDate = TMDBSortCriterion.releaseDate;
+  static const voteAverage = TMDBSortCriterion.voteAverage;
+  static const all = TMDBSortCriterion.all;
+}
+
+enum TimeWindow {
+  week,
+  day;
+}
+
+enum SortOrder {
+  asc(1),
+  desc(-1);
+
+  final int factor;
+
+  const SortOrder(this.factor);
+
+  bool get isDescending => this == desc;
+
+  @override
+  String toString() {
+    return name;
+  }
+}
+
+class SortParameter<T extends TMDBMultiMedia> {
+  final SortCriterion criterion;
+  final SortOrder order;
+
+  SortParameter({required this.criterion, this.order = SortOrder.desc});
+
+  @override
+  String toString() {
+    return "${criterion.key}.${order.name}";
+  }
+
+  int comparator(T a, T b) {
+    return criterion.of(a).compareTo(criterion.of(b)) * order.factor;
   }
 }

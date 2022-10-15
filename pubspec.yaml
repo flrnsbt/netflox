@@ -32,7 +32,7 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   group_button: ^5.2.1
   http: ^0.13.4
-  http_parser: ^4.0.1
+  language_picker: ^0.4.1
   nil: ^1.1.1
   path_provider: ^2.0.11
   pointer_interceptor: ^0.9.3+2

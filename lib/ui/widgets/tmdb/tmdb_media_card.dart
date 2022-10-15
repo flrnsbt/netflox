@@ -23,8 +23,19 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
   static CustomBannerOptions?
       _isNewMultimediaBannerMessage<T extends TMDBMedia>(
           BuildContext context, T media) {
-    if (media is TMDBMultiMedia && media.isRecent()) {
-      return CustomBannerOptions.defaultNew;
+    if (media is TMDBMultiMedia) {
+      final newnewss = media.newness();
+      if (newnewss != null) {
+        return CustomBannerOptions(
+            textStyle: TextStyle(
+                color: newnewss == MediaNewness.coming
+                    ? Colors.black
+                    : Colors.white,
+                fontFamily: "Verdana",
+                fontWeight: FontWeight.bold),
+            message: newnewss.tr(context).toUpperCase(),
+            color: colorByMediaNewness(newnewss));
+      }
     }
     return null;
   }

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:chewie/chewie.dart';
-import 'package:http_parser/http_parser.dart';
 
 enum SubtitleType {
   webvtt,
@@ -80,36 +79,4 @@ String removeAllHtmlTags(String htmlText) {
   );
 
   return newHtmlText;
-}
-
-// Extract the encoding type from the headers.
-Encoding _encodingForHeaders(Map<String, String> headers) => encodingForCharset(
-      _contentTypeForHeaders(headers).parameters['charset'],
-    );
-
-MediaType _contentTypeForHeaders(Map<String, String> headers) {
-  var _contentType = headers['content-type']!;
-  if (_hasSemiColonEnding(_contentType)) {
-    _contentType = _fixSemiColonEnding(_contentType);
-  }
-
-  return MediaType.parse(_contentType);
-}
-
-// Check if the string is ending with a semicolon.
-bool _hasSemiColonEnding(String _string) {
-  return _string.substring(_string.length - 1, _string.length) == ';';
-}
-
-// Remove ending semicolon from string.
-String _fixSemiColonEnding(String _string) {
-  return _string.substring(0, _string.length - 1);
-}
-
-Encoding encodingForCharset(String? charset, [Encoding fallback = utf8]) {
-  // If the charset is empty we use the encoding fallback.
-  if (charset == null) return fallback;
-  // If the charset is not empty we will return the encoding type for this charset.
-
-  return Encoding.getByName(charset) ?? fallback;
 }

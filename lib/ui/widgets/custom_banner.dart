@@ -236,6 +236,11 @@ class CustomBannerOptions {
             fontWeight: FontWeight.bold));
   }
 
+  static const coming = CustomBannerOptions(
+      message: 'COMING',
+      location: BannerLocation.topStart,
+      color: Colors.yellow);
+
   static const defaultNew = CustomBannerOptions(
       message: 'NEW', location: BannerLocation.topStart, color: Colors.pink);
 
@@ -262,7 +267,7 @@ class CustomBannerOptions {
       this.location = BannerLocation.topStart,
       this.color = _kColor,
       this.textStyle = const TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontFamily: "Verdana",
           fontWeight: FontWeight.bold)});
 }

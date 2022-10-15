@@ -7,11 +7,10 @@ import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:video_player/video_player.dart';
 import 'package:netflox/utils/custom_modal_bottom_sheet.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import '../../data/models/subtitle.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
   final String videoUrl;
-  final Map<String, String> subtitles;
+  final Map<String, Subtitles> subtitles;
   const NetfloxVideoPlayer({
     Key? key,
     required this.videoUrl,
@@ -27,20 +26,20 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   ChewieController? _controller;
   VideoPlayerController? _videoPlayerController;
   late SubtitlePicker _subtitlePicker;
-  bool _initialized = false;
   OptionsTranslation? _translation;
   Key? _visibilityKey;
+  bool _initialized = false;
+  bool _running = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _videoPlayerController = VideoPlayerController.network(
       widget.videoUrl,
     );
-    final subtitles = widget.subtitles.map<String, Subtitles>((key, value) =>
-        MapEntry(key, getSubtitlesData(value, SubtitleType.srt)));
     _subtitlePicker = SubtitlePicker(
-      subtitles: subtitles,
+      subtitles: widget.subtitles,
       onSubtitleChanged: (currentSubtitle) {
         final subtitles = <Subtitle>[];
         if (currentSubtitle != null) {
@@ -53,26 +52,32 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         cancelButtonText: 'cancel'.tr(context),
         subtitlesButtonText: 'subtitles'.tr(context),
         playbackSpeedButtonText: 'playback-speed'.tr(context));
-    _initVideo();
-    WidgetsBinding.instance.addObserver(this);
+    _initChewieController();
   }
 
-  Future<void> _initVideo() async {
-    await _videoPlayerController!.initialize();
+  Future<void> _initChewieController() async {
+    _videoPlayerController!.addListener(_initializeListener);
     _controller = ChewieController(
         subtitleBuilder: (context, subtitle) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 35),
               child: Text(
                 subtitle,
-                style: const TextStyle(color: Colors.yellow, fontSize: 32),
+                style: const TextStyle(
+                    color: Color.fromARGB(255, 255, 230, 0), fontSize: 42),
               ),
             ),
         videoPlayerController: _videoPlayerController!,
         allowedScreenSleep: false,
         zoomAndPan: false,
         allowFullScreen: true,
+        customControls: const CupertinoControls(
+          backgroundColor: Color.fromRGBO(41, 41, 41, 0.7),
+          iconColor: Color.fromARGB(255, 200, 200, 200),
+        ),
+        autoInitialize: true,
         showControlsOnInitialize: false,
         allowPlaybackSpeedChanging: false,
+        fullScreenByDefault: true,
         additionalOptions: (context) {
           return [
             OptionItem(
@@ -89,17 +94,24 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
             errorCode: errorMessage,
           );
         },
-        fullScreenByDefault: true,
         deviceOrientationsOnEnterFullScreen: [
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight
         ],
         optionsTranslation: _translation);
     _visibilityKey = Key(_controller.hashCode.toString());
-    await _videoPlayerController?.play();
-    setState(() {
-      _initialized = true;
-    });
+  }
+
+  void _initializeListener() async {
+    if (_videoPlayerController!.value.isInitialized) {
+      setState(() {
+        _initialized = true;
+      });
+      await Future.delayed(const Duration(seconds: 2));
+      _controller!.play();
+      _running = true;
+      _videoPlayerController!.removeListener(_initializeListener);
+    }
   }
 
   @override
@@ -108,6 +120,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       Navigator.of(context, rootNavigator: true).maybePop();
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
           overlays: _controller?.systemOverlaysAfterFullScreen);
+
       SystemChrome.setPreferredOrientations(
           _controller?.deviceOrientationsAfterFullScreen ??
               [
@@ -117,6 +130,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
                 DeviceOrientation.landscapeLeft,
               ]);
     }
+
     _videoPlayerController?.dispose();
     _controller?.dispose();
     _videoPlayerController = null;
@@ -131,37 +145,40 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && _running) {
       _controller?.play();
     } else {
       _controller?.pause();
     }
   }
 
+  void _onVisibilityChanged(VisibilityInfo info) {
+    if (_running) {
+      if (_controller!.isFullScreen) {
+        if (info.visibleFraction == 0) {
+          _controller?.pause();
+        } else {
+          _controller?.play();
+        }
+      } else {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_initialized) {
-      return Center(
-        child: ClipRect(
-          child: SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.fitWidth,
-              child: VisibilityDetector(
-                key: _visibilityKey!,
-                onVisibilityChanged: (info) {
-                  if (_controller!.isFullScreen) {
-                    if (info.visibleFraction == 0) {
-                      _controller?.pause();
-                    } else {
-                      _controller?.play();
-                    }
-                  } else {
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: SizedBox(
-                    width: _videoPlayerController!.value.size.width,
-                    height: _videoPlayerController!.value.size.height,
+      return VisibilityDetector(
+        key: _visibilityKey!,
+        onVisibilityChanged: _onVisibilityChanged,
+        child: Center(
+          child: ClipRect(
+            child: SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.fitWidth,
+                child: SizedBox.fromSize(
+                    size: _videoPlayerController!.value.size,
                     child: Chewie(controller: _controller!)),
               ),
             ),
@@ -189,7 +206,7 @@ class SubtitlePicker {
   show(BuildContext context) {
     CustomModalBottomSheet<String>(
       defaultValue: _currentSubtitle,
-      values: subtitles.keys,
+      values: subtitles.keys.map((e) => 'language-$e'),
       onSelected: (value) {
         Navigator.of(context, rootNavigator: true).pop();
         _currentSubtitle = value;

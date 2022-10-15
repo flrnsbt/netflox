@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/blocs/theme/theme_cubit_cubit.dart';
@@ -24,34 +25,35 @@ class TMDBScreenBuilder extends StatefulWidget {
 
 class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
   ScrollController? _controller;
-  Widget? _returnTopButton;
+  Widget? _title;
+  bool _show = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.element is TMDBMedia &&
+        (widget.element as TMDBMedia).name != null) {
+      _title = Text(
+        (widget.element as TMDBMedia).name!,
+        style: const TextStyle(fontSize: 12),
+      );
+    }
     _controller = widget.controller ?? ScrollController();
-    _returnTopButton = ChangeNotifierProvider.value(
-      value: _controller,
-      child: Consumer<ScrollController>(
-        builder: (context, value, child) {
-          if (value.offset > MediaQuery.of(context).size.height) {
-            return child!;
-          }
-          return const SizedBox.shrink();
-        },
-        child: IconButton(
-            icon: const Icon(Icons.arrow_upward),
-            onPressed: () {
-              _controller?.animateTo(0,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.ease);
-            }),
-      ),
-    );
+    _controller!.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    final show = _controller!.offset > MediaQuery.of(context).size.height;
+    if (show != _show) {
+      setState(() {
+        _show = show;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _controller!.removeListener(_scrollListener);
     _controller?.dispose();
     super.dispose();
   }
@@ -61,14 +63,24 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
     return Theme(
       data: ThemeDataCubit.darkThemeData,
       child: SliverAppBar(
+        backgroundColor: Theme.of(context).backgroundColor,
         floating: false,
         pinned: true,
         actions: [
-          _returnTopButton!,
+          if (_show)
+            IconButton(
+                icon: const Icon(Icons.arrow_upward),
+                onPressed: () {
+                  _controller?.animateTo(0,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.ease);
+                }),
           const SizedBox(
             width: 25,
           )
         ],
+        centerTitle: false,
+        title: _show ? _title : null,
         leading: Row(children: const [
           SizedBox(
             width: 25,
@@ -95,6 +107,7 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
   @override
   Widget build(BuildContext context) {
     return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: CustomScrollView(controller: _controller, slivers: [
         _buildAppbar(context),
         SliverToBoxAdapter(

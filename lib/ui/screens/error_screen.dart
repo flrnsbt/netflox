@@ -5,7 +5,9 @@ import 'package:netflox/ui/widgets/error_widget.dart';
 
 class ErrorScreen extends StatelessWidget {
   final Object? errorCode;
-  const ErrorScreen({super.key, @PathParam('error') this.errorCode});
+  final Widget? child;
+  const ErrorScreen(
+      {super.key, @PathParam('error') this.errorCode, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +20,7 @@ class ErrorScreen extends StatelessWidget {
       body: ConstrainedLargeScreenWidget(
         child: CustomErrorWidget.from(
           error: errorCode,
+          bottom: child,
         ),
       ),
     );

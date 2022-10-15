@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/data_fetcher/basic_server_fetch_state.dart';
@@ -63,7 +61,6 @@ class _PagedSliverScrollViewWrapperState
     final now = DateTime.now();
     if (!_isLoading() && now.difference(_loadTimeStamp) > _kDelay) {
       _loadTimeStamp = now;
-      Future.delayed(const Duration(milliseconds: 50), () => _scrollToEnd());
       _currentEventType.value = PagedSliverScrollViewEventType.load;
     }
   }
@@ -77,14 +74,6 @@ class _PagedSliverScrollViewWrapperState
   }
 
   bool _isLoading() => _loadIndicator._controller.state.isLoading();
-
-  _scrollToEnd() {
-    if (_controller.position.hasContentDimensions) {
-      _controller.animateTo(_controller.position.maxScrollExtent,
-          curve: Curves.fastLinearToSlowEaseIn,
-          duration: const Duration(milliseconds: 150));
-    }
-  }
 
   @override
   void initState() {
@@ -133,7 +122,7 @@ class _PagedSliverScrollViewWrapperState
         NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification.metrics.pixels >=
-                notification.metrics.maxScrollExtent) {
+                notification.metrics.maxScrollExtent + 30) {
               _load();
               return true;
             }
@@ -166,6 +155,11 @@ class _PagedSliverScrollViewWrapperState
                   fillOverscroll: true,
                   hasScrollBody: false,
                   child: _loadIndicator),
+              const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 5,
+                ),
+              )
             ],
           ),
         ),
@@ -218,7 +212,7 @@ class LoadingIndicator extends StatelessWidget {
                   break;
                 case BasicServerFetchStatus.failed:
                   child = SizedBox(
-                    height: 60,
+                    height: 80,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: errorBuilder?.call(context, state.error) ??

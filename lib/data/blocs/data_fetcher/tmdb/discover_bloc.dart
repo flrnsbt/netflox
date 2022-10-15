@@ -12,7 +12,7 @@ class TMDBMultimediaDiscoverBloc
     return _tmdbService.discover(parameters.type,
         sortParameter: parameters.sortParameter,
         genres: parameters.genres,
-        // language: _currentParameters!.language,
+        mediaLanguage: parameters.originalLanguage?.isoCode,
         year: parameters.year,
         page: page);
   }

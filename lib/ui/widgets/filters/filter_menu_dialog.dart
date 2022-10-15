@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/ui/widgets/filters/filters.dart';
-import '../../../data/blocs/data_fetcher/filter_parameter.dart';
+import 'package:netflox/ui/widgets/filters/filter_widget.dart';
+import '../../../data/models/tmdb/filter_parameter.dart';
 import 'filter_menu_builder.dart';
 
 class FilterMenuDialog<P extends FilterParameter> extends StatelessWidget {
@@ -18,7 +18,7 @@ class FilterMenuDialog<P extends FilterParameter> extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => FilterMenuBuilder.from<P>(_filterParameter),
-      child: BlocBuilder<FilterMenuBuilder<P>, List<FilterMenuItem>>(
+      child: BlocBuilder<FilterMenuBuilder<P>, List<FilterWidget>>(
         builder: (context, state) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

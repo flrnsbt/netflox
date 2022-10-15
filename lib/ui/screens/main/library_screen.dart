@@ -4,11 +4,11 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
-import 'package:responsive_framework/responsive_grid.dart';
 import '../../../data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
-import '../../../data/blocs/data_fetcher/filter_parameter.dart';
+import '../../../data/models/tmdb/filter_parameter.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
 import '../../router/router.gr.dart';
 import '../../widgets/custom_awesome_dialog.dart';
@@ -76,9 +76,29 @@ class LibraryScreen extends StatelessWidget with AutoRouteWrapper {
                       style: Theme.of(context).textTheme.subtitle1,
                     ),
                   ),
-                  IconButton(
-                      onPressed: () => showFilterMenuDialog(context, state),
-                      icon: const Icon(Icons.filter_list))
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                          style: const ButtonStyle(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              fixedSize: MaterialStatePropertyAll(Size.zero),
+                              padding:
+                                  MaterialStatePropertyAll(EdgeInsets.zero)),
+                          onPressed: () => context
+                              .read<LibraryMediaExploreBloc>()
+                              .add(const PagedDataCollectionRefreshEvent()),
+                          icon: const Icon(Icons.refresh)),
+                      IconButton(
+                          style: const ButtonStyle(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              fixedSize: MaterialStatePropertyAll(Size.zero),
+                              padding:
+                                  MaterialStatePropertyAll(EdgeInsets.zero)),
+                          onPressed: () => showFilterMenuDialog(context, state),
+                          icon: const Icon(Icons.filter_list))
+                    ],
+                  )
                 ],
               );
             }),
@@ -152,16 +172,26 @@ class LibraryScreen extends StatelessWidget with AutoRouteWrapper {
               create: (context) =>
                   PagedDataFilterManager(_defaultLibraryFilterParameter))
         ],
-        child: BlocListener<PagedDataFilterManager<LibraryFilterParameter>,
-            LibraryFilterParameter>(
-          child: this,
-          listener: (context, state) {
-            _data.clear();
-
-            context
-                .read<LibraryMediaExploreBloc>()
-                .add(PagedDataCollectionFetchEvent.updateParameter(state));
-          },
-        ));
+        child: MultiBlocListener(listeners: [
+          BlocListener<ConnectivityManager, ConnectivityState>(
+              listenWhen: (previous, current) => !previous.hasNetworkAccess(),
+              listener: (context, state) {
+                if (state.hasNetworkAccess() && _data.isEmpty) {
+                  context
+                      .read<LibraryMediaExploreBloc>()
+                      .add(const PagedDataCollectionRefreshEvent());
+                }
+              }),
+          BlocListener<PagedDataFilterManager<LibraryFilterParameter>,
+              LibraryFilterParameter>(
+            child: this,
+            listener: (context, state) {
+              _data.clear();
+              context
+                  .read<LibraryMediaExploreBloc>()
+                  .add(PagedDataCollectionFetchEvent.updateParameter(state));
+            },
+          )
+        ], child: this));
   }
 }

@@ -1,13 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
-import 'package:netflox/data/models/tmdb/parameters.dart';
-import 'package:netflox/ui/widgets/filters/filters.dart';
-import '../../../data/blocs/data_fetcher/filter_parameter.dart';
+import 'package:netflox/ui/widgets/filters/filter_widget.dart';
+import '../../../data/models/tmdb/filter_parameter.dart';
 import '../../../data/models/tmdb/library_media_information.dart';
 import '../../../data/models/tmdb/type.dart';
 
 abstract class FilterMenuBuilder<P extends FilterParameter>
-    extends Cubit<List<FilterMenuItem>> {
+    extends Cubit<List<FilterWidget>> {
   final P _filterParameter;
 
   FilterMenuBuilder(P filterParameter)
@@ -44,7 +43,7 @@ abstract class FilterMenuBuilder<P extends FilterParameter>
     throw UnimplementedError();
   }
 
-  List<FilterMenuItem> _buildFilterItems();
+  List<FilterWidget> _buildFilterItems();
 
   @override
   Future<void> close() {
@@ -59,14 +58,13 @@ abstract class FilterMenuBuilder<P extends FilterParameter>
     for (var element in state) {
       data.putIfAbsent(element.name, () => element.controller.currentValue);
     }
-
     return FilterParameter.fromMap(data);
   }
 }
 
 abstract class TypedFilterMenuBuilder<T extends TMDBPrimaryMedia,
     P extends SingleTypeFilterParameter<T>> extends FilterMenuBuilder<P> {
-  final FilterCheckBoxMenuItem<TMDBType<TMDBMedia>> _mediaTypePicker;
+  final FilterCheckBoxWidget<TMDBType<TMDBMedia>> _mediaTypePicker;
   TypedFilterMenuBuilder(super.filterParameter)
       : _currentType = filterParameter.type,
         _mediaTypePicker =
@@ -92,7 +90,7 @@ abstract class TypedFilterMenuBuilder<T extends TMDBPrimaryMedia,
 
   void _build() {
     final newState =
-        List<FilterMenuItem>.from([_mediaTypePicker, ..._buildFilterItems()]);
+        List<FilterWidget>.from([_mediaTypePicker, ..._buildFilterItems()]);
     emit(newState);
   }
 
@@ -104,7 +102,7 @@ class SearchFilterMenuBuilder
   SearchFilterMenuBuilder(super.filterParameter);
 
   @override
-  List<FilterMenuItem> _buildFilterItems() {
+  List<FilterWidget> _buildFilterItems() {
     return [
       if (_currentType.isMultimedia())
         NetfloxFilters.year(value: _filterParameter.year)
@@ -117,9 +115,11 @@ class DiscoverFilterMenuBuilder
   DiscoverFilterMenuBuilder(super.filterParameter);
 
   @override
-  List<FilterMenuItem> _buildFilterItems() {
+  List<FilterWidget> _buildFilterItems() {
     assert(_currentType != TMDBMultiMediaType.any);
     return [
+      NetfloxFilters.language(
+          selectedLanguage: _filterParameter.originalLanguage),
       NetfloxFilters.year(value: _filterParameter.year),
       NetfloxFilters.genres(
         _currentType,
@@ -141,14 +141,14 @@ class LibraryFilterMenuBuilder
   LibraryFilterMenuBuilder(super.filterParameter);
 
   @override
-  List<FilterMenuItem> _buildFilterItems() {
+  List<FilterWidget> _buildFilterItems() {
     return [
-      FilterCheckBoxMenuItem.multi(
+      FilterCheckBoxWidget.multi(
           name: 'media_type',
           items: TMDBMultiMediaType.all,
           enableDeselect: false,
           selectedItems: _filterParameter.types),
-      FilterCheckBoxMenuItem.radio(
+      FilterCheckBoxWidget.radio(
           name: 'media_status',
           items: [
             MediaStatus.available,
@@ -156,7 +156,7 @@ class LibraryFilterMenuBuilder
             MediaStatus.rejected
           ],
           selectedItem: _filterParameter.status),
-      FilterCheckBoxMenuItem.radio(
+      FilterCheckBoxWidget.radio(
           name: "sort_by",
           items: [LibrarySortCriterion.addedOn],
           selectedItem: _filterParameter.sortCriterion),
@@ -172,14 +172,14 @@ class SimpleMultimediaFilterMenuBuilder
   SimpleMultimediaFilterMenuBuilder(super.filterParameter);
 
   @override
-  List<FilterMenuItem> _buildFilterItems() {
+  List<FilterWidget> _buildFilterItems() {
     return [
-      FilterCheckBoxMenuItem.multi(
+      FilterCheckBoxWidget.multi(
           name: 'media_type',
           items: TMDBMultiMediaType.all,
           enableDeselect: false,
           selectedItems: _filterParameter.types),
-      FilterCheckBoxMenuItem.radio(
+      FilterCheckBoxWidget.radio(
           name: "sort_by",
           items: TMDBSortCriterion.all,
           selectedItem: _filterParameter.sortCriterion),

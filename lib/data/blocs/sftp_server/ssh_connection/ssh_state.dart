@@ -9,6 +9,7 @@ class SSHConnectionState extends Equatable {
   final Object? exception;
 
   bool isConnected() => status == SSHConnectionStatus.connected;
+  bool isConnecting() => status == SSHConnectionStatus.connecting;
   bool failed() => exception != null;
   bool isDisconnected() => status == SSHConnectionStatus.disconnected;
 
