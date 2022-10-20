@@ -55,7 +55,7 @@ class CustomBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final offset = this.offset ?? message.length * 0.8 + height * 2.2;
+    final offset = this.offset ?? message.length * 0.3 + height * 2.2;
     return ClipRect(
       child: CustomPaint(
         foregroundPainter: CustomBannerPainter(
@@ -66,7 +66,7 @@ class CustomBanner extends StatelessWidget {
           location: location,
           layoutDirection: Directionality.of(context),
           color: color,
-          textStyle: textStyle.copyWith(fontSize: height * 0.6),
+          textStyle: textStyle.copyWith(fontSize: height * 0.5),
         ),
         child: child,
       ),
@@ -236,6 +236,11 @@ class CustomBannerOptions {
             fontWeight: FontWeight.bold));
   }
 
+  static const coming = CustomBannerOptions(
+      message: 'COMING',
+      location: BannerLocation.topStart,
+      color: Colors.yellow);
+
   static const defaultNew = CustomBannerOptions(
       message: 'NEW', location: BannerLocation.topStart, color: Colors.pink);
 
@@ -262,7 +267,7 @@ class CustomBannerOptions {
       this.location = BannerLocation.topStart,
       this.color = _kColor,
       this.textStyle = const TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontFamily: "Verdana",
           fontWeight: FontWeight.bold)});
 }

@@ -29,17 +29,21 @@ class _NetfloxSearchBarState extends State<NetfloxSearchBar> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller?.addListener(() {
-      setState(() {
-        _showEraseButton = _controller!.text.isNotEmpty;
-        widget.onQueryChange?.call(_controller!.text);
-      });
+    _controller?.addListener(_controllerListener);
+  }
+
+  void _controllerListener() {
+    setState(() {
+      _showEraseButton = _controller!.text.isNotEmpty;
+      widget.onQueryChange?.call(_controller!.text);
     });
   }
 
   @override
   void dispose() {
+    _controller?.removeListener(_controllerListener);
     _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
 

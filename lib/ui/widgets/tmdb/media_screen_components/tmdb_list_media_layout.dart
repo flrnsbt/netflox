@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/ui/widgets/faded_edge_widget.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 
@@ -116,56 +117,56 @@ class _CarouselLayout extends StatefulWidget {
 class _CarouselLayoutState extends State<_CarouselLayout> {
   CarouselController? _controller;
   bool _highlightControllers = false;
+  Key? _carouselVisibilityKey;
 
   @override
   void initState() {
     super.initState();
     _controller = CarouselController();
+    _carouselVisibilityKey = Key(_controller.hashCode.toString());
   }
 
   Widget _buildCarousel(bool enableInfiniteScroll, double ratio) {
-    return MouseRegion(
-        onEnter: (event) {
-          setState(() {
-            _highlightControllers = true;
-          });
-        },
-        onExit: (event) {
-          setState(() {
-            _highlightControllers = false;
-          });
-        },
-        child: CarouselSlider(
-          carouselController: _controller,
-          options: CarouselOptions(
-              enableInfiniteScroll: enableInfiniteScroll,
-              autoPlay: widget.play,
-              clipBehavior: Clip.none,
-              padEnds: false,
-              height: widget.height,
-              disableCenter: true,
-              autoPlayInterval: const Duration(seconds: 6),
-              autoPlayAnimationDuration: const Duration(seconds: 2),
-              pauseAutoPlayOnTouch: true,
-              viewportFraction: ratio),
-          items: [
-            for (final media in widget.data)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: AspectRatio(
-                    aspectRatio: 2 / 3,
-                    child: TMDBMediaCard(
-                      media: media,
-                      showBottomTitle: true,
-                      onTap: (media) =>
-                          context.pushRoute(MediaRoute.fromMedia(media)),
-                    ),
-                  ),
+    return CarouselSlider(
+      carouselController: _controller,
+      options: CarouselOptions(
+          enableInfiniteScroll: enableInfiniteScroll,
+          autoPlay: widget.play,
+          clipBehavior: Clip.none,
+          padEnds: false,
+          height: widget.height,
+          disableCenter: true,
+          autoPlayInterval: const Duration(seconds: 6),
+          autoPlayAnimationDuration: const Duration(seconds: 2),
+          pauseAutoPlayOnTouch: true,
+          viewportFraction: ratio),
+      items: [
+        for (final media in widget.data)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: AspectRatio(
+                aspectRatio: 2 / 3,
+                child: TMDBMediaCard(
+                  media: media,
+                  showBottomTitle: true,
+                  onTap: (media) =>
+                      context.pushRoute(MediaRoute.fromMedia(media)),
                 ),
               ),
-          ],
-        ));
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.stopAutoPlay();
+    if (_carouselVisibilityKey != null) {
+      VisibilityDetectorController.instance.forget(_carouselVisibilityKey!);
+    }
+    super.dispose();
   }
 
   @override
@@ -175,19 +176,40 @@ class _CarouselLayoutState extends State<_CarouselLayout> {
       final itemNumber = 1 ~/ ratio;
       final overflowed = itemNumber < widget.data.length;
       return ClipRect(
-        clipper: _CustomCarouselClipper(),
-        child: FadedEdgeWidget(
-          endStop: 0.05,
-          startStop: 0,
-          axis: Axis.horizontal,
-          child: Stack(
-            children: [
-              _buildCarousel(overflowed, ratio),
-              if (overflowed) _buildController()
-            ],
-          ),
-        ),
-      );
+          clipper: _CustomCarouselClipper(),
+          child: VisibilityDetector(
+            key: _carouselVisibilityKey!,
+            onVisibilityChanged: (info) {
+              if (info.visibleFraction == 0) {
+                _controller?.stopAutoPlay();
+              } else {
+                _controller?.startAutoPlay();
+              }
+            },
+            child: MouseRegion(
+              onEnter: (event) {
+                setState(() {
+                  _highlightControllers = true;
+                });
+              },
+              onExit: (event) {
+                setState(() {
+                  _highlightControllers = false;
+                });
+              },
+              child: FadedEdgeWidget(
+                endStop: 0.05,
+                startStop: 0,
+                axis: Axis.horizontal,
+                child: Stack(
+                  children: [
+                    _buildCarousel(overflowed, ratio),
+                    if (overflowed) _buildController()
+                  ],
+                ),
+              ),
+            ),
+          ));
     });
   }
 

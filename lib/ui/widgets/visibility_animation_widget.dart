@@ -22,13 +22,22 @@ class _VisibilityAnimationWidgetState extends State<VisibilityAnimationWidget>
         vsync: this,
         duration: const Duration(milliseconds: 200),
         reverseDuration: const Duration(milliseconds: 300));
-    widget.controller?.addListener(() {
-      if (widget.controller!.isShowing()) {
-        _visibility.forward();
-      } else {
-        _visibility.reverse();
-      }
-    });
+    widget.controller?.addListener(_visibilityControllerListener);
+  }
+
+  void _visibilityControllerListener() {
+    if (widget.controller!.isShowing()) {
+      _visibility.forward();
+    } else {
+      _visibility.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller?.removeListener(_visibilityControllerListener);
+    widget.controller?.dispose();
+    super.dispose();
   }
 
   @override

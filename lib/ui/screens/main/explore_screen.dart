@@ -2,9 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
-import 'package:netflox/data/blocs/data_fetcher/filter_parameter.dart';
+import 'package:netflox/data/models/language.dart';
+import 'package:netflox/data/models/tmdb/filter_parameter.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +14,7 @@ import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/error_widget.dart';
-import '../../widgets/filters/filter_menu_dialog.dart';
+import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
 
@@ -28,7 +30,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
 
   Future<void> showFilterMenuDialog(BuildContext context) {
     return CustomAwesomeDialog(
-            width: 500,
+            width: 450,
             dialogType: DialogType.noHeader,
             bodyHeaderDistance: 0,
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
@@ -52,7 +54,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         width: MediaQuery.of(context).size.width,
         alignment: Alignment.center,
-        color: Theme.of(context).shadowColor,
+        color: const Color.fromARGB(8, 255, 255, 255),
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
             DiscoverFilterParameter>(
           builder: (context, state) {
@@ -65,6 +67,12 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (BuildContext context, int index) {
                   final filter = singleValueFilters[index];
+                  dynamic filterValue = filter.value;
+                  if (filterValue is! Language) {
+                    filterValue = filterValue.toString().tr(context);
+                  } else {
+                    filterValue = filterValue.tr(context);
+                  }
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -79,7 +87,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
                         width: 5,
                       ),
                       Text(
-                        filter.value.toString().tr(context),
+                        filterValue,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -183,7 +191,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
       }, builder: (context, state) {
         return SliverList(
             delegate: SliverChildBuilderDelegate(
-                ((context, index) => ListTMDBMediaCard(
+                ((context, index) => TMDBListMediaCard(
                       media: _data.elementAt(index),
                       onTap: (media) =>
                           context.pushRoute(MediaRoute.fromMedia(media)),

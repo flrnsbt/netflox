@@ -55,7 +55,8 @@ class TMDBMovie extends TMDBMultiMedia
         img: img,
         genres: genres,
         backdropImg: backdropImg,
-        duration: map['runtime'],
+        duration:
+            map['runtime'] != null ? Duration(minutes: map['runtime']) : null,
         popularity: map['popularity'],
         voteAverage: map['vote_average'],
         voteCount: map['vote_count'],
@@ -115,7 +116,7 @@ class TMDBMovie extends TMDBMultiMedia
   final num? popularity;
 
   @override
-  final int? duration;
+  final Duration? duration;
 
   @override
   final num? voteAverage;

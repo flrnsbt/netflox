@@ -9,7 +9,7 @@ import '../../../services/firestore_service.dart';
 import '../../../services/tmdb_service.dart';
 import '../../models/tmdb/library_media_information.dart';
 import 'basic_server_fetch_state.dart';
-import 'filter_parameter.dart';
+import '../../models/tmdb/filter_parameter.dart';
 part 'library/library_multi_media_explore_bloc.dart';
 part 'tmdb/discover_bloc.dart';
 part 'tmdb/search_bloc.dart';

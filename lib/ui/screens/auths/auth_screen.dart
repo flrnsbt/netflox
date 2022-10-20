@@ -66,6 +66,7 @@ class AuthFormScreen extends StatelessWidget {
               break;
             case AuthFormStatus.success:
               onFinish?.call();
+              dialog?.dismiss();
               break;
             case AuthFormStatus.error:
               final exception = NetfloxException.from(state.exception!);

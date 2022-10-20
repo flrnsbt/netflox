@@ -1,6 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:language_picker/languages.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/type.dart';
+
+Color mediaStatusColor(MediaStatus mediaStatus) {
+  switch (mediaStatus) {
+    case MediaStatus.available:
+      return Colors.green;
+    case MediaStatus.pending:
+      return Colors.amber;
+    case MediaStatus.unavailable:
+      return Colors.white30;
+    case MediaStatus.rejected:
+      return Colors.red;
+  }
+}
 
 enum MediaStatus {
   available,
@@ -43,19 +58,23 @@ class LibraryMediaInformation with LanguageProvider {
         type: type,
         id: map['id'],
         mediaStatus: MediaStatus.fromString(map['media_status']),
-        subtitles: map['subtitles']?.cast<String>(),
-        languages: map['languages']?.cast<String>());
+        subtitles: map['subtitles']
+            ?.map<Language>((e) => Language.fromIsoCode(e))
+            ?.toList(),
+        languages: map['languages']
+            ?.map<Language>((e) => Language.fromIsoCode(e))
+            ?.toList());
   }
 
   @override
-  final List<String>? languages;
+  final List<Language>? languages;
 
   @override
-  final List<String>? subtitles;
+  final List<Language>? subtitles;
 
   Map<String, dynamic> toMap() {
     return {
-      if (languages != null) 'languages': languages,
+      if (languages != null) 'languages': languages!.map((e) => e.isoCode),
       if (subtitles != null) 'subtitles': subtitles,
       'media_status': mediaStatus.name,
       'added_on': addedOn ?? Timestamp.now(),
@@ -71,6 +90,6 @@ class LibraryMediaInformation with LanguageProvider {
 }
 
 mixin LanguageProvider {
-  List<String>? get languages;
-  List<String>? get subtitles;
+  List<Language>? get languages;
+  List<Language>? get subtitles;
 }

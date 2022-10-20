@@ -72,11 +72,11 @@ class TMDBScreenHeader extends StatelessWidget {
         backgroundImage: _buildBackgroundImage,
         child: SafeArea(
           minimum:
-              const EdgeInsets.only(left: 120, right: 25, top: 10, bottom: 20),
+              const EdgeInsets.only(left: 120, right: 25, top: 25, bottom: 20),
           child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
             Flexible(
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
+                    constraints: const BoxConstraints(maxWidth: 700),
                     child: child)),
             if (ResponsiveWrapper.of(context).isLargerThan(TABLET))
               _buildImg(context)

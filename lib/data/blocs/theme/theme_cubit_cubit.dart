@@ -44,8 +44,8 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
           elevation: 0,
           backgroundColor: Color.fromARGB(255, 5, 5, 5),
           foregroundColor: Colors.white),
-      cardColor: const Color.fromARGB(255, 20, 20, 20),
-      canvasColor: const Color.fromARGB(255, 10, 10, 10),
+      cardColor: const Color.fromARGB(255, 18, 18, 18),
+      canvasColor: const Color.fromARGB(255, 8, 8, 8),
       primaryColor: Colors.pinkAccent,
       colorScheme: ColorScheme.fromSwatch(
         accentColor: Colors.pinkAccent,
@@ -61,8 +61,8 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
           showSelectedLabels: true,
           showUnselectedLabels: true,
           landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
-          backgroundColor: Color.fromARGB(255, 15, 15, 15)),
-      scaffoldBackgroundColor: const Color.fromARGB(255, 5, 5, 5),
+          backgroundColor: Color.fromARGB(255, 12, 12, 12)),
+      scaffoldBackgroundColor: const Color.fromARGB(255, 2, 2, 2),
       backgroundColor: Colors.black);
 
   Future<void> _init() async {

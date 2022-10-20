@@ -22,6 +22,8 @@ class TabHomeScreen extends StatelessWidget {
       homeIndex: 0,
       bottomNavigationBuilder: (_, tabsRouter) {
         return BottomNavigationBar(
+            selectedFontSize: 12,
+            unselectedFontSize: 10,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: const Icon(CupertinoIcons.search),

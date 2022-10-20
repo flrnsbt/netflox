@@ -15,5 +15,5 @@ extension ResponsiveDimension on num {
       this /
       100;
 
-  double sp(BuildContext context) => hw(context) / 3;
+  double sp(BuildContext context) => h(context) / 3;
 }

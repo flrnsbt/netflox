@@ -1,29 +1,48 @@
 import 'dart:io';
-import 'package:better_player/src/controls/better_player_clickable_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 
+class CustomModalBottomSheetItem extends StatelessWidget {
+  final void Function()? onTap;
+  final Widget child;
+  const CustomModalBottomSheetItem(
+      {super.key, this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      clipBehavior: Clip.hardEdge,
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: child,
+      ),
+    );
+  }
+}
+
 class CustomModalBottomSheet<T> {
-  final void Function(T value)? onSelected;
-  final List<BetterPlayerMaterialClickableWidget> _children;
+  final void Function(T? value)? onSelected;
+  final List<CustomModalBottomSheetItem> _children;
   final Color? color;
 
   const CustomModalBottomSheet._(
       {this.onSelected,
-      required List<BetterPlayerMaterialClickableWidget> children,
+      required List<CustomModalBottomSheetItem> children,
       this.color})
       : _children = children;
 
   factory CustomModalBottomSheet(
-      {void Function(T value)? onSelected,
-      required T defaultValue,
-      required List<T> values,
+      {void Function(T? value)? onSelected,
+      required T? defaultValue,
+      required Iterable<T> values,
+      Widget Function(T? value, bool selected)? builder,
       Color? color}) {
-    final children = values.map<BetterPlayerMaterialClickableWidget>((e) {
+    final v = [...values, null];
+    final children = v.map<CustomModalBottomSheetItem>((e) {
       final isSelected = e == defaultValue;
-      final name = e is Enum ? e.name : e.toString();
-      return BetterPlayerMaterialClickableWidget(
+      return CustomModalBottomSheetItem(
           onTap: () {
             onSelected?.call(e);
           },
@@ -39,10 +58,13 @@ class CustomModalBottomSheet<T> {
                         color: color,
                       )),
                   const SizedBox(width: 16),
-                  Text(
-                    name,
-                    style: _getOverflowMenuElementTextStyle(isSelected, color),
-                  ).tr(),
+                  if (builder != null)
+                    builder(e, isSelected)
+                  else
+                    Text(
+                      e?.toString() ?? 'none',
+                      style: getOverflowMenuElementTextStyle(isSelected, color),
+                    ).tr(),
                 ],
               )));
     }).toList();
@@ -57,7 +79,7 @@ class CustomModalBottomSheet<T> {
         : _showCupertinoModalBottomSheet(context);
   }
 
-  static TextStyle _getOverflowMenuElementTextStyle(bool isSelected,
+  static TextStyle getOverflowMenuElementTextStyle(bool isSelected,
       [Color? color]) {
     return TextStyle(
       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -67,7 +89,6 @@ class CustomModalBottomSheet<T> {
 
   void _showCupertinoModalBottomSheet(BuildContext context) {
     showCupertinoModalPopup<void>(
-      barrierColor: Colors.transparent,
       context: context,
       useRootNavigator: true,
       builder: (context) {
@@ -78,8 +99,7 @@ class CustomModalBottomSheet<T> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               decoration: BoxDecoration(
-                color: color,
-                /*shape: RoundedRectangleBorder(side: Bor,borderRadius: 24,)*/
+                color: color ?? Theme.of(context).backgroundColor,
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24.0),
                     topRight: Radius.circular(24.0)),
@@ -96,7 +116,6 @@ class CustomModalBottomSheet<T> {
 
   void _showMaterialBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
-      backgroundColor: Colors.transparent,
       context: context,
       useRootNavigator: true,
       builder: (context) {
@@ -107,7 +126,7 @@ class CustomModalBottomSheet<T> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               decoration: BoxDecoration(
-                color: color,
+                color: color ?? Theme.of(context).backgroundColor,
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24.0),
                     topRight: Radius.circular(24.0)),

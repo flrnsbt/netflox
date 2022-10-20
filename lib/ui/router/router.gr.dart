@@ -79,14 +79,12 @@ class NetfloxRouter extends _i17.RootStackRouter {
                 mediaType: pathParams.get('mediaType'),
               ));
       return _i17.MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: _i17.WrappedRoute(
-            child: _i4.MediaScreen(
-          key: args.key,
-          id: args.id,
-          mediaType: args.mediaType,
-        )),
-      );
+          routeData: routeData,
+          child: _i4.MediaScreen(
+            key: args.key,
+            id: args.id,
+            mediaType: args.mediaType,
+          ));
     },
     TVShowSeasonRoute.name: (routeData) {
       final pathParams = routeData.inheritedPathParams;
@@ -120,7 +118,9 @@ class NetfloxRouter extends _i17.RootStackRouter {
         routeData: routeData,
         child: _i7.StreamMediaScreen(
           key: args.key,
+          onVideoClosed: args.onVideoClosed,
           playableMedia: args.playableMedia,
+          startAt: args.startAt,
         ),
         fullscreenDialog: true,
       );
@@ -508,30 +508,36 @@ class TVShowEpisodeRouteArgs {
 /// generated route for
 /// [_i7.StreamMediaScreen]
 class StreamMediaRoute extends _i17.PageRouteInfo<StreamMediaRouteArgs> {
-  StreamMediaRoute({
-    _i19.Key? key,
-    required _i21.TMDBPlayableMedia playableMedia,
-  }) : super(
+  StreamMediaRoute(
+      {_i19.Key? key,
+      required _i21.TMDBPlayableMedia playableMedia,
+      void Function(Duration? playbackTimestamp)? onVideoClosed,
+      Duration? startAt})
+      : super(
           StreamMediaRoute.name,
           path: 'stream',
           args: StreamMediaRouteArgs(
-            key: key,
-            playableMedia: playableMedia,
-          ),
+              key: key,
+              playableMedia: playableMedia,
+              startAt: startAt,
+              onVideoClosed: onVideoClosed),
         );
 
   static const String name = 'StreamMediaRoute';
 }
 
 class StreamMediaRouteArgs {
-  const StreamMediaRouteArgs({
-    this.key,
-    required this.playableMedia,
-  });
+  const StreamMediaRouteArgs(
+      {this.key,
+      required this.playableMedia,
+      this.startAt,
+      this.onVideoClosed});
 
   final _i19.Key? key;
 
   final _i21.TMDBPlayableMedia playableMedia;
+  final Duration? startAt;
+  final void Function(Duration? playbackTimestamp)? onVideoClosed;
 
   @override
   String toString() {

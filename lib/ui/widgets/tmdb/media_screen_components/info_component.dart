@@ -51,6 +51,7 @@ class TMDBInfoComponent extends StatelessWidget {
                     titleSpacing: 5,
                     name: 'production-countries',
                     child: ListView.builder(
+                      padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
                       itemCount: media.productionCountries!.length,

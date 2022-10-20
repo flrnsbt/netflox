@@ -8,10 +8,10 @@ import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/data/models/tmdb/video.dart';
 import 'package:netflox/data/models/tmdb/error.dart';
-import 'package:netflox/data/models/tmdb/parameters.dart';
 import 'package:netflox/data/repositories/tmdb_result.dart';
 import 'package:universal_io/io.dart';
 import '../models/server_configs/tmdb_config.dart';
+import '../models/tmdb/filter_parameter.dart';
 import '../models/tmdb/media.dart';
 import '../models/tmdb/type.dart';
 

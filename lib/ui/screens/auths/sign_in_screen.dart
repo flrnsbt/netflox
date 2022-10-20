@@ -7,15 +7,27 @@ import 'package:nil/nil.dart';
 import '../../../data/blocs/account/auth/auth_form/auth_event.dart';
 import '../../../data/blocs/account/auth/auth_form/auth_form_bloc.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
+  State<SignInScreen> createState() => _SignInScreenState();
+}
 
+class _SignInScreenState extends State<SignInScreen> {
+  final formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Form(
       key: formKey,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -87,6 +99,7 @@ class SignInScreen extends StatelessWidget {
           },
           obscureText: true,
           textInputAction: TextInputAction.send,
+          onFieldSubmitted: (value) => _submit(),
           decoration: InputDecoration(
               filled: true,
               hintText: "password-hint".tr(context),
@@ -135,12 +148,7 @@ class SignInScreen extends StatelessWidget {
                     const MaterialStatePropertyAll(Size.fromHeight(45)),
                 shape: MaterialStateProperty.all(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)))),
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                context.read<AuthFormBloc>().add(SubmitAuthForm(
-                    passwordController.text, emailController.text));
-              }
-            },
+            onPressed: () => _submit(),
             child: const Text("sign-in", style: TextStyle(fontSize: 14)).tr()),
         const SizedBox(
           height: 20,
@@ -164,5 +172,13 @@ class SignInScreen extends StatelessWidget {
             ).tr()),
       ]),
     );
+  }
+
+  void _submit() {
+    if (formKey.currentState?.validate() ?? false) {
+      context
+          .read<AuthFormBloc>()
+          .add(SubmitAuthForm(passwordController.text, emailController.text));
+    }
   }
 }

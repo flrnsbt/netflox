@@ -18,13 +18,25 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
   final TMDBMediaCardContentBuilder? content;
   final CustomBannerOptions? bannerOptions;
   final TMDBMediaCardContentBuilder? hover;
+  final bool contentBarrier;
   final void Function(T media)? onTap;
 
   static CustomBannerOptions?
       _isNewMultimediaBannerMessage<T extends TMDBMedia>(
           BuildContext context, T media) {
-    if (media is TMDBMultiMedia && media.isRecent()) {
-      return CustomBannerOptions.defaultNew;
+    if (media is TMDBMultiMedia) {
+      final newnewss = media.newness();
+      if (newnewss != null) {
+        return CustomBannerOptions(
+            textStyle: TextStyle(
+                color: newnewss == MediaNewness.coming
+                    ? Colors.black
+                    : Colors.white,
+                fontFamily: "Verdana",
+                fontWeight: FontWeight.bold),
+            message: newnewss.tr(context).toUpperCase(),
+            color: colorByMediaNewness(newnewss));
+      }
     }
     return null;
   }
@@ -38,6 +50,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       this.showMediaType = false,
       this.showBottomTitle = false,
       this.showHover = true,
+      this.contentBarrier = true,
       this.insetPadding = const EdgeInsets.only(left: 15, right: 15, top: 15),
       Widget Function(BuildContext context, T media)? contentBuilder,
       this.borderRadius,
@@ -45,7 +58,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       : content = contentBuilder != null
             ? TMDBMediaCardContentBuilder<T>(
                 media: media,
-                opacity: 0.5,
+                opacity: contentBarrier ? 0.5 : 0,
                 contentBuilder: contentBuilder,
                 insetPadding: insetPadding,
               )

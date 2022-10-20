@@ -21,7 +21,6 @@ import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/widgets/custom_snackbar.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:nil/nil.dart';
 import 'package:provider/provider.dart';
 import 'data/blocs/account/auth/auth_cubit.dart';
@@ -35,7 +34,6 @@ Future<void> main() async {
   await initApp();
   runApp(MultiProvider(providers: [
     BlocProvider(
-      lazy: false,
       create: (context) => ConnectivityManager(),
     ),
     BlocProvider(create: (BuildContext context) => AppLocalization()),
@@ -155,12 +153,12 @@ class StackScreen extends StatelessWidget {
             final String text;
             Widget? icon;
             if (state.hasNetworkAccess()) {
-              text = 'network-connection-success'.tr(context);
+              text = 'network-connection-success';
             } else {
-              text = 'network-connection-problem'.tr(context);
+              text = 'network-connection-problem';
               icon = const Icon(Icons.warning);
             }
-            showSnackBar(context, text: text, leading: icon);
+            showSnackBar(context, text: text.tr(context), leading: icon);
           },
         ));
   }

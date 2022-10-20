@@ -6,14 +6,17 @@ import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/ui/widgets/custom_banner.dart';
-import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
-import 'package:responsive_framework/responsive_framework.dart';
+import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart';
+import 'package:netflox/ui/widgets/framed_text.dart';
+import 'package:netflox/ui/widgets/tmdb/list_tmdb_media_card.dart';
+import 'package:nil/nil.dart';
+import '../../../data/blocs/account/auth/user_account_data_cubit.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import '../../../data/models/tmdb/library_media_information.dart';
 import '../../widgets/tmdb/media_screen_components/components.dart';
+import '../../widgets/tmdb/tmdb_image.dart';
 import '../error_screen.dart';
 
 class TVShowSeasonScreen extends StatelessWidget {
@@ -46,50 +49,63 @@ class TVShowSeasonScreen extends StatelessWidget {
   }
 
   Widget _buildEpisodeCard(BuildContext context, TMDBTVEpisode episode) {
-    final episodeNumber = "${'episode'.tr(context)} ${episode.episodeNumber}";
-    return BlocProvider(
-      create: (context) => LibraryMediaInfoFetchCubit(episode),
+    final playbackStateBloc =
+        LibraryMediaUserPlaybackStateCubit(context, episode);
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => LibraryMediaInfoFetchCubit(episode)),
+        BlocProvider(create: (context) => playbackStateBloc)
+      ],
       child: BlocBuilder<LibraryMediaInfoFetchCubit,
               BasicServerFetchState<LibraryMediaInformation>>(
           builder: (context, state) {
         final mediaStatus =
             state.result?.mediaStatus ?? MediaStatus.unavailable;
-        return TMDBMediaCard(
-          media: episode,
-          onTap: (media) =>
-              context.pushRoute(TVShowEpisodeRoute(episode: episode)),
-          bannerOptions:
-              CustomBannerOptions.mediaStatusBanner(context, mediaStatus),
-          insetPadding: const EdgeInsets.all(10),
-          showImageError: false,
-          contentBuilder: (context, media) {
-            return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AutoSizeText(
-                    episode.name ?? episodeNumber,
-                    maxLines: 2,
-                    minFontSize: 10,
-                    wrapWords: false,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  AutoSizeText(
-                    "S$seasonNumber:E${episode.episodeNumber}",
-                    maxLines: 1,
-                    minFontSize: 7,
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
-                ]);
-          },
-          showHover: false,
-        );
+        return TMDBListCard(
+            image: TMDBImageWidget(
+              aspectRatio: 4 / 5,
+              img: episode.img,
+              borderRadius: BorderRadius.circular(10),
+              padding: const EdgeInsets.only(right: 10),
+              showError: false,
+            ),
+            title: episodeTitleBuilder(episode),
+            subtitle: Row(children: [
+              FramedText(
+                text: mediaStatus.tr(context),
+                color: mediaStatusColor(mediaStatus),
+              ),
+              BlocBuilder<LibraryMediaUserPlaybackStateCubit,
+                  LibraryMediaUserPlaybackState>(
+                builder: (context, state) {
+                  if (state.watched) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: FramedText(
+                        color: Theme.of(context).hintColor,
+                        text: "watched".tr(context),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              )
+            ]),
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => BlocProvider.value(
+                        value: playbackStateBloc,
+                        child: TVShowEpisodeScreen(episode: episode)))),
+            content: Text(
+              episode.overview!,
+              softWrap: false,
+              style:
+                  TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+            ));
       }),
     );
   }
@@ -99,34 +115,26 @@ class TVShowSeasonScreen extends StatelessWidget {
       element: season,
       content: [
         if (season.overview?.isNotEmpty ?? false)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 25),
-            child: MediaScreenComponent(
-              name: 'overview'.tr(context),
-              child: Text(
-                season.overview!,
-                style: const TextStyle(fontSize: 12),
-              ),
+          MediaScreenComponent(
+            name: 'overview'.tr(context),
+            child: Text(
+              season.overview!,
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         if (season.episodes.isNotEmpty)
           MediaScreenComponent(
               backgroundColor: Colors.transparent,
               name: 'episodes'.tr(context),
-              child: GridView.builder(
+              padding: EdgeInsets.zero,
+              child: ListView.builder(
                 padding: EdgeInsets.zero,
-                gridDelegate: const ResponsiveGridDelegate(
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 20,
-                    minCrossAxisExtent: 100,
-                    maxCrossAxisExtent: 200,
-                    childAspectRatio: 1),
-                shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: season.episodes.length,
+                shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return _buildEpisodeCard(context, season.episodes[index]);
                 },
+                itemCount: season.episodes.length,
               ))
       ],
       header: Column(

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'filter_parameter.dart';
+import '../../models/tmdb/filter_parameter.dart';
 
 class PagedDataFilterManager<P extends FilterParameter> extends Cubit<P> {
   final P _initialParameter;

@@ -1,7 +1,6 @@
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:netflox/data/models/user/user_data.dart';
 
 enum UserType {
   user,
@@ -26,23 +25,19 @@ class NetfloxUser extends Equatable {
   final UserType userType;
   final bool verified;
   final List<SSHKeyPair>? sshKeyPair;
-  final NetfloxUserData data;
 
   bool isAdmin() => userType == UserType.admin;
   bool isNormalUser() => userType == UserType.user;
 
-  NetfloxUser(
-      {required this.id,
-      required this.displayName,
-      this.userType = UserType.user,
-      this.verified = false,
-      this.email,
-      this.imgURL,
-      this.sshKeyPair,
-      NetfloxUserMediaData? mediaData})
-      : data = mediaData != null
-            ? NetfloxUserData.fromMediaData(mediaData)
-            : NetfloxUserData.fromId(id);
+  const NetfloxUser({
+    required this.id,
+    required this.displayName,
+    this.userType = UserType.user,
+    this.verified = false,
+    this.email,
+    this.imgURL,
+    this.sshKeyPair,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -66,17 +61,15 @@ class NetfloxUser extends Equatable {
 
   factory NetfloxUser.fromMap(Map<String, dynamic> map) {
     return NetfloxUser(
-        id: map['id'],
-        userType: UserType.fromString(map['userType']),
-        verified: map['verified'] ?? false,
-        displayName:
-            map['firstName'] ?? map['email']?.split("@").first ?? map['id'],
-        email: map['email'] ?? '',
-        imgURL: map['imgURL'],
-        sshKeyPair: map['key_pair'],
-        mediaData: map['mediaData'] != null
-            ? NetfloxUserMediaData.fromMap(map['mediaData'])
-            : null);
+      id: map['id'],
+      userType: UserType.fromString(map['userType']),
+      verified: map['verified'] ?? false,
+      displayName:
+          map['firstName'] ?? map['email']?.split("@").first ?? map['id'],
+      email: map['email'] ?? '',
+      imgURL: map['imgURL'],
+      sshKeyPair: map['key_pair'],
+    );
   }
 
   @override

@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/services/json_file_reader.dart';
 import 'package:netflox/services/shared_preferences.dart';
-import 'package:universal_io/io.dart';
 
 Locale localeFromString(String locale) {
   final array = locale.split("_");
@@ -82,11 +83,21 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalization> {
   bool shouldReload(AppLocalizationsDelegate old) => false;
 }
 
-String? languageCodeToCountry(String languageCode) {
-  return _languageCodeToCountry[languageCode];
+String? languageCodeToCountryCode(String languageCode) {
+  return _languageCountryCodeMatch[languageCode];
 }
 
-const _languageCodeToCountry = {
+String? countryCodetoLanguageCode(String countryCode) {
+  try {
+    return _languageCountryCodeMatch.entries
+        .firstWhere((e) => e.value == countryCode)
+        .value;
+  } catch (e) {
+    return null;
+  }
+}
+
+const _languageCountryCodeMatch = {
   "aa": "dj",
   "af": "za",
   "ak": "gh",

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/constants/default_app_timeout.dart';
 part 'connectivity_state.dart';
@@ -26,6 +27,18 @@ class ConnectivityManager extends Cubit<ConnectivityState> {
     _stream?.cancel();
     return super.close();
   }
+}
+
+mixin ConnectivityStatefulWidgetListener<T extends StatefulWidget> on State<T> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ConnectivityManager>().stream.listen((event) {
+      connectivityChanged(event);
+    });
+  }
+
+  void connectivityChanged(ConnectivityState state);
 }
 
 class LocalHostHttpOverrides extends HttpOverrides {

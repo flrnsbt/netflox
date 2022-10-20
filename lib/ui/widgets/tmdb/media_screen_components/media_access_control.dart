@@ -1,7 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:netflox/data/blocs/account/auth/user_account_data_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/models/language.dart';
+import 'package:nil/nil.dart';
 
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
@@ -148,7 +151,7 @@ class LibraryMediaControlLayout extends StatelessWidget {
             ),
           );
         } else {
-          return const SizedBox.shrink();
+          return const Nil();
         }
       case MediaStatus.rejected:
         return const Text("unavailable").tr();
@@ -168,10 +171,36 @@ class WatchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TMDBHeaderButton(
-        text: 'watch',
-        onPressed: () =>
-            context.pushRoute(StreamMediaRoute(playableMedia: media)));
+    return BlocBuilder<LibraryMediaUserPlaybackStateCubit,
+        LibraryMediaUserPlaybackState>(
+      builder: (context, state) {
+        var text = 'watch';
+        var mediaDuration = media.duration;
+        if (mediaDuration == null || mediaDuration == const Duration()) {
+          mediaDuration = const Duration(minutes: 90);
+        }
+        if (state.playbackTimestamp != null &&
+            (state.playbackTimestamp! <
+                (mediaDuration - const Duration(minutes: 4)))) {
+          text = 'continue';
+        }
+        return TMDBHeaderButton(
+            text: text,
+            onPressed: () => context.pushRoute(StreamMediaRoute(
+                  playableMedia: media,
+                  startAt: state.playbackTimestamp,
+                  onVideoClosed: (
+                    playbackTimestamp,
+                  ) {
+                    if (playbackTimestamp != null) {
+                      context
+                          .read<LibraryMediaUserPlaybackStateCubit>()
+                          .update(playbackTimestamp);
+                    }
+                  },
+                )));
+      },
+    );
   }
 }
 

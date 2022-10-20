@@ -44,7 +44,8 @@ extension BuildContextLocalizationExtension on BuildContext {
 }
 
 extension LocaleToCountryInterface on Locale {
-  String? get languageCodeToCountry => a.languageCodeToCountry(languageCode);
+  String? get languageCodeToCountry =>
+      a.languageCodeToCountryCode(languageCode);
 }
 
 extension AppLocalizationTranslatorExtension on BuildContext {

@@ -54,17 +54,7 @@ class CustomAwesomeDialog extends AwesomeDialog with NetfloxCustomDialog {
       super.reverseBtnOrder,
       super.titleTextStyle,
       super.transitionAnimationDuration,
-      super.width = 350})
-      : super(
-        // customHeader: customHeader ??
-        //     ColorFiltered(
-        //       colorFilter: const ColorFilter.mode(
-        //           Color.fromARGB(181, 255, 183, 0), BlendMode.srcATop),
-        //       child: AwesomeDialogHeader(
-        //         dialogType: dialogType,
-        //         loop: true,
-        //       ),
-        );
+      super.width = 350});
 
   CustomAwesomeDialog copyWith({
     BuildContext? context,

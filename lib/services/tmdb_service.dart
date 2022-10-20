@@ -8,7 +8,7 @@ import 'package:netflox/data/models/tmdb/type.dart';
 import 'package:netflox/data/models/tmdb/movie.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/data/models/tmdb/video.dart';
-import 'package:netflox/data/models/tmdb/parameters.dart';
+import '../data/models/tmdb/filter_parameter.dart';
 import '../data/repositories/tmdb_repository.dart';
 import '../data/repositories/tmdb_result.dart';
 
