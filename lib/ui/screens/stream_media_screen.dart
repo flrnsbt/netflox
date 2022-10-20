@@ -9,13 +9,16 @@ import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_connection.dar
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/ui/widgets/video_player.dart';
+import 'package:netflox/ui/widgets/video_player/video_player.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import '../../data/blocs/sftp_server/ssh_connection/ssh_state.dart';
 
 class StreamMediaScreen extends StatefulWidget {
   final TMDBPlayableMedia playableMedia;
-  const StreamMediaScreen({Key? key, required this.playableMedia})
+  final Duration? startAt;
+  final void Function(Duration? playbackTimestamp)? onVideoClosed;
+  const StreamMediaScreen(
+      {Key? key, required this.playableMedia, this.startAt, this.onVideoClosed})
       : super(key: key);
 
   @override
@@ -78,6 +81,8 @@ class _StreamMediaScreenState extends State<StreamMediaScreen>
                               builder: (context, state) {
                                 if (state.isRunning()) {
                                   return NetfloxVideoPlayer(
+                                    onVideoClosed: widget.onVideoClosed,
+                                    startingTime: widget.startAt,
                                     subtitles: libraryMedia.subtitles,
                                     videoUrl: state.url!,
                                   );

@@ -38,8 +38,17 @@ class TMDBTvScreen extends StatelessWidget {
                 showError: false,
               ),
             ),
-            title:
-                season.name ?? "${"season".tr(context)} ${season.seasonNumber}",
+            title: AutoSizeText(
+              season.name ?? "${"season".tr(context)} ${season.seasonNumber}",
+              maxLines: 1,
+              wrapWords: false,
+              minFontSize: 12,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+              ),
+            ),
             subtitle: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -107,22 +116,22 @@ class TMDBTvScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            flex: 4,
+            flex: 6,
             child: AutoSizeText(
               tv.name,
               wrapWords: false,
               maxLines: 3,
               textAlign: TextAlign.end,
-              minFontSize: 20,
+              minFontSize: 18,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 55, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(
-            height: 15,
+            height: 10,
           ),
           Flexible(
-            flex: 1,
+            flex: 2,
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
@@ -135,9 +144,9 @@ class TMDBTvScreen extends StatelessWidget {
                   FramedText(
                     text: tv.type.name.tr(context),
                   ),
-                  if (tv.duration != null)
+                  if (tv.duration != null && tv.duration!.inMinutes != 0)
                     FramedText(
-                      text: "${tv.duration} mins",
+                      text: "${tv.duration!.inMinutes} mins",
                     ),
                 ]
                     .map((e) => Padding(
@@ -147,19 +156,20 @@ class TMDBTvScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(
+            height: 10,
+          ),
+          if (tv.voteAverage != null)
+            Flexible(
+              flex: 1,
+              child: RatingWidget(
+                score: tv.voteAverage!,
+              ),
+            ),
+          const SizedBox(
             height: 15,
           ),
           Flexible(
-            flex: 1,
-            child: RatingWidget(
-              score: tv.voteAverage!,
-            ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Flexible(
-            flex: 2,
+            flex: 4,
             child: LibraryMediaControlLayout(
               media: tv,
             ),

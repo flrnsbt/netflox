@@ -11,6 +11,7 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -19,7 +20,7 @@ class LoadingScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 25, left: 35, right: 35),
               child: Text("${loadingMessage!.tr(context)}...",
-                  style: const TextStyle(fontSize: 10)),
+                  style: const TextStyle(fontSize: 12)),
             )
         ],
       ),

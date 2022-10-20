@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:chewie/chewie.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
+import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_state.dart';
 
 import '../../../../utils/subtitle_helper.dart';
@@ -26,19 +27,20 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     if (!state.opened()) {
       emit(SFTPMediaFileAccessState.waiting);
       SftpFile? videoRemoteFile;
-      Map<String, Subtitles>? subtitles;
+      Map<Language, Subtitles>? subtitles;
       Object? exception;
       try {
         final subFiles = (await _sftpClient.readdir(remoteFilePath).first)
             .where((e) => e.filename.split(".").last == SubtitleType.srt.name);
-        subtitles = <String, Subtitles>{};
+        subtitles = <Language, Subtitles>{};
         videoRemoteFile = await _sftpClient.open("$remoteFilePath/video.mp4");
         for (var sub in subFiles) {
           final filePath = "$remoteFilePath/${sub.filename}";
           final content = await _getSubtitles(filePath);
           if (content != null) {
             final key = sub.filename.split(".").first;
-            subtitles.putIfAbsent(key, () => content);
+            final language = Language.fromIsoCode(key);
+            subtitles.putIfAbsent(language, () => content);
           }
         }
       } catch (e) {

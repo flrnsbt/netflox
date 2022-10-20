@@ -18,6 +18,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
   final TMDBMediaCardContentBuilder? content;
   final CustomBannerOptions? bannerOptions;
   final TMDBMediaCardContentBuilder? hover;
+  final bool contentBarrier;
   final void Function(T media)? onTap;
 
   static CustomBannerOptions?
@@ -49,6 +50,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       this.showMediaType = false,
       this.showBottomTitle = false,
       this.showHover = true,
+      this.contentBarrier = true,
       this.insetPadding = const EdgeInsets.only(left: 15, right: 15, top: 15),
       Widget Function(BuildContext context, T media)? contentBuilder,
       this.borderRadius,
@@ -56,7 +58,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       : content = contentBuilder != null
             ? TMDBMediaCardContentBuilder<T>(
                 media: media,
-                opacity: 0.5,
+                opacity: contentBarrier ? 0.5 : 0,
                 contentBuilder: contentBuilder,
                 insetPadding: insetPadding,
               )

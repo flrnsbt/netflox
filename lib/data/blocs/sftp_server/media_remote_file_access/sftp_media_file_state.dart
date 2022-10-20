@@ -14,7 +14,7 @@ abstract class SFTPMediaFileAccessState extends Equatable {
       SFTPMediaAccessWaitingState._();
 
   static SFTPMediaOpenedState open(SftpFile video,
-          {Map<String, Subtitles>? subtitles, Object? exception}) =>
+          {Map<Language, Subtitles>? subtitles, Object? exception}) =>
       SFTPMediaOpenedState._(video, exception: exception, subtitles: subtitles);
 
   @override
@@ -35,11 +35,11 @@ class SFTPMediaAccessWaitingState extends SFTPMediaFileAccessState {
 
 class SFTPMediaOpenedState extends SFTPMediaFileAccessState {
   final SftpFile video;
-  final Map<String, Subtitles> subtitles;
+  final Map<Language, Subtitles> subtitles;
   final Object? exception;
 
   SFTPMediaOpenedState._(this.video,
-      {this.exception, Map<String, Subtitles>? subtitles})
+      {this.exception, Map<Language, Subtitles>? subtitles})
       : subtitles = subtitles ?? {};
 
   @override

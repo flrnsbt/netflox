@@ -33,20 +33,17 @@ class TMDBMovieScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            flex: 5,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: AutoSizeText(
-                movie.name,
-                wrapWords: false,
-                maxLines: 3,
-                textAlign: TextAlign.end,
-                minFontSize: 25,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 55,
-                  fontWeight: FontWeight.bold,
-                ),
+            flex: 6,
+            child: AutoSizeText(
+              movie.name,
+              wrapWords: false,
+              maxLines: 3,
+              textAlign: TextAlign.end,
+              minFontSize: 18,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 55,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -71,9 +68,10 @@ class TMDBMovieScreen extends StatelessWidget {
                 FramedText(
                   text: movie.type.name.tr(context),
                 ),
-                FramedText(
-                  text: "${movie.duration} mins",
-                ),
+                if (movie.duration != null && movie.duration!.inMinutes != 0)
+                  FramedText(
+                    text: "${movie.duration!.inMinutes} mins",
+                  ),
               ]
                       .map((e) => Padding(
                           padding: const EdgeInsets.only(left: 7), child: e))
@@ -81,7 +79,7 @@ class TMDBMovieScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(
-            height: 15,
+            height: 10,
           ),
           if (movie.voteAverage != null)
             Flexible(

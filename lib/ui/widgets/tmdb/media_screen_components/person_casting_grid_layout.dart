@@ -11,7 +11,7 @@ import '../../../../data/models/tmdb/media.dart';
 import '../../../router/router.gr.dart';
 import '../../custom_awesome_dialog.dart';
 import '../../default_sliver_grid.dart';
-import '../../filters/filter_menu_dialog.dart';
+import '../filters/filter_menu_dialog.dart';
 import '../tmdb_media_card.dart';
 import 'components.dart';
 

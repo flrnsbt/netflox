@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
-import 'package:netflox/ui/widgets/filters/filter_widget.dart';
-import '../../../data/models/tmdb/filter_parameter.dart';
-import '../../../data/models/tmdb/library_media_information.dart';
-import '../../../data/models/tmdb/type.dart';
+import 'package:netflox/ui/widgets/tmdb/filters/filter_widget.dart';
+import '../../../../data/models/tmdb/filter_parameter.dart';
+import '../../../../data/models/tmdb/library_media_information.dart';
+import '../../../../data/models/tmdb/type.dart';
 
 abstract class FilterMenuBuilder<P extends FilterParameter>
     extends Cubit<List<FilterWidget>> {
@@ -48,7 +48,11 @@ abstract class FilterMenuBuilder<P extends FilterParameter>
   @override
   Future<void> close() {
     for (var element in state) {
-      element.controller.dispose();
+      try {
+        element.controller.dispose();
+      } catch (e) {
+        //
+      }
     }
     return super.close();
   }
@@ -156,6 +160,9 @@ class LibraryFilterMenuBuilder
             MediaStatus.rejected
           ],
           selectedItem: _filterParameter.status),
+      NetfloxFilters.language(selectedLanguage: _filterParameter.language),
+      NetfloxFilters.language(
+          name: 'subtitle', selectedLanguage: _filterParameter.subtitle),
       FilterCheckBoxWidget.radio(
           name: "sort_by",
           items: [LibrarySortCriterion.addedOn],

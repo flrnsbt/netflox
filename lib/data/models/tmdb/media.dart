@@ -116,6 +116,7 @@ mixin TMDBPrimaryMediaIdProvider {
 }
 
 mixin TMDBPlayableMedia on TMDBLibraryMedia {
+  Duration? get duration;
   String? get remoteFilePath;
 }
 
@@ -173,7 +174,7 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
   @override
   String get libraryPath => id;
 
-  int? get duration;
+  Duration? get duration;
   num? get voteAverage;
   int? get voteCount;
 

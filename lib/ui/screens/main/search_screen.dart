@@ -14,7 +14,7 @@ import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
 import '../../router/router.gr.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/default_sliver_grid.dart';
-import '../../widgets/filters/filter_menu_dialog.dart';
+import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/tmdb_media_card.dart';
 

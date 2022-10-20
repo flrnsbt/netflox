@@ -7,6 +7,8 @@ import 'package:netflox/ui/widgets/tmdb/tmdb_image.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
+import '../../../data/models/tmdb/season.dart';
+
 class TMDBListCard extends StatelessWidget {
   final void Function()? onTap;
   final double? height;
@@ -20,7 +22,7 @@ class TMDBListCard extends StatelessWidget {
       this.bottom,
       this.content});
   final Widget? image;
-  final String title;
+  final Widget title;
   final Widget subtitle;
   final Widget? bottom;
   final Widget? content;
@@ -51,16 +53,7 @@ class TMDBListCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Flexible(
-                                child: AutoSizeText(
-                                  title,
-                                  maxLines: 2,
-                                  wrapWords: false,
-                                  minFontSize: 12,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                  ),
-                                ),
+                                child: title,
                               ),
                               const SizedBox(height: 5),
                               FittedBox(fit: BoxFit.scaleDown, child: subtitle),
@@ -86,6 +79,23 @@ class TMDBListCard extends StatelessWidget {
                     ]))));
   }
 }
+
+Widget episodeTitleBuilder(TMDBTVEpisode episode) => AutoSizeText.rich(
+      TextSpan(children: [
+        TextSpan(
+          text: "S${episode.seasonNumber}:E${episode.episodeNumber}",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        TextSpan(text: " - ${episode.name}"),
+      ]),
+      maxLines: 2,
+      wrapWords: false,
+      minFontSize: 10,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 17,
+      ),
+    );
 
 class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
   final T media;
@@ -124,7 +134,16 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
       onTap: () {
         onTap?.call(media);
       },
-      title: media.name ?? "",
+      title: AutoSizeText(
+        media.name ?? "",
+        maxLines: 2,
+        wrapWords: false,
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 17,
+        ),
+      ),
       subtitle: Row(
         children: [
           FramedText(

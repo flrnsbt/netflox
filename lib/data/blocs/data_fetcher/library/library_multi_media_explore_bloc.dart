@@ -16,22 +16,26 @@ class LibraryMediaExploreBloc
       LibraryFilterParameter parameters) async {
     final mediaStatus = parameters.status.name;
     final typeNames = parameters.types.map((e) => e.name).toList();
-    final languages = parameters.languages?.map((e) => e.languageCode).toList();
-    final subtitles = parameters.subtitles;
+    final language = parameters.language?.isoCode;
+    final subtitle = parameters.subtitle?.isoCode;
     var query = FirestoreService.media
         .where("media_status", isEqualTo: mediaStatus)
         .where("media_type", whereIn: typeNames)
         .orderBy(parameters.sortCriterion.toString(),
             descending: parameters.sortOrder.isDescending);
 
-    if (languages != null) {
-      query = query.where('languages', whereIn: languages);
+    if (language != null) {
+      query = query.where('languages', arrayContains: language);
     }
-    if (subtitles != null) {
-      query = query.where('subtitles', whereIn: subtitles);
-    }
+
     final result = await query.fetchAfterDoc(_lastDoc);
-    return result.docs;
+    final docs = result.docs;
+    if (subtitle != null) {
+      return docs
+          .where((e) => e.data()['subtitles']?.contains(subtitle) ?? false)
+          .toList();
+    }
+    return docs;
   }
 
   DocumentSnapshot? _lastDoc;

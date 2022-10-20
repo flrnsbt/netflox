@@ -11,8 +11,8 @@ import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/widgets/country_flag_icon.dart';
 import 'package:netflox/ui/widgets/see_more_widget.dart';
 import 'package:provider/provider.dart';
-import '../../../data/models/tmdb/filter_parameter.dart';
-import '../../../data/models/tmdb/type.dart';
+import '../../../../data/models/tmdb/filter_parameter.dart';
+import '../../../../data/models/tmdb/type.dart';
 
 mixin FilterWidget<T> on Widget {
   String get name;
@@ -422,15 +422,6 @@ class LanguageWidgetController extends ChangeNotifier
   }
 
   @override
-  void dispose() {
-    try {
-      super.dispose();
-    } catch (e) {
-      //
-    }
-  }
-
-  @override
   final Language? defaultValue;
 
   LanguageWidgetController({Language? currentValue})
@@ -485,9 +476,10 @@ class NetfloxFilters {
           selectedItem: sortOrder ?? SortOrder.desc,
           items: SortOrder.values);
 
-  static LanguagePickerFilterWidget language({Language? selectedLanguage}) =>
+  static LanguagePickerFilterWidget language(
+          {Language? selectedLanguage, String name = 'language'}) =>
       LanguagePickerFilterWidget(
-          selectedLanguage: selectedLanguage, name: "language");
+          selectedLanguage: selectedLanguage, name: name);
 
   static FilterCheckBoxWidget<List<TMDBMultiMediaGenre>>
       genres<T extends TMDBMultiMedia>(TMDBType<T> type,

@@ -1,19 +1,26 @@
+import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/ui/screens/error_screen.dart';
-import 'package:netflox/ui/screens/loading_screen.dart';
+import 'package:language_picker/languages.dart';
+import 'package:netflox/ui/widgets/video_player/subtitle_picker.dart';
 import 'package:video_player/video_player.dart';
-import 'package:netflox/utils/custom_modal_bottom_sheet.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/ui/screens/loading_screen.dart';
+import '../custom_snackbar.dart';
+import 'custom_video_player_control.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
   final String videoUrl;
-  final Map<String, Subtitles> subtitles;
+  final Map<Language, Subtitles> subtitles;
+  final Duration? startingTime;
+  final void Function(Duration? playbackTimestamp)? onVideoClosed;
   const NetfloxVideoPlayer({
     Key? key,
     required this.videoUrl,
+    this.startingTime,
+    this.onVideoClosed,
     this.subtitles = const {},
   }) : super(key: key);
 
@@ -29,8 +36,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   OptionsTranslation? _translation;
   Key? _visibilityKey;
   bool _initialized = false;
-  bool _running = false;
-
   @override
   void initState() {
     super.initState();
@@ -52,11 +57,13 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         cancelButtonText: 'cancel'.tr(context),
         subtitlesButtonText: 'subtitles'.tr(context),
         playbackSpeedButtonText: 'playback-speed'.tr(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _videoPlayerController!.addListener(_initializeListener);
+    });
     _initChewieController();
   }
 
   Future<void> _initChewieController() async {
-    _videoPlayerController!.addListener(_initializeListener);
     _controller = ChewieController(
         subtitleBuilder: (context, subtitle) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 35),
@@ -69,15 +76,26 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         videoPlayerController: _videoPlayerController!,
         allowedScreenSleep: false,
         zoomAndPan: false,
+        autoPlay: true,
+        fullScreenByDefault: true,
         allowFullScreen: true,
-        customControls: const CupertinoControls(
-          backgroundColor: Color.fromRGBO(41, 41, 41, 0.7),
-          iconColor: Color.fromARGB(255, 200, 200, 200),
-        ),
+        customControls: const CustomControls(),
+        // routePageBuilder:
+        //     (context, animation, secondaryAnimation, controllerProvider) {
+        //   return ValueListenableBuilder(
+        //       valueListenable: animation,
+        //       builder: (context, value, child) {
+        //         if (value == 1) {
+        //           return child!;
+        //         } else {
+        //           return const SizedBox.shrink();
+        //         }
+        //       },
+        //       child: Material(child: controllerProvider));
+        // },
         autoInitialize: true,
         showControlsOnInitialize: false,
         allowPlaybackSpeedChanging: false,
-        fullScreenByDefault: true,
         additionalOptions: (context) {
           return [
             OptionItem(
@@ -89,28 +107,52 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
                 title: 'subtitles'.tr(context))
           ];
         },
-        errorBuilder: (context, errorMessage) {
-          return ErrorScreen(
-            errorCode: errorMessage,
-          );
-        },
         deviceOrientationsOnEnterFullScreen: [
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight
         ],
         optionsTranslation: _translation);
     _visibilityKey = Key(_controller.hashCode.toString());
+    _videoPlayerController!.addListener(_playbackListener);
+  }
+
+  void _playbackListener() {
+    if (_initialized && (_videoPlayerController?.value.isFinished() ?? false)) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  void _popupContinuePlaybackPrompt() {
+    showSnackBar(context,
+        text:
+            "${'continue-watching-prompt'.tr(context)} (${widget.startingTime!.inMinutes}mins)",
+        leading: const Icon(Icons.info),
+        action: SnackBarAction(
+            textColor: Theme.of(context).colorScheme.onSurface,
+            label: 'continue'.tr(context),
+            onPressed: () {
+              _controller!.seekTo(widget.startingTime!);
+              ScaffoldMessenger.of(context).clearSnackBars();
+            }));
   }
 
   void _initializeListener() async {
-    if (_videoPlayerController!.value.isInitialized) {
+    if (!_initialized && _videoPlayerController!.value.isInitialized) {
       setState(() {
         _initialized = true;
       });
-      await Future.delayed(const Duration(seconds: 2));
-      _controller!.play();
-      _running = true;
-      _videoPlayerController!.removeListener(_initializeListener);
+    }
+    if (_videoPlayerController!.value.isPlaying) {
+      _startedPlaying();
+      _videoPlayerController?.removeListener(_initializeListener);
+    }
+  }
+
+  Future<void> _startedPlaying() async {
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() {});
+    if (widget.startingTime != null) {
+      _popupContinuePlaybackPrompt();
     }
   }
 
@@ -120,7 +162,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       Navigator.of(context, rootNavigator: true).maybePop();
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
           overlays: _controller?.systemOverlaysAfterFullScreen);
-
       SystemChrome.setPreferredOrientations(
           _controller?.deviceOrientationsAfterFullScreen ??
               [
@@ -130,7 +171,10 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
                 DeviceOrientation.landscapeLeft,
               ]);
     }
-
+    widget.onVideoClosed?.call(
+      _videoPlayerController?.value.position,
+    );
+    _videoPlayerController!.removeListener(_playbackListener);
     _videoPlayerController?.dispose();
     _controller?.dispose();
     _videoPlayerController = null;
@@ -145,23 +189,24 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && _running) {
+    if (state == AppLifecycleState.resumed && _initialized) {
       _controller?.play();
     } else {
       _controller?.pause();
+      if (state == AppLifecycleState.detached) {
+        widget.onVideoClosed?.call(
+          _videoPlayerController?.value.position,
+        );
+      }
     }
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
-    if (_running) {
-      if (_controller!.isFullScreen) {
-        if (info.visibleFraction == 0) {
-          _controller?.pause();
-        } else {
-          _controller?.play();
-        }
+    if (_initialized) {
+      if (info.visibleFraction == 0) {
+        _controller?.pause();
       } else {
-        Navigator.of(context).pop();
+        _controller?.play();
       }
     }
   }
@@ -173,15 +218,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         key: _visibilityKey!,
         onVisibilityChanged: _onVisibilityChanged,
         child: Center(
-          child: ClipRect(
-            child: SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.fitWidth,
-                child: SizedBox.fromSize(
-                    size: _videoPlayerController!.value.size,
-                    child: Chewie(controller: _controller!)),
-              ),
-            ),
+          child: SizedBox.expand(
+            child: FittedBox(
+                fit: BoxFit.fitWidth, child: Chewie(controller: _controller!)),
           ),
         ),
       );
@@ -191,28 +230,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 }
 
-class SubtitlePicker {
-  final Map<String, Subtitles> subtitles;
-  String? _currentSubtitle;
-  final void Function(Subtitles? currentSubtitle)? onSubtitleChanged;
-  SubtitlePicker({
-    this.subtitles = const {},
-    this.onSubtitleChanged,
-    String? initialSubtitle,
-  })  : assert(initialSubtitle == null ||
-            subtitles.keys.contains(initialSubtitle)),
-        _currentSubtitle = initialSubtitle;
-
-  show(BuildContext context) {
-    CustomModalBottomSheet<String>(
-      defaultValue: _currentSubtitle,
-      values: subtitles.keys.map((e) => 'language-$e'),
-      onSelected: (value) {
-        Navigator.of(context, rootNavigator: true).pop();
-        _currentSubtitle = value;
-        final subtitle = subtitles[value];
-        onSubtitleChanged?.call(subtitle);
-      },
-    ).show(context);
-  }
+extension on VideoPlayerValue {
+  bool isFinished() => position >= duration;
 }

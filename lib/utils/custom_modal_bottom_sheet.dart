@@ -37,6 +37,7 @@ class CustomModalBottomSheet<T> {
       {void Function(T? value)? onSelected,
       required T? defaultValue,
       required Iterable<T> values,
+      Widget Function(T? value, bool selected)? builder,
       Color? color}) {
     final v = [...values, null];
     final children = v.map<CustomModalBottomSheetItem>((e) {
@@ -57,10 +58,13 @@ class CustomModalBottomSheet<T> {
                         color: color,
                       )),
                   const SizedBox(width: 16),
-                  Text(
-                    e?.toString() ?? 'none',
-                    style: _getOverflowMenuElementTextStyle(isSelected, color),
-                  ).tr(),
+                  if (builder != null)
+                    builder(e, isSelected)
+                  else
+                    Text(
+                      e?.toString() ?? 'none',
+                      style: getOverflowMenuElementTextStyle(isSelected, color),
+                    ).tr(),
                 ],
               )));
     }).toList();
@@ -75,7 +79,7 @@ class CustomModalBottomSheet<T> {
         : _showCupertinoModalBottomSheet(context);
   }
 
-  static TextStyle _getOverflowMenuElementTextStyle(bool isSelected,
+  static TextStyle getOverflowMenuElementTextStyle(bool isSelected,
       [Color? color]) {
     return TextStyle(
       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

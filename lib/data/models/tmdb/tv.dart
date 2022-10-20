@@ -35,12 +35,12 @@ class TMDBTv extends TMDBMultiMedia {
         seasons = seasons ?? const [],
         genres = genres ?? const [];
 
-  static int _getAverageDuration(List<int> durations) {
+  static Duration _getAverageDuration(List<int> durations) {
     int total = 0;
     for (final d in durations) {
       total += d;
     }
-    return total ~/ durations.length;
+    return Duration(minutes: total ~/ durations.length);
   }
 
   factory TMDBTv.fromMap(Map<String, dynamic> map) {
@@ -54,7 +54,7 @@ class TMDBTv extends TMDBMultiMedia {
         }
       }
     }
-    int? duration;
+    Duration? duration;
     final durations = map["episode_run_time"];
     if (durations != null && durations.isNotEmpty) {
       duration = _getAverageDuration(durations.cast<int>());
@@ -134,7 +134,7 @@ class TMDBTv extends TMDBMultiMedia {
   final num? popularity;
 
   @override
-  final int? duration;
+  final Duration? duration;
 
   @override
   final num? voteAverage;

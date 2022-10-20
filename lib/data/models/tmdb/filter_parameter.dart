@@ -158,8 +158,8 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
   final List<TMDBType<TMDBMultiMedia>> types;
   final LibrarySortCriterion sortCriterion;
   final SortOrder sortOrder;
-  final List<Locale>? languages;
-  final List<Locale>? subtitles;
+  final Language? language;
+  final Language? subtitle;
   final MediaStatus status;
 
   SortParameter get sortParameter =>
@@ -169,8 +169,8 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
       {this.sortCriterion = LibrarySortCriterion.addedOn,
       List<TMDBType<TMDBMultiMedia>>? types,
       this.sortOrder = SortOrder.desc,
-      this.languages,
-      this.subtitles,
+      this.language,
+      this.subtitle,
       this.status = MediaStatus.available})
       : types = types ?? TMDBMultiMediaType.all;
 
@@ -179,8 +179,8 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
         sortCriterion: map['sort_by'],
         types: map['media_type'],
         sortOrder: map['order_by'],
-        languages: map['languages'],
-        subtitles: map['subtitles'],
+        language: map['language'],
+        subtitle: map['subtitle'],
         status: map['media_status']);
   }
 
@@ -188,8 +188,8 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
     return {
       'media_type': types,
       'sort_by': sortCriterion,
-      'languages': languages,
-      'subtitles': subtitles,
+      'language': language,
+      'subtitle': subtitle,
       'media_status': status,
       'order_by': sortOrder,
     };
@@ -199,23 +199,23 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
       {List<TMDBType<TMDBMultiMedia>>? types,
       int? year,
       LibrarySortCriterion? sortCriterion,
-      List<Locale>? languages,
-      List<Locale>? subtitles,
+      Language? language,
+      Language? subtitle,
       MediaStatus? status,
       SortOrder? sortOrder}) {
     return LibraryFilterParameter(
       types: types ?? this.types,
       sortCriterion: sortCriterion ?? this.sortCriterion,
       sortOrder: sortOrder ?? this.sortOrder,
-      languages: languages ?? this.languages,
-      subtitles: subtitles ?? this.subtitles,
+      language: language ?? this.language,
+      subtitle: subtitle ?? this.subtitle,
       status: status ?? this.status,
     );
   }
 
   @override
   List<Object?> get props =>
-      [types, status, subtitles, languages, sortCriterion, sortOrder];
+      [types, status, subtitle, language, sortCriterion, sortOrder];
 }
 
 class SimpleMultimediaFilterParameter extends FilterParameter<TMDBMultiMedia> {

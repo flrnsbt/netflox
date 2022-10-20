@@ -157,7 +157,7 @@ class _PagedSliverScrollViewWrapperState
                   child: _loadIndicator),
               const SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 5,
+                  height: 25,
                 ),
               )
             ],
@@ -189,7 +189,7 @@ class LoadingIndicator extends StatelessWidget {
       {super.key,
       this.maxHeight = 150,
       LoadingIndicatorController? controller,
-      this.loadingIndicatorSpacing = 25,
+      this.loadingIndicatorSpacing = 35,
       this.errorBuilder,
       this.loadingBuilder,
       this.idleBuilder})

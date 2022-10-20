@@ -59,7 +59,7 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
   }
 
   Widget _buildAppbar(BuildContext context) {
-    final double height = 20.w(context).clamp(200, 600);
+    final double height = 20.w(context).clamp(240, 600);
     return Theme(
       data: ThemeDataCubit.darkThemeData,
       child: SliverAppBar(

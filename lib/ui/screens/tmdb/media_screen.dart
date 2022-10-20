@@ -10,10 +10,8 @@ import 'package:netflox/data/models/tmdb/people.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/ui/widgets/custom_banner.dart';
 import 'package:netflox/ui/widgets/rating_widget.dart';
 import 'package:netflox/ui/widgets/tmdb/list_tmdb_media_card.dart';
-import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
@@ -28,7 +26,7 @@ part 'movie_screen.dart';
 part 'tv_show_screen.dart';
 part 'people_screen.dart';
 
-class MediaScreen extends StatelessWidget with AutoRouteWrapper {
+class MediaScreen extends StatelessWidget {
   final String id;
   final dynamic mediaType;
   const MediaScreen(
@@ -42,41 +40,44 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TMDBPrimaryMediaCubit, BasicServerFetchState>(
-      builder: (context, state) {
-        if (state.success() && state.hasData()) {
-          final media = state.result!;
-          return MultiBlocProvider(providers: [
-            if (media.type.isPeople())
-              BlocProvider(
-                  create: (context) =>
-                      TMDBFetchPeopleCasting(people: media, context: context))
-            else if (media.type.isMultimedia()) ...[
-              BlocProvider(
-                create: (context) =>
-                    TMDBFetchMediaCredits(media: media, context: context),
-              ),
-              BlocProvider(
-                  create: (context) => TMDBFetchVideosCubit.fromMultiMedia(
-                      media,
-                      context: context)),
-              BlocProvider(
-                  create: (context) =>
-                      TMDBFetchMultimediaCollection<SimilarRequestType>(
+    return BlocProvider(
+        create: (context) => TMDBPrimaryMediaCubit(
+            id: id, mediaType: mediaType, context: context),
+        child: BlocBuilder<TMDBPrimaryMediaCubit, BasicServerFetchState>(
+          builder: (context, state) {
+            if (state.success() && state.hasData()) {
+              final media = state.result!;
+              return MultiBlocProvider(providers: [
+                if (media.type.isPeople())
+                  BlocProvider(
+                      create: (context) => TMDBFetchPeopleCasting(
+                          people: media, context: context))
+                else if (media.type.isMultimedia()) ...[
+                  BlocProvider(
+                    create: (context) =>
+                        TMDBFetchMediaCredits(media: media, context: context),
+                  ),
+                  BlocProvider(
+                      create: (context) => TMDBFetchVideosCubit.fromMultiMedia(
+                          media,
+                          context: context)),
+                  BlocProvider(
+                      create: (context) =>
+                          TMDBFetchMultimediaCollection<SimilarRequestType>(
+                              media: media, context: context)),
+                  BlocProvider(
+                      create: (context) => TMDBFetchMultimediaCollection<
+                              RecommendationRequestType>(
                           media: media, context: context)),
-              BlocProvider(
-                  create: (context) =>
-                      TMDBFetchMultimediaCollection<RecommendationRequestType>(
-                          media: media, context: context)),
-            ]
-          ], child: _buildLayout(media));
-        }
-        if (state.isLoading()) {
-          return const LoadingScreen();
-        }
-        return ErrorScreen(errorCode: state.error);
-      },
-    );
+                ]
+              ], child: _buildLayout(media));
+            }
+            if (state.isLoading()) {
+              return const LoadingScreen();
+            }
+            return ErrorScreen(errorCode: state.error);
+          },
+        ));
   }
 
   Widget _buildLayout(TMDBMedia media) {
@@ -94,13 +95,5 @@ class MediaScreen extends StatelessWidget with AutoRouteWrapper {
       default:
         return const ErrorScreen();
     }
-  }
-
-  @override
-  Widget wrappedRoute(BuildContext context) {
-    return BlocProvider(
-        create: (context) => TMDBPrimaryMediaCubit(
-            id: id, mediaType: mediaType, context: context),
-        child: this);
   }
 }

@@ -14,7 +14,7 @@ import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/error_widget.dart';
-import '../../widgets/filters/filter_menu_dialog.dart';
+import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
 
@@ -54,7 +54,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         width: MediaQuery.of(context).size.width,
         alignment: Alignment.center,
-        color: Colors.indigo,
+        color: const Color.fromARGB(8, 255, 255, 255),
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
             DiscoverFilterParameter>(
           builder: (context, state) {

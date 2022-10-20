@@ -102,6 +102,7 @@ class TMDBTVEpisode extends TMDBMedia
       required this.episodeNumber,
       this.guests,
       this.date,
+      this.duration,
       required this.showId,
       this.voteAverage,
       this.voteCount,
@@ -124,6 +125,8 @@ class TMDBTVEpisode extends TMDBMedia
       overview: map['overview'],
       showId: map['show_id'].toString(),
       name: map['name'],
+      duration:
+          map['duration'] != null ? Duration(minutes: map['duration']) : null,
       guests: map['guest_stars']
           ?.map<TMDBPerson>((e) => TMDBPerson.fromJson(e))
           .toList(),
@@ -148,4 +151,7 @@ class TMDBTVEpisode extends TMDBMedia
   String? get remoteFilePath {
     return "tv/$libraryPath";
   }
+
+  @override
+  final Duration? duration;
 }

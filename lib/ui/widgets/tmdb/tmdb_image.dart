@@ -13,6 +13,7 @@ class TMDBImageWidget extends StatelessWidget {
   final bool fadeAnimations;
   final EdgeInsets padding;
   final BorderRadius? borderRadius;
+  final double? aspectRatio;
   final BlendMode? colorBlendMode;
   final Color? color;
   final Widget Function(BuildContext, ImageProvider<Object>)? imageBuilder;
@@ -25,6 +26,7 @@ class TMDBImageWidget extends StatelessWidget {
       this.color,
       this.borderRadius,
       this.colorBlendMode,
+      this.aspectRatio,
       this.fadeAnimations = false,
       this.imageBuilder,
       this.showProgressIndicator = true})
@@ -46,15 +48,18 @@ class TMDBImageWidget extends StatelessWidget {
           final url = _getUrl(context, size, img!);
           return CachedNetworkImage(
             imageBuilder: (context, imageProvider) {
+              final img = Image(
+                image: imageProvider,
+                fit: fit,
+              );
               return Padding(
                 padding: padding,
                 child: imageBuilder?.call(context, imageProvider) ??
                     ClipRRect(
                         borderRadius: borderRadius ?? BorderRadius.zero,
-                        child: Image(
-                          image: imageProvider,
-                          fit: fit,
-                        )),
+                        child: aspectRatio != null
+                            ? AspectRatio(aspectRatio: aspectRatio!, child: img)
+                            : img),
               );
             },
             colorBlendMode: colorBlendMode,
