@@ -71,16 +71,18 @@ class TMDBScreenHeader extends StatelessWidget {
         opacityStrength: 0.9,
         backgroundImage: _buildBackgroundImage,
         child: SafeArea(
-          minimum:
-              const EdgeInsets.only(left: 120, right: 25, top: 25, bottom: 20),
-          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            Flexible(
-                child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 700),
-                    child: child)),
-            if (ResponsiveWrapper.of(context).isLargerThan(TABLET))
-              _buildImg(context)
-          ]),
+          minimum: const EdgeInsets.only(left: 130, right: 25, bottom: 20),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              Flexible(
+                  child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      child: child)),
+              if (ResponsiveWrapper.of(context).isLargerThan(TABLET))
+                _buildImg(context)
+            ]),
+          ),
         ));
   }
 }

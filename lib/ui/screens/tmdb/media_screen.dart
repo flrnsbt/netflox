@@ -13,6 +13,7 @@ import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/rating_widget.dart';
 import 'package:netflox/ui/widgets/tmdb/list_tmdb_media_card.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import '../../../data/blocs/account/auth/user_account_data_cubit.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
@@ -48,6 +49,18 @@ class MediaScreen extends StatelessWidget {
             if (state.success() && state.hasData()) {
               final media = state.result!;
               return MultiBlocProvider(providers: [
+                if (media is TMDBPlayableMedia)
+                  BlocProvider(
+                    create: (_) {
+                      final bloc =
+                          context.watch<LibraryMediaUserPlaybackStateCubit?>();
+                      if (bloc != null) {
+                        return bloc;
+                      } else {
+                        return LibraryMediaUserPlaybackStateCubit(_, media);
+                      }
+                    },
+                  ),
                 if (media.type.isPeople())
                   BlocProvider(
                       create: (context) => TMDBFetchPeopleCasting(

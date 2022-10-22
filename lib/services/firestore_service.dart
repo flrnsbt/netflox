@@ -19,12 +19,7 @@ class FirestoreService {
   }
 
   static CollectionReference<Map<String, dynamic>> userWatchedMedia(String id) {
-    return FirebaseFirestore.instance
-        .collection('users/$id/data/media/watched');
-  }
-
-  static CollectionReference<Map<String, dynamic>> userLikedMedia(String id) {
-    return FirebaseFirestore.instance.collection('users/$id/data/media/liked');
+    return FirebaseFirestore.instance.collection('users/$id/data/media/list');
   }
 
   static CollectionReference<Map<String, dynamic>> userData(String id) {

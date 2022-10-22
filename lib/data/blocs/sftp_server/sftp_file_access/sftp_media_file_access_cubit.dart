@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
 import 'package:chewie/chewie.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
 import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_state.dart';
+import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/data/models/tmdb/media_upload_document.dart';
 
 import '../../../../utils/subtitle_helper.dart';
 
@@ -22,33 +24,32 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
   SFTPMediaAccessCubit(this._sftpClient)
       : super(SFTPMediaFileAccessState.waiting);
 
-  Future<void> open(String remoteFilePath) async {
-    remoteFilePath = 'netfloxDisk/$remoteFilePath';
+  Future<void> open(TMDBLibraryMedia media) async {
+    final remoteFilePath = 'netfloxDisk/${media.libraryPath}';
     if (!state.opened()) {
       emit(SFTPMediaFileAccessState.waiting);
       SftpFile? videoRemoteFile;
-      Map<Language, Subtitles>? subtitles;
+      Map<Language, SftpFile>? subtitles;
       Object? exception;
       try {
         final subFiles = (await _sftpClient.readdir(remoteFilePath).first)
             .where((e) => e.filename.split(".").last == SubtitleType.srt.name);
-        subtitles = <Language, Subtitles>{};
+        subtitles = <Language, SftpFile>{};
         videoRemoteFile = await _sftpClient.open("$remoteFilePath/video.mp4");
         for (var sub in subFiles) {
           final filePath = "$remoteFilePath/${sub.filename}";
-          final content = await _getSubtitles(filePath);
-          if (content != null) {
-            final key = sub.filename.split(".").first;
-            final language = Language.fromIsoCode(key);
-            subtitles.putIfAbsent(language, () => content);
-          }
+          final key = sub.filename.split(".").first;
+          final language = Language.fromIsoCode(key);
+          final remoteFile = await _sftpClient.open(filePath);
+          subtitles.putIfAbsent(language, () => remoteFile);
         }
       } catch (e) {
         exception = e;
       } finally {
         if (videoRemoteFile != null) {
-          emit(SFTPMediaFileAccessState.open(videoRemoteFile,
-              subtitles: subtitles, exception: exception));
+          final docs = TMDBMediaLibraryRemoteDocument(
+              videoFile: videoRemoteFile, subtitleFiles: subtitles);
+          emit(SFTPMediaFileAccessState.open(docs, exception: exception));
         } else {
           emit(SFTPMediaFileAccessState.fail(
               exception ?? Exception('unknown-error')));
@@ -57,31 +58,13 @@ class SFTPMediaAccessCubit extends Cubit<SFTPMediaFileAccessState> {
     }
   }
 
-  FutureOr<Subtitles?> _getSubtitles(String filePath) async {
-    try {
-      final remoteFile = await _sftpClient.open(filePath);
-      final bytes = await remoteFile.readBytes();
-      for (final codec in codecs) {
-        try {
-          final content = codec.decode(bytes);
-          return getSubtitlesData(content, SubtitleType.srt);
-        } catch (e) {
-          //
-        }
-      }
-    } catch (e) {
-      return null;
-    }
-    return null;
-  }
-
   @override
   Future<void> close() {
     try {
       _sftpClient.close();
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
     return super.close();
   }
 }
-
-const codecs = <Encoding>[utf8, latin1, ascii];

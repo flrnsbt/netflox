@@ -12,7 +12,7 @@ class LibraryMediaUserPlaybackStateCubit
     extends Cubit<LibraryMediaUserPlaybackState> {
   final DocumentReference<Map<String, dynamic>> _docRef;
   LibraryMediaUserPlaybackStateCubit(
-      BuildContext context, TMDBLibraryMedia media)
+      BuildContext context, TMDBPlayableMedia media)
       : _docRef = FirestoreService.userWatchedMedia(
                 context.read<AuthCubit>().state.user!.id)
             .doc(media.id),

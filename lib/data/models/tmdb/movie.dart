@@ -80,9 +80,6 @@ class TMDBMovie extends TMDBMultiMedia
   TMDBType<TMDBMovie> get type => TMDBType.movie;
 
   @override
-  String get remoteFilePath => "$type/$id";
-
-  @override
   LibraryMediaInformation libraryMediaInfo;
 
   @override

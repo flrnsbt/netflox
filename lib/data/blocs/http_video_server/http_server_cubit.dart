@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:netflox/data/constants/local_server.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -13,6 +14,7 @@ class HTTPServerVideoBinderCubit extends Cubit<HttpVideoBinderState> {
   HTTPServerVideoBinderCubit() : super(HttpVideoBinderState.off);
 
   void init(SftpFile video) async {
+    final fileSize = (await video.stat()).size ?? 0;
     if (state == HttpVideoBinderState.off) {
       _server = await shelf_io.serve(((request) async {
         final responseHeader = <String, Object>{};
@@ -39,8 +41,6 @@ class HTTPServerVideoBinderCubit extends Cubit<HttpVideoBinderState> {
         responseHeader.putIfAbsent(
             HttpHeaders.contentTypeHeader, () => 'video/mp4');
         try {
-          final stat = await video.stat();
-          final fileSize = stat.size ?? 0;
           if (request.method == "HEAD") {
             responseHeader.putIfAbsent(
                 HttpHeaders.acceptRangesHeader, () => 'bytes');

@@ -5,8 +5,12 @@ import 'package:nil/nil.dart';
 class CountryFlagIcon extends StatelessWidget {
   final String countryCode;
   final double height;
+  final BoxFit fit;
   const CountryFlagIcon(
-      {super.key, required this.countryCode, this.height = 20});
+      {super.key,
+      required this.countryCode,
+      this.fit = BoxFit.fill,
+      this.height = 20});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,7 @@ class CountryFlagIcon extends StatelessWidget {
             child: Image(
               image: imageProvider,
               height: height,
-              fit: BoxFit.fill,
+              fit: fit,
             )),
       ),
       errorWidget: (context, url, error) => const Nil(),

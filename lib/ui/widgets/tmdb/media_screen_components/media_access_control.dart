@@ -177,11 +177,11 @@ class WatchButton extends StatelessWidget {
         var text = 'watch';
         var mediaDuration = media.duration;
         if (mediaDuration == null || mediaDuration == const Duration()) {
-          mediaDuration = const Duration(minutes: 90);
+          mediaDuration = const Duration(minutes: 60);
         }
         if (state.playbackTimestamp != null &&
             (state.playbackTimestamp! <
-                (mediaDuration - const Duration(minutes: 4)))) {
+                (mediaDuration - const Duration(minutes: 6)))) {
           text = 'continue';
         }
         return TMDBHeaderButton(

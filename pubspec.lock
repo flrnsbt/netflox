@@ -379,6 +379,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.4"
+  file_picker:
+    dependency: "direct main"
+    description:
+      name: file_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.2.1"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -480,6 +487,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.11"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.7"
   flutter_rating_bar:
     dependency: "direct main"
     description:
@@ -1111,6 +1125,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.7"
+  video_player_macos:
+    dependency: "direct main"
+    description:
+      name: video_player_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.6"
   video_player_platform_interface:
     dependency: transitive
     description:

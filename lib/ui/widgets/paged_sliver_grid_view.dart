@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/data_fetcher/basic_server_fetch_state.dart';
@@ -8,6 +9,8 @@ import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/netflox_loading_indicator.dart';
 import 'package:netflox/ui/widgets/visibility_animation_widget.dart';
 import 'package:nil/nil.dart';
+
+import '../../utils/platform_mobile_extension.dart';
 
 enum PagedSliverScrollViewEventType {
   refresh,
@@ -122,7 +125,8 @@ class _PagedSliverScrollViewWrapperState
         NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification.metrics.pixels >=
-                notification.metrics.maxScrollExtent + 30) {
+                notification.metrics.maxScrollExtent +
+                    (platformIsMobile() ? 30 : 0)) {
               _load();
               return true;
             }

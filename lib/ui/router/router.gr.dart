@@ -18,6 +18,7 @@ import 'package:netflox/data/models/exception.dart';
 
 import '../../data/blocs/account/auth/auth_form/auth_form_bloc.dart' as _i22;
 import '../../data/models/tmdb/media.dart' as _i21;
+import '../../data/models/tmdb/media.dart';
 import '../../data/models/tmdb/season.dart' as _i20;
 import '../../main.dart' as _i1;
 import '../screens/admin_screen.dart' as _i10;
@@ -31,7 +32,7 @@ import '../screens/main/library_screen.dart' as _i15;
 import '../screens/main/search_screen.dart' as _i13;
 import '../screens/main/tab_home_screen.dart' as _i21;
 import '../screens/settings_screen.dart' as _i11;
-import '../screens/stream_media_screen.dart' as _i7;
+import '../screens/sftp_media_screen.dart' as _i7;
 import '../screens/tmdb/media_screen.dart' as _i4;
 import '../screens/tmdb/tv_show_episode_screen.dart' as _i6;
 import '../screens/tmdb/tv_show_season_screen.dart' as _i5;
@@ -116,7 +117,7 @@ class NetfloxRouter extends _i17.RootStackRouter {
       final args = routeData.argsAs<StreamMediaRouteArgs>();
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i7.StreamMediaScreen(
+        child: _i7.StreamSFTPMediaScreen(
           key: args.key,
           onVideoClosed: args.onVideoClosed,
           playableMedia: args.playableMedia,
@@ -146,7 +147,7 @@ class NetfloxRouter extends _i17.RootStackRouter {
     AdminRoute.name: (routeData) {
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i10.AdminScreen(),
+        child: _i10.AdminScreen(),
       );
     },
     SettingsRoute.name: (routeData) {
@@ -156,9 +157,10 @@ class NetfloxRouter extends _i17.RootStackRouter {
       );
     },
     UploadRoute.name: (routeData) {
+      final args = routeData.argsAs<UploadRouteArgs>();
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i12.UploadScreen(),
+        child: _i12.UploadScreen(media: args.media),
       );
     },
     SearchRoute.name: (routeData) {
@@ -182,7 +184,7 @@ class NetfloxRouter extends _i17.RootStackRouter {
           orElse: () => const LibraryRouteArgs());
       return _i17.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i17.WrappedRoute(child: _i15.LibraryScreen(key: args.key)),
+        child: _i15.LibraryScreen(key: args.key),
       );
     },
     MyAccountRoute.name: (routeData) {
@@ -506,7 +508,7 @@ class TVShowEpisodeRouteArgs {
 }
 
 /// generated route for
-/// [_i7.StreamMediaScreen]
+/// [_i7.StreamSFTPMediaScreen]
 class StreamMediaRoute extends _i17.PageRouteInfo<StreamMediaRouteArgs> {
   StreamMediaRoute(
       {_i19.Key? key,
@@ -623,11 +625,8 @@ class SettingsRoute extends _i17.PageRouteInfo<void> {
 /// generated route for
 /// [_i12.UploadScreen]
 class UploadRoute extends _i17.PageRouteInfo<void> {
-  const UploadRoute()
-      : super(
-          UploadRoute.name,
-          path: 'upload-file',
-        );
+  UploadRoute(TMDBLibraryMedia media)
+      : super(UploadRoute.name, path: 'upload', args: UploadRouteArgs(media));
 
   static const String name = 'UploadRoute';
 }
@@ -643,6 +642,12 @@ class SearchRoute extends _i17.PageRouteInfo<SearchRouteArgs> {
         );
 
   static const String name = 'SearchRoute';
+}
+
+class UploadRouteArgs {
+  final TMDBLibraryMedia media;
+
+  const UploadRouteArgs(this.media);
 }
 
 class SearchRouteArgs {

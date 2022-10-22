@@ -636,7 +636,7 @@ class _CustomControlsState extends State<CustomControls>
       ),
       child: Row(
         children: <Widget>[
-          if (!chewieController.isFullScreen)
+          if (!chewieController.isFullScreen && Navigator.canPop(context))
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _buildExitButton(

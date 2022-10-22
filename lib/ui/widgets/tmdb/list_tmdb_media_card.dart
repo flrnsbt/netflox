@@ -17,6 +17,7 @@ class TMDBListCard extends StatelessWidget {
       this.onTap,
       this.height,
       this.image,
+      this.action,
       required this.title,
       required this.subtitle,
       this.bottom,
@@ -26,6 +27,7 @@ class TMDBListCard extends StatelessWidget {
   final Widget subtitle;
   final Widget? bottom;
   final Widget? content;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -70,12 +72,13 @@ class TMDBListCard extends StatelessWidget {
                               child: content,
                             )),
                       const SizedBox(
-                        width: 10,
+                        width: 20,
                       ),
-                      Icon(
-                        Icons.chevron_right,
-                        color: Theme.of(context).focusColor,
-                      )
+                      action ??
+                          Icon(
+                            Icons.chevron_right,
+                            color: Theme.of(context).focusColor,
+                          )
                     ]))));
   }
 }
@@ -100,10 +103,16 @@ Widget episodeTitleBuilder(TMDBTVEpisode episode) => AutoSizeText.rich(
 class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
   final T media;
   final double? height;
+  final Widget? action;
   final void Function(T media)? onTap;
   final Widget? bottom;
   const TMDBListMediaCard(
-      {super.key, required this.media, this.bottom, this.onTap, this.height});
+      {super.key,
+      required this.media,
+      this.action,
+      this.bottom,
+      this.onTap,
+      this.height});
 
   Widget _buildBottom(BuildContext context) {
     var widget;
@@ -134,6 +143,7 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
       onTap: () {
         onTap?.call(media);
       },
+      action: action,
       title: AutoSizeText(
         media.name ?? "",
         maxLines: 2,

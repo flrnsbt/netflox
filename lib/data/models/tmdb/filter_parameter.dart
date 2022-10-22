@@ -8,7 +8,7 @@ import 'media.dart';
 import 'movie.dart';
 import 'type.dart';
 
-abstract class FilterParameter<T extends TMDBPrimaryMedia> extends Equatable {
+abstract class FilterParameter<T extends TMDBMedia> extends Equatable {
   const FilterParameter();
 
   @override

@@ -21,6 +21,7 @@ import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/widgets/custom_snackbar.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
+import 'package:netflox/ui/widgets/upload_process_provider_widget.dart';
 import 'package:nil/nil.dart';
 import 'package:provider/provider.dart';
 import 'data/blocs/account/auth/auth_cubit.dart';
@@ -205,7 +206,7 @@ class ConnectedScreen extends StatelessWidget {
                 dispose: (context, value) => value.close(true),
               )
             ],
-            child: child,
+            child: UploadProcessManagerWidget(child: child),
           );
         } else if (state.isLoading()) {
           return LoadingScreen(

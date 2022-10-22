@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,19 +11,46 @@ import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import '../custom_snackbar.dart';
 import 'custom_video_player_control.dart';
+import 'package:video_player_macos/video_player_macos.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
-  final String videoUrl;
+  final String? videoUrl;
+  final File? videoFile;
+  final bool showControl;
   final Map<Language, Subtitles> subtitles;
   final Duration? startingTime;
+  final bool defaultFullScreen;
+  final bool autoPlay;
+  final bool mute;
+  final bool quitOnFinish;
   final void Function(Duration? playbackTimestamp)? onVideoClosed;
-  const NetfloxVideoPlayer({
+  const NetfloxVideoPlayer.network({
     Key? key,
-    required this.videoUrl,
+    required String this.videoUrl,
     this.startingTime,
+    this.autoPlay = true,
+    this.quitOnFinish = true,
+    this.showControl = true,
+    this.mute = false,
+    this.defaultFullScreen = true,
     this.onVideoClosed,
     this.subtitles = const {},
-  }) : super(key: key);
+  })  : videoFile = null,
+        super(key: key);
+
+  const NetfloxVideoPlayer.file({
+    Key? key,
+    required File this.videoFile,
+    this.startingTime,
+    this.autoPlay = true,
+    this.quitOnFinish = true,
+    this.mute = false,
+    this.showControl = true,
+    this.defaultFullScreen = true,
+    this.onVideoClosed,
+    this.subtitles = const {},
+  })  : videoUrl = null,
+        super(key: key);
 
   @override
   State<NetfloxVideoPlayer> createState() => _NetfloxVideoPlayerState();
@@ -40,9 +68,16 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoPlayerController = VideoPlayerController.network(
-      widget.videoUrl,
-    );
+    if (widget.videoFile != null) {
+      _videoPlayerController = VideoPlayerController.file(
+        widget.videoFile!,
+      );
+    } else {
+      _videoPlayerController = VideoPlayerController.network(
+        widget.videoUrl!,
+      );
+    }
+
     _subtitlePicker = SubtitlePicker(
       subtitles: widget.subtitles,
       onSubtitleChanged: (currentSubtitle) {
@@ -76,8 +111,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         videoPlayerController: _videoPlayerController!,
         allowedScreenSleep: false,
         zoomAndPan: false,
-        autoPlay: true,
-        fullScreenByDefault: true,
+        showControls: widget.showControl,
+        autoPlay: widget.autoPlay,
+        fullScreenByDefault: widget.defaultFullScreen,
         allowFullScreen: true,
         customControls: const CustomControls(),
         // routePageBuilder:
@@ -94,7 +130,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         //       child: Material(child: controllerProvider));
         // },
         autoInitialize: true,
-        showControlsOnInitialize: false,
+        showControlsOnInitialize: true,
         allowPlaybackSpeedChanging: false,
         additionalOptions: (context) {
           return [
@@ -113,7 +149,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         ],
         optionsTranslation: _translation);
     _visibilityKey = Key(_controller.hashCode.toString());
-    _videoPlayerController!.addListener(_playbackListener);
+    if (widget.quitOnFinish) {
+      _videoPlayerController!.addListener(_playbackListener);
+    }
   }
 
   void _playbackListener() {
@@ -141,6 +179,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       setState(() {
         _initialized = true;
       });
+      if (widget.mute) {
+        _videoPlayerController!.setVolume(0);
+      }
     }
     if (_videoPlayerController!.value.isPlaying) {
       _startedPlaying();
@@ -202,12 +243,8 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
-    if (_initialized) {
-      if (info.visibleFraction == 0) {
-        _controller?.pause();
-      } else {
-        _controller?.play();
-      }
+    if (_controller!.isPlaying && info.visibleFraction == 0) {
+      _controller?.pause();
     }
   }
 
@@ -215,20 +252,20 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   Widget build(BuildContext context) {
     if (_initialized) {
       return VisibilityDetector(
-        key: _visibilityKey!,
-        onVisibilityChanged: _onVisibilityChanged,
-        child: Center(
-          child: SizedBox.expand(
-            child: FittedBox(
-                fit: BoxFit.fitWidth, child: Chewie(controller: _controller!)),
-          ),
-        ),
-      );
+          key: _visibilityKey!,
+          onVisibilityChanged: _onVisibilityChanged,
+          child: Chewie(controller: _controller!));
     } else {
       return const LoadingScreen();
     }
   }
 }
+
+//  Center(
+//           child: SizedBox.expand(
+//             child: ClipRect(
+//               child: FittedBox(
+//                   fit: BoxFit.contain, child:
 
 extension on VideoPlayerValue {
   bool isFinished() => position >= duration;

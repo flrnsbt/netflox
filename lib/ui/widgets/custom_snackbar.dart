@@ -8,15 +8,15 @@ void showSnackBar(BuildContext context,
     SnackBarAction? action,
     Duration duration = const Duration(seconds: 10)}) {
   final snackBar = SnackBar(
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 35),
+    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 25),
     margin: const EdgeInsets.only(bottom: 25, right: 25, left: 25),
     content: AutoSizeText(
       text,
-      maxLines: 1,
+      maxLines: 3,
       wrapWords: false,
-      minFontSize: 10,
+      minFontSize: 8,
       style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
+          color: Theme.of(context).colorScheme.onSurface, fontSize: 15),
     ),
     duration: duration,
     backgroundColor: Theme.of(context).cardColor,
@@ -30,10 +30,8 @@ void showSnackBar(BuildContext context,
           },
         ),
   );
-  try {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  } catch (e) {
-    //
-  }
+
+  ScaffoldMessenger.maybeOf(context)?.clearSnackBars();
+
+  ScaffoldMessenger.maybeOf(context)?.showSnackBar(snackBar);
 }
