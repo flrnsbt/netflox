@@ -27,19 +27,22 @@ abstract class FilterMenuBuilder<P extends FilterParameter>
   }
 
   static FilterMenuBuilder<P> from<P extends FilterParameter>(P parameter) {
-    if (P == SearchFilterParameter) {
-      return SearchFilterMenuBuilder(parameter as SearchFilterParameter)
-          as FilterMenuBuilder<P>;
-    } else if (P == DiscoverFilterParameter) {
-      return DiscoverFilterMenuBuilder(parameter as DiscoverFilterParameter)
-          as FilterMenuBuilder<P>;
-    } else if (P == LibraryFilterParameter) {
-      return LibraryFilterMenuBuilder(parameter as LibraryFilterParameter)
-          as FilterMenuBuilder<P>;
-    } else if (P == SimpleMultimediaFilterParameter) {
-      return SimpleMultimediaFilterMenuBuilder(
-          parameter as SimpleMultimediaFilterParameter) as FilterMenuBuilder<P>;
+    switch (parameter.runtimeType) {
+      case SearchFilterParameter:
+        return SearchFilterMenuBuilder(parameter as SearchFilterParameter)
+            as FilterMenuBuilder<P>;
+      case DiscoverFilterParameter:
+        return DiscoverFilterMenuBuilder(parameter as DiscoverFilterParameter)
+            as FilterMenuBuilder<P>;
+      case LibraryFilterParameter:
+        return LibraryFilterMenuBuilder(parameter as LibraryFilterParameter)
+            as FilterMenuBuilder<P>;
+      case SimpleMultimediaFilterParameter:
+        return SimpleMultimediaFilterMenuBuilder(
+                parameter as SimpleMultimediaFilterParameter)
+            as FilterMenuBuilder<P>;
     }
+
     throw UnimplementedError();
   }
 
@@ -149,9 +152,9 @@ class LibraryFilterMenuBuilder
     return [
       FilterCheckBoxWidget.multi(
           name: 'media_type',
-          items: TMDBMultiMediaType.all,
+          items: TMDBLibraryMediaType.all,
           enableDeselect: false,
-          selectedItems: _filterParameter.types),
+          selectedItems: _filterParameter.selectedtypes),
       FilterCheckBoxWidget.radio(
           name: 'media_status',
           items: [

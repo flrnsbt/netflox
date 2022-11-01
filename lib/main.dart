@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/auto_route.dart' show AutoRouter;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -12,8 +12,10 @@ import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
 import 'package:netflox/data/repositories/tmdb_repository.dart';
 import 'package:netflox/services/local_storage_manager.dart';
+import 'package:netflox/services/notification_service.dart';
 import 'package:netflox/services/shared_preferences.dart';
 import 'package:netflox/services/tmdb_service.dart';
+import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
 import 'package:netflox/ui/router/router.gr.dart';
 import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
@@ -24,6 +26,7 @@ import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/upload_process_provider_widget.dart';
 import 'package:nil/nil.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_framework/utils/responsive_utils.dart';
 import 'data/blocs/account/auth/auth_cubit.dart';
 import 'data/blocs/app_localization/app_localization_cubit.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -34,16 +37,21 @@ import 'firebase_options.dart';
 Future<void> main() async {
   await initApp();
   runApp(MultiProvider(providers: [
+    ListenableProvider(
+      dispose: (context, value) => value.dispose(),
+      create: (context) => NetfloxRouter(),
+    ),
     BlocProvider(
       create: (context) => ConnectivityManager(),
     ),
     BlocProvider(create: (BuildContext context) => AppLocalization()),
     BlocProvider(create: (BuildContext context) => ThemeDataCubit()),
-  ], child: NetfloxApp()));
+  ], child: const NetfloxApp()));
 }
 
 Future<void> initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
     if (kDebugMode) {
       return CustomErrorWidget(
@@ -53,9 +61,8 @@ Future<void> initApp() async {
     return const Nil();
   };
   await SharedPreferenceService.init();
-  if (!kIsWeb) {
-    await LocalStorageManager.init();
-  }
+  await LocalStorageManager.init();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -67,10 +74,46 @@ Future<void> initApp() async {
   ]);
 }
 
-class NetfloxApp extends StatelessWidget {
-  final NetfloxRouter _router;
-  NetfloxApp({super.key, NetfloxRouter? router})
-      : _router = router ?? NetfloxRouter();
+class NetfloxApp extends StatefulWidget {
+  const NetfloxApp({super.key});
+
+  @override
+  State<NetfloxApp> createState() => _NetfloxAppState();
+}
+
+class _NetfloxAppState extends State<NetfloxApp> {
+  @override
+  void dispose() {
+    super.dispose();
+    NotificationService.cancelAll();
+  }
+
+  Widget _buildResponsiveLayout(context, child) {
+    return ResponsiveWrapper.builder(ClampingScrollWrapper(child: child!),
+        breakpoints: [
+          const ResponsiveBreakpoint.resize(300, name: MOBILE),
+          const ResponsiveBreakpoint.autoScale(700, name: TABLET),
+          const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+          const ResponsiveBreakpoint.autoScaleDown(1400),
+          const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
+        ],
+        landscapePlatforms: ResponsiveTargetPlatform.values,
+        breakpointsLandscape: [
+          const ResponsiveBreakpoint.autoScale(500,
+              scaleFactor: 0.5, name: MOBILE),
+          const ResponsiveBreakpoint.autoScale(800,
+              scaleFactor: 0.7, name: TABLET),
+          const ResponsiveBreakpoint.autoScale(1100, name: DESKTOP),
+          const ResponsiveBreakpoint.autoScale(
+            1400,
+          ),
+          const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
+        ],
+        defaultScale: false,
+        minWidth: 200,
+        minWidthLandscape: 300,
+        background: Container(color: Theme.of(context).backgroundColor));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,30 +126,7 @@ class NetfloxApp extends StatelessWidget {
           builder: (context, state) => KeyedSubtree(
               key: ValueKey(state),
               child: MaterialApp.router(
-                builder: (context, child) {
-                  return ResponsiveWrapper.builder(
-                      ClampingScrollWrapper(child: child!),
-                      breakpoints: [
-                        const ResponsiveBreakpoint.resize(300, name: MOBILE),
-                        const ResponsiveBreakpoint.autoScale(700,
-                            scaleFactor: 1.1, name: TABLET),
-                        const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-                        const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
-                      ],
-                      breakpointsLandscape: [
-                        const ResponsiveBreakpoint.autoScale(500,
-                            scaleFactor: 0.5, name: MOBILE),
-                        const ResponsiveBreakpoint.autoScale(800,
-                            scaleFactor: 0.7, name: TABLET),
-                        const ResponsiveBreakpoint.autoScale(1100,
-                            name: DESKTOP),
-                        const ResponsiveBreakpoint.autoScale(1700, name: "XL"),
-                      ],
-                      defaultScale: false,
-                      minWidth: 200,
-                      background:
-                          Container(color: Theme.of(context).backgroundColor));
-                },
+                builder: _buildResponsiveLayout,
                 scrollBehavior: const MaterialScrollBehavior().copyWith(
                   dragDevices: {
                     PointerDeviceKind.mouse,
@@ -116,7 +136,7 @@ class NetfloxApp extends StatelessWidget {
                     PointerDeviceKind.unknown
                   },
                 ),
-                routerDelegate: _router.delegate(),
+                routerDelegate: context.router.delegate(),
                 supportedLocales: AppLocalization.supportedLocales,
                 locale: state.currentLocale,
                 localizationsDelegates: const [
@@ -125,8 +145,8 @@ class NetfloxApp extends StatelessWidget {
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
                 ],
-                routeInformationParser:
-                    _router.defaultRouteParser(includePrefixMatches: true),
+                routeInformationParser: context.router
+                    .defaultRouteParser(includePrefixMatches: true),
                 theme: themeState.data,
                 debugShowCheckedModeBanner: false,
               )));
@@ -150,6 +170,7 @@ class StackScreen extends StatelessWidget {
           builder: (context, state) {
             return const ConnectedScreen();
           },
+          listenWhen: (previous, current) => previous != ConnectivityState.init,
           listener: (context, state) {
             final String text;
             Widget? icon;
@@ -206,7 +227,7 @@ class ConnectedScreen extends StatelessWidget {
                 dispose: (context, value) => value.close(true),
               )
             ],
-            child: UploadProcessManagerWidget(child: child),
+            child: UploadProcessManager(child: child),
           );
         } else if (state.isLoading()) {
           return LoadingScreen(

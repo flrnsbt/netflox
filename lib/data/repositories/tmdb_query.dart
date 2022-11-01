@@ -215,12 +215,6 @@ extension TMDBDocumentQuery<T extends TMDBMultiMedia> on TMDBDocument<T> {
     return TMDBCollection<T>._(_query);
   }
 
-  TMDBMultipleDocument<TMDBPerson> credits() {
-    _query._queryBuilder.addPathNode("credits");
-    _query._queryBuilder.type = TMDBType.person;
-    return TMDBMultipleDocument<TMDBPerson>._(_query, 'cast');
-  }
-
   TMDBCollection<T> getRecommendations() {
     _query._queryBuilder.addPathNode("recommendations");
     return TMDBCollection<T>._(_query);
@@ -232,6 +226,12 @@ extension TMDBLibraryDocumentQuery<T extends TMDBLibraryMedia>
   TMDBMultipleDocument<TMDBVideo> getVideos() {
     _query._queryBuilder.addPathNode(TMDBType.video);
     return TMDBMultipleDocument<TMDBVideo>._(_query, 'results');
+  }
+
+  TMDBMultipleDocument<TMDBPerson> credits() {
+    _query._queryBuilder.addPathNode("credits");
+    _query._queryBuilder.type = TMDBType.person;
+    return TMDBMultipleDocument<TMDBPerson>._(_query, 'cast');
   }
 }
 
@@ -259,6 +259,7 @@ extension TMDBPeopleDocumentQuery on TMDBDocument<TMDBPerson> {
 
 abstract class TMDBReference<T> with TMDBQueryHTTPClient {
   final TMDBQuery _query;
+  @override
   final HttpClient _client;
   TMDBReference(this._query, [String? resultKey]) : _client = HttpClient() {
     setIncludeAdult(false);
@@ -319,18 +320,23 @@ mixin _TMDBMultipleDocumentInterface<T extends TMDBElement>
   Future<List<T>> _convertData(
     Map<String, dynamic> result,
   ) async {
-    final data = <T>[];
-    final dataList = result[_resultKey];
-    if (dataList != null) {
-      for (final e in dataList) {
-        final TMDBType type = TMDBType.fromString(e['media_type'],
+    final convertedData = <T>[];
+    final rawData = result[_resultKey];
+    if (rawData != null) {
+      for (final data in rawData) {
+        final TMDBType type = TMDBType.fromString(data['media_type'],
             orElse: () => _query._queryBuilder.type);
-        e.putIfAbsent("tmdb_type", () => type);
-        final d = TMDBElement.fromMap(e);
-        data.add(d as T);
+        data.putIfAbsent("tmdb_type", () => type);
+        if (type.isTVElement()) {
+          dynamic showId = _query._queryBuilder.path.split("/");
+          showId = showId[showId.indexOf('tv') + 1];
+          data.putIfAbsent("show_id", () => showId);
+        }
+        final d = TMDBElement.fromMap(data);
+        convertedData.add(d as T);
       }
     }
-    return data;
+    return convertedData;
   }
 }
 
@@ -370,12 +376,17 @@ class TMDBDocument<T extends TMDBElement> extends TMDBReference<T> {
   @override
   Future<TMDBDocumentResult<T>> fetch() async {
     try {
-      final result = await _getJson();
-      final TMDBType type = TMDBType.fromString(result['media_type'],
+      final rawData = await _getJson();
+      final type = TMDBType.fromString(rawData['media_type'],
           orElse: () => _query._queryBuilder.type);
-      result.putIfAbsent("tmdb_type", () => type);
-      final data = TMDBElement.fromMap(result);
-      final errors = _convertError(result['errors']);
+      rawData.putIfAbsent("tmdb_type", () => type);
+      if (type.isTVElement()) {
+        dynamic showId = _query._queryBuilder.path.split("/");
+        showId = showId[showId.indexOf('tv') + 1];
+        rawData.putIfAbsent("show_id", () => showId);
+      }
+      final data = TMDBElement.fromMap(rawData);
+      final errors = _convertError(rawData['errors']);
       return TMDBDocumentResult(data: data as T, error: errors);
     } catch (e) {
       rethrow;

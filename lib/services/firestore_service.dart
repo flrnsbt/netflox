@@ -4,7 +4,7 @@ import '../data/constants/app_configuration.dart';
 
 class FirestoreService {
   static final users = FirebaseFirestore.instance.collection("users");
-  static final media = FirebaseFirestore.instance.collection("medias");
+  static final media = FirebaseFirestore.instance.collection("media");
   static final config = FirebaseFirestore.instance.collection("config");
   static final sshConfig = FirebaseFirestore.instance.doc("config/ssh_config");
   static final tmdbConfig =
@@ -18,7 +18,7 @@ class FirestoreService {
     return FirebaseFirestore.instance.doc('users/$id/data/keys');
   }
 
-  static CollectionReference<Map<String, dynamic>> userWatchedMedia(String id) {
+  static CollectionReference<Map<String, dynamic>> userMediaData(String id) {
     return FirebaseFirestore.instance.collection('users/$id/data/media/list');
   }
 

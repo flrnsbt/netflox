@@ -32,7 +32,9 @@ class TMDBListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        color: Theme.of(context).canvasColor,
+        color: Theme.of(context).cardColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.symmetric(vertical: 5),
         child: InkWell(
             onTap: () {
@@ -41,7 +43,7 @@ class TMDBListCard extends StatelessWidget {
               }
             },
             child: Container(
-                height: height ?? 15.h(context).clamp(100, 250),
+                height: height ?? 13.h(context).clamp(100, 250),
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 child: Row(
@@ -104,6 +106,7 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
   final T media;
   final double? height;
   final Widget? action;
+  final Widget? content;
   final void Function(T media)? onTap;
   final Widget? bottom;
   const TMDBListMediaCard(
@@ -111,6 +114,7 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
       required this.media,
       this.action,
       this.bottom,
+      this.content,
       this.onTap,
       this.height});
 
@@ -122,10 +126,7 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
         (media as TMDBPrimaryMedia).popularityLevel != null) {
       widget = Text(
         (media as TMDBPrimaryMedia).popularityLevel!.tr(context),
-        style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            fontStyle: FontStyle.italic),
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
       );
     }
     if (widget != null) {
@@ -150,9 +151,7 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
         wrapWords: false,
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          fontSize: 17,
-        ),
+        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
       ),
       subtitle: Row(
         children: [
@@ -186,15 +185,17 @@ class TMDBListMediaCard<T extends TMDBMedia> extends StatelessWidget {
             )
         ],
       ),
-      content: Text(
-        media.overview!,
-        softWrap: false,
-        style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
-        maxLines: 4,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.end,
-      ),
+      content: content ??
+          Text(
+            media.overview!,
+            softWrap: false,
+            style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),
       image: TMDBImageWidget(
+        aspectRatio: 4 / 5,
         borderRadius: BorderRadius.circular(10),
         img: media.img,
         padding: const EdgeInsets.only(right: 10),

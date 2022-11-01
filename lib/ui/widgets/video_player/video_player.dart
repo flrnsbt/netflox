@@ -1,16 +1,24 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:language_picker/languages.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:netflox/ui/widgets/video_player/subtitle_picker.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import '../custom_snackbar.dart';
 import 'custom_video_player_control.dart';
+
+// ignore: unused_import
 import 'package:video_player_macos/video_player_macos.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
@@ -64,6 +72,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   OptionsTranslation? _translation;
   Key? _visibilityKey;
   bool _initialized = false;
+  bool _alreadyPlayed = false;
   @override
   void initState() {
     super.initState();
@@ -92,43 +101,36 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         cancelButtonText: 'cancel'.tr(context),
         subtitlesButtonText: 'subtitles'.tr(context),
         playbackSpeedButtonText: 'playback-speed'.tr(context));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _videoPlayerController!.addListener(_initializeListener);
-    });
+
     _initChewieController();
   }
 
   Future<void> _initChewieController() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _videoPlayerController!.addListener(_initializeListener);
+    });
     _controller = ChewieController(
-        subtitleBuilder: (context, subtitle) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 35),
-              child: Text(
-                subtitle,
-                style: const TextStyle(
-                    color: Color.fromARGB(255, 255, 230, 0), fontSize: 42),
-              ),
-            ),
+        subtitleBuilder: (context, subtitle) =>
+            SubtitleBuilder(subtitle: subtitle),
         videoPlayerController: _videoPlayerController!,
         allowedScreenSleep: false,
         zoomAndPan: false,
         showControls: widget.showControl,
         autoPlay: widget.autoPlay,
         fullScreenByDefault: widget.defaultFullScreen,
-        allowFullScreen: true,
+        allowFullScreen: widget.defaultFullScreen,
         customControls: const CustomControls(),
-        // routePageBuilder:
-        //     (context, animation, secondaryAnimation, controllerProvider) {
-        //   return ValueListenableBuilder(
-        //       valueListenable: animation,
-        //       builder: (context, value, child) {
-        //         if (value == 1) {
-        //           return child!;
-        //         } else {
-        //           return const SizedBox.shrink();
-        //         }
-        //       },
-        //       child: Material(child: controllerProvider));
-        // },
+        errorBuilder: (context, errorMessage) {
+          return ErrorScreen(
+              errorCode: errorMessage,
+              child: IconButton(
+                  color: Colors.grey.withOpacity(0.3),
+                  onPressed: () => _initChewieController(),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                  )));
+        },
         autoInitialize: true,
         showControlsOnInitialize: true,
         allowPlaybackSpeedChanging: false,
@@ -161,17 +163,16 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 
   void _popupContinuePlaybackPrompt() {
-    showSnackBar(context,
-        text:
-            "${'continue-watching-prompt'.tr(context)} (${widget.startingTime!.inMinutes}mins)",
-        leading: const Icon(Icons.info),
-        action: SnackBarAction(
-            textColor: Theme.of(context).colorScheme.onSurface,
-            label: 'continue'.tr(context),
-            onPressed: () {
-              _controller!.seekTo(widget.startingTime!);
-              ScaffoldMessenger.of(context).clearSnackBars();
-            }));
+    CustomAwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      desc:
+          "${'continue-watching-prompt'.tr(context)} (${widget.startingTime!.inMinutes}mins)",
+      btnCancelOnPress: () {},
+      btnOkText: 'keep-watching',
+      btnCancelText: 'restart-playback',
+      btnOkOnPress: () => _controller!.seekTo(widget.startingTime!),
+    ).show();
   }
 
   void _initializeListener() async {
@@ -179,9 +180,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       setState(() {
         _initialized = true;
       });
-      if (widget.mute) {
-        _videoPlayerController!.setVolume(0);
-      }
     }
     if (_videoPlayerController!.value.isPlaying) {
       _startedPlaying();
@@ -190,7 +188,11 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 
   Future<void> _startedPlaying() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
+    _alreadyPlayed = true;
+    if (widget.mute) {
+      _controller!.setVolume(0);
+    }
     setState(() {});
     if (widget.startingTime != null) {
       _popupContinuePlaybackPrompt();
@@ -230,7 +232,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && _initialized) {
+    if (state == AppLifecycleState.resumed && _alreadyPlayed) {
       _controller?.play();
     } else {
       _controller?.pause();
@@ -243,7 +245,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
-    if (_controller!.isPlaying && info.visibleFraction == 0) {
+    if (_alreadyPlayed && info.visibleFraction < 0.5) {
       _controller?.pause();
     }
   }
@@ -251,22 +253,58 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   @override
   Widget build(BuildContext context) {
     if (_initialized) {
-      return VisibilityDetector(
-          key: _visibilityKey!,
-          onVisibilityChanged: _onVisibilityChanged,
-          child: Chewie(controller: _controller!));
+      return Theme(
+        data: ThemeDataCubit.darkThemeData,
+        child: Scaffold(
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          backgroundColor: Colors.black,
+          body: VisibilityDetector(
+              key: _visibilityKey!,
+              onVisibilityChanged: _onVisibilityChanged,
+              child: Chewie(controller: _controller!)),
+        ),
+      );
     } else {
       return const LoadingScreen();
     }
   }
 }
 
-//  Center(
-//           child: SizedBox.expand(
-//             child: ClipRect(
-//               child: FittedBox(
-//                   fit: BoxFit.contain, child:
-
 extension on VideoPlayerValue {
   bool isFinished() => position >= duration;
+}
+
+class SubtitleBuilder extends StatelessWidget {
+  final dynamic subtitle;
+  const SubtitleBuilder({super.key, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSize = _getFontSize(context);
+    return Container(
+      color: Colors.black26,
+      margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 35),
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+      child: AutoSizeText(
+        subtitle,
+        textAlign: TextAlign.center,
+        wrapWords: false,
+        maxLines: 4,
+        minFontSize: 12,
+        maxFontSize: 60,
+        style: TextStyle(
+            color: const Color.fromARGB(255, 255, 230, 0), fontSize: fontSize),
+      ),
+    );
+  }
+
+  double _getFontSize(BuildContext context) {
+    var fontSize = 5.hw(context);
+    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+      fontSize /= 2;
+    }
+
+    return fontSize;
+  }
 }

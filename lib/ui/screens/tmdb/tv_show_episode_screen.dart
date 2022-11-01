@@ -1,63 +1,59 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
+import 'package:netflox/data/blocs/data_fetcher/tmdb/element_cubit.dart';
 import 'package:netflox/data/models/tmdb/season.dart';
-import 'package:netflox/ui/router/router.gr.dart';
-import 'package:netflox/ui/widgets/default_sliver_grid.dart';
-import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
 
 import '../../widgets/tmdb/media_screen_components/components.dart';
+import 'media_screen.dart';
 
-class TVShowEpisodeScreen extends StatelessWidget {
-  final TMDBTVEpisode episode;
-  const TVShowEpisodeScreen({super.key, required this.episode});
+class TVShowEpisodeScreen extends TMDBMediaScreenWrapper<TMDBTVEpisode> {
+  final String showId;
+  final int seasonNumber;
+  const TVShowEpisodeScreen(
+      {super.key,
+      @PathParam('episodeNumber') required this.id,
+      @PathParam('seasonNumber') required this.seasonNumber,
+      @PathParam('id') required this.showId});
+
+  factory TVShowEpisodeScreen.fromEpisode(TMDBTVEpisode episode) {
+    return TVShowEpisodeScreen(
+        id: episode.episodeNumber,
+        seasonNumber: episode.seasonNumber,
+        showId: episode.showId);
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildLayout(BuildContext context, TMDBTVEpisode media) {
     return TMDBScreenBuilder(
-      element: episode,
+      element: media,
       content: [
-        if (episode.overview?.isNotEmpty ?? false)
+        if (media.overview?.isNotEmpty ?? false)
           MediaScreenComponent(
             name: 'overview'.tr(context),
             child: Text(
-              episode.overview!,
+              media.overview!,
               style: const TextStyle(fontSize: 13),
             ),
           ),
-        if (episode.guests?.isNotEmpty ?? false)
-          MediaScreenComponent(
-            name: 'guest_stars'.tr(context),
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-            child: GridView.custom(
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: DefaultSliverGrid.defaultGridDelegate,
-              childrenDelegate: SliverChildBuilderDelegate(
-                  (context, index) => AspectRatio(
-                      aspectRatio: 2 / 3,
-                      child: TMDBMediaCard(
-                        onTap: (media) =>
-                            context.pushRoute(MediaRoute.fromMedia(media)),
-                        media: episode.guests![index],
-                        showBottomTitle: true,
-                      )),
-                  childCount: episode.guests!.length),
-            ),
-          ),
+        const TMDBListMediaLayout<TMDBFetchMediaCredits>.carousel(
+          title: 'credits',
+          play: true,
+          height: 180,
+        ),
       ],
       header: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (episode.name != null)
+          if (media.name != null)
             Flexible(
               flex: 3,
               child: Padding(
                 padding: const EdgeInsets.only(left: 15),
                 child: AutoSizeText(
-                  episode.name!,
+                  media.name!,
                   wrapWords: false,
                   maxLines: 3,
                   textAlign: TextAlign.end,
@@ -74,15 +70,15 @@ class TVShowEpisodeScreen extends StatelessWidget {
             height: 10,
           ),
           Text(
-            "${'season'.tr(context)} ${episode.seasonNumber} : ${'episode'.tr(context)} ${episode.episodeNumber}",
+            "${'season'.tr(context)} ${media.seasonNumber} : ${'episode'.tr(context)} ${media.episodeNumber}",
             style: const TextStyle(fontSize: 17),
           ),
-          if (episode.date != null) ...[
+          if (media.date != null) ...[
             const SizedBox(
               height: 10,
             ),
             Text(
-              episode.date!,
+              media.date!,
               style: const TextStyle(
                   fontSize: 13,
                   fontFamily: "Verdana",
@@ -93,13 +89,29 @@ class TVShowEpisodeScreen extends StatelessWidget {
             ),
             Flexible(
               flex: 2,
-              child: LibraryMediaControlLayout(
-                media: episode,
+              child: LibraryMediaStatusWidget(
+                media: media,
               ),
             ),
           ]
         ],
       ),
+    );
+  }
+
+  @override
+  final int id;
+
+  @override
+  BlocProvider<TMDBElementCubit<TMDBTVEpisode>> wrappedRoute(
+      BuildContext context) {
+    return BlocProvider(
+      child: this,
+      create: (context) => TMDBEpisodeCubit(
+          id: showId,
+          episodeNumber: id,
+          seasonNumber: seasonNumber,
+          context: context),
     );
   }
 }

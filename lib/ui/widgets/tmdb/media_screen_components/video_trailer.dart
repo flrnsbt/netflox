@@ -33,7 +33,7 @@ class VideoTrailer extends StatelessWidget {
                     element.isTrailer && element.site == VideoSite.youtube);
                 widget = CustomYoutubePlayer(
                   videoId: video.key,
-                  maxHeight: 100.h(context),
+                  maxHeight: 90.h(context),
                 );
               } catch (e) {
                 widget = const Text("nothing-found").tr();

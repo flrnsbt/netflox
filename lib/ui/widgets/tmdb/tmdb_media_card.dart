@@ -3,9 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/data/models/tmdb/movie.dart';
+import 'package:netflox/data/models/tmdb/people.dart';
+import 'package:netflox/data/models/tmdb/tv.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_image.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
-import '../../../data/models/tmdb/type.dart';
 import '../custom_banner.dart';
 
 class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
@@ -128,14 +130,14 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
 
   Widget _buildMediaTypeIcon() {
     IconData? icon;
-    switch (media.type) {
-      case TMDBType.movie:
+    switch (media.runtimeType) {
+      case TMDBMovie:
         icon = Icons.movie_outlined;
         break;
-      case TMDBType.tv:
+      case TMDBTv:
         icon = CupertinoIcons.tv;
         break;
-      case TMDBType.person:
+      case TMDBPerson:
         icon = Icons.person_outline;
         break;
     }
@@ -156,9 +158,19 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-            child: bannerOptions != null
-                ? CustomBanner.fromOptions(bannerOptions, _buildCard(context))
-                : _buildCard(context)),
+          child: Stack(
+            children: [
+              _buildCard(context),
+              if (bannerOptions != null)
+                FractionallySizedBox(
+                  heightFactor: 0.25,
+                  child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: CustomBanner.fromOptions(bannerOptions)),
+                )
+            ],
+          ),
+        ),
         if (showBottomTitle)
           Container(
             margin: const EdgeInsets.only(top: 5, left: 10, right: 10),

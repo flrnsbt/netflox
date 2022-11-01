@@ -1,30 +1,36 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../../../../data/models/tmdb/element.dart';
+import '../../../../data/models/tmdb/img.dart';
 import '../../../../data/models/tmdb/media.dart';
 import '../../background_image_widget.dart';
 import '../tmdb_image.dart';
 
-class TMDBScreenHeader extends StatelessWidget {
-  final TMDBImageProvider element;
+class TMDBScreenHeaderContent extends StatelessWidget {
+  final TMDBElementWithImage element;
   final Widget child;
-  const TMDBScreenHeader({
+  const TMDBScreenHeaderContent({
     Key? key,
     required this.child,
     required this.element,
   }) : super(key: key);
 
   Widget? _buildBackgroundImage(BuildContext context) {
+    final img = image;
+    if (img != null) {
+      return TMDBImageWidget(
+        img: img,
+        showError: false,
+        showProgressIndicator: false,
+      );
+    }
+    return null;
+  }
+
+  TMDBImg? get image {
     if (element.type.isMultimedia()) {
-      final img = (element as TMDBMultiMedia).backdropImg;
-      if (img != null) {
-        return TMDBImageWidget(
-          img: img,
-          showError: false,
-          showProgressIndicator: false,
-        );
-      }
+      return (element as TMDBMultiMedia).backdropImg;
     }
     return null;
   }
@@ -68,7 +74,7 @@ class TMDBScreenHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return NetfloxBackgroundImage(
         color: Colors.black,
-        opacityStrength: 0.9,
+        opacityStrength: 0.7,
         backgroundImage: _buildBackgroundImage,
         child: SafeArea(
           minimum: const EdgeInsets.only(left: 130, right: 25, bottom: 20),
@@ -77,7 +83,7 @@ class TMDBScreenHeader extends StatelessWidget {
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               Flexible(
                   child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 700),
+                      constraints: const BoxConstraints(maxWidth: 600),
                       child: child)),
               if (ResponsiveWrapper.of(context).isLargerThan(TABLET))
                 _buildImg(context)

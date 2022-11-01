@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:email_validator/email_validator.dart';
@@ -9,10 +8,10 @@ import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart'
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
+import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
 import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/profile_image.dart';
-import 'package:netflox/utils/reponsive_size_helper.dart';
 import '../../data/blocs/account/auth/auth_cubit.dart';
 import '../router/router.gr.dart';
 import '../widgets/custom_awesome_dialog.dart';
@@ -21,32 +20,27 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   Widget _buildLanguagePicker(BuildContext context) {
-    final locales = <Locale, Widget>{};
-    for (var locale in AppLocalization.supportedLocales) {
-      final widget = Text(
-        "language-${locale.languageCode}".tr(context),
-        style: TextStyle(fontSize: 5.sp(context)),
-      );
-      locales.putIfAbsent(locale, () => widget);
-    }
-    return StatefulBuilder(
-      builder: (BuildContext context, void Function(void Function()) setState) {
-        return BlocBuilder<AppLocalization, AppLocalizationState>(
-          builder: (context, state) {
-            return CupertinoSlidingSegmentedControl<Locale>(
-              thumbColor: Theme.of(context).primaryColor,
-              children: locales,
+    return BlocBuilder<AppLocalization, AppLocalizationState>(
+        builder: (context, state) => CupertinoSelector<Locale>(
+              currentValue: state.currentLocale,
+              builder: (context, value, selected) {
+                return Text(
+                  "language-${value.languageCode}".tr(context),
+                  maxLines: 1,
+                  style: TextStyle(
+                      fontSize: 14, color: selected ? Colors.white : null),
+                );
+              },
+              values: AppLocalization.supportedLocales,
               onValueChanged: (value) {
                 if (value != null) {
                   CustomAwesomeDialog(
                           btnOkOnPress: () {
                             context.read<AppLocalization>().updateLocale(value);
-                            context.popRoute();
+                            context.router.pop();
                           },
                           onDismissCallback: (type) {
-                            if (type.aborted()) {
-                              setState.call(() {});
-                            }
+                            if (type.aborted()) {}
                           },
                           btnCancelOnPress: () {},
                           context: context,
@@ -57,12 +51,7 @@ class SettingsScreen extends StatelessWidget {
                       .show();
                 }
               },
-              groupValue: state.currentLocale,
-            );
-          },
-        );
-      },
-    );
+            ));
   }
 
   Widget _buildAppSettings(BuildContext context) {
@@ -86,25 +75,23 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildThemePicker(BuildContext context) {
-    final themes = <ThemeMode, Widget>{};
-    for (var theme in ThemeMode.values) {
-      final widget = Text(
-        theme.name,
-        style: TextStyle(fontSize: 5.sp(context)),
-      ).tr();
-      themes.putIfAbsent(theme, () => widget);
-    }
     return BlocBuilder<ThemeDataCubit, ThemeDataState>(
       builder: (context, state) {
-        return CupertinoSlidingSegmentedControl<ThemeMode>(
-          children: themes,
+        return CupertinoSelector<Brightness>(
+          values: Brightness.values,
           thumbColor: Theme.of(context).primaryColor,
+          builder: (context, value, selected) => Text(
+            value.name,
+            maxLines: 1,
+            style:
+                TextStyle(fontSize: 14, color: selected ? Colors.white : null),
+          ).tr(),
           onValueChanged: (value) {
             if (value != null) {
               context.read<ThemeDataCubit>().changeMode(value);
             }
           },
-          groupValue: state.mode,
+          currentValue: state.mode,
         );
       },
     );
@@ -186,8 +173,8 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
       bool result = false;
       await CustomAwesomeDialog(
               dialogType: DialogType.warning,
-              title: "warning",
-              desc: "unsaved-changes",
+              title: "unsaved-changes",
+              desc: "unsaved-changes-desc",
               btnOkOnPress: () {
                 result = true;
               },
@@ -267,6 +254,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
               if (widget.user.isAdmin())
                 ElevatedButton(
                     style: const ButtonStyle(
+                        elevation: MaterialStatePropertyAll(0),
                         fixedSize:
                             MaterialStatePropertyAll(Size.fromHeight(40))),
                     onPressed: () => context.router.push(const AdminRoute()),
@@ -279,6 +267,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                     )),
               ElevatedButton(
                 style: const ButtonStyle(
+                    elevation: MaterialStatePropertyAll(0),
                     fixedSize: MaterialStatePropertyAll(Size.fromHeight(40))),
                 child: AutoSizeText(
                   "sign-out".tr(context),
@@ -291,8 +280,9 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
               ),
               ElevatedButton(
                 style: ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(
-                        Theme.of(context).disabledColor),
+                    elevation: const MaterialStatePropertyAll(0),
+                    backgroundColor:
+                        MaterialStatePropertyAll(Theme.of(context).hintColor),
                     fixedSize:
                         const MaterialStatePropertyAll(Size.fromHeight(40))),
                 child: AutoSizeText(
@@ -300,7 +290,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                   maxLines: 2,
                   wrapWords: false,
                   textAlign: TextAlign.center,
-                  minFontSize: 8,
+                  minFontSize: 10,
                 ),
                 onPressed: () {
                   context.read<AuthCubit>().deleteAccount();
@@ -506,6 +496,48 @@ class SettingItem extends StatelessWidget {
         ),
         Expanded(flex: 3, child: child),
       ],
+    );
+  }
+}
+
+class CupertinoSelector<T> extends StatelessWidget {
+  final List<T> values;
+  final Color? thumbColor;
+  final T? currentValue;
+  final Widget Function(BuildContext context, T value, bool selected)? builder;
+  final void Function(T?) onValueChanged;
+  const CupertinoSelector(
+      {super.key,
+      required this.values,
+      this.currentValue,
+      this.builder,
+      required this.onValueChanged,
+      this.thumbColor});
+
+  Widget _builder(BuildContext context, T value, bool selected) {
+    return builder?.call(context, value, selected) ??
+        Text(
+          value.toString(),
+          maxLines: 1,
+          style: const TextStyle(fontSize: 14, color: Colors.white),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoSlidingSegmentedControl<T>(
+      thumbColor: thumbColor ?? Theme.of(context).primaryColor,
+      groupValue: currentValue,
+      children: values.asMap().map((key, value) => MapEntry(
+          value,
+          FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _builder(context, value, value == currentValue)))),
+      onValueChanged: (value) {
+        if (value != null) {
+          onValueChanged(value);
+        }
+      },
     );
   }
 }

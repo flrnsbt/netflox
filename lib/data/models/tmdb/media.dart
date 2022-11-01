@@ -56,25 +56,27 @@ abstract class TMDBPrimaryMedia extends TMDBMedia with TMDBPopularityProvider {
 
   String get originalName;
 
+  @override
+  TMDBType<TMDBPrimaryMedia> get type;
+
   static TMDBMedia fromMap(Map<String, dynamic> map) {
-    final TMDBType<TMDBPrimaryMedia> type = map['tmdb_type'];
-    switch (type) {
-      case TMDBType.movie:
-        return TMDBMovie.fromMap(map);
+    final type = map['tmdb_type'] as TMDBType;
 
-      case TMDBType.tv:
-        return TMDBTv.fromMap(map);
-
-      case TMDBType.person:
+    try {
+      if (type.isMultimedia()) {
+        return TMDBMultiMedia.fromMap(map);
+      } else {
         return TMDBPerson.fromJson(map);
+      }
+    } catch (e) {
+      throw FormatException("Invalid TMDBPrimaryMedia type",
+          "'$type' is not a valid TMDBPrimaryMedia (movie, tv, people)");
     }
-    throw FormatException("Invalid TMDBPrimaryMedia type",
-        "'$type' is not a valid TMDBPrimaryMedia (movie, tv, people)");
   }
 }
 
 abstract class TMDBMedia extends TMDBElement
-    with TMDBNameProvider, TMDBImageProvider {
+    with TMDBNameProvider, TMDBElementWithImage {
   @override
   TMDBType<TMDBMedia> get type;
 
@@ -87,16 +89,14 @@ abstract class TMDBMedia extends TMDBElement
   TMDBMedia(super.id);
 
   static TMDBMedia fromMap(Map<String, dynamic> map) {
-    final TMDBType<TMDBMedia> type = map['tmdb_type'];
+    final type = map['tmdb_type'] as TMDBType;
     if (type.isPrimaryMedia()) {
       return TMDBPrimaryMedia.fromMap(map);
     } else {
-      switch (type) {
-        case TMDBType.tvEpisode:
-          return TMDBTVEpisode.fromMap(map);
-
-        case TMDBType.tvSeason:
-          return TMDBTVSeason.fromMap(map);
+      if (type.isTvEpisode()) {
+        return TMDBTVEpisode.fromMap(map);
+      } else if (type.isTvSeason()) {
+        return TMDBTVSeason.fromMap(map);
       }
     }
 
@@ -108,11 +108,11 @@ abstract class TMDBMedia extends TMDBElement
 mixin TMDBLibraryMedia on TMDBMedia {
   LibraryMediaInformation get libraryMediaInfo;
   set libraryMediaInfo(LibraryMediaInformation libraryMediaInfo);
-  String get libraryPath;
-}
+  String get absolutePath;
 
-mixin TMDBPrimaryMediaIdProvider {
-  String get primaryMediaId;
+  Map<String, dynamic> libraryIdMap() {
+    return {'media_type': type.path, 'id': id};
+  }
 }
 
 mixin TMDBPlayableMedia on TMDBLibraryMedia {
@@ -126,13 +126,13 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
   TMDBImg? get backdropImg;
 
   static TMDBMultiMedia fromMap(Map<String, dynamic> map) {
-    final type = map['media_type'];
-    switch (type) {
-      case 'movie':
-        return TMDBMovie.fromMap(map);
-      case 'tv':
-        return TMDBTv.fromMap(map);
+    final type = map['tmdb_type'] as TMDBType;
+    if (type.isMovie()) {
+      return TMDBMovie.fromMap(map);
+    } else if (type.isTV()) {
+      return TMDBTv.fromMap(map);
     }
+
     throw FormatException("Invalid TMDBMedia type",
         "'$type' is not a valid TMDBMediaType (movie, tv, people)");
   }
@@ -171,7 +171,7 @@ abstract class TMDBMultiMedia extends TMDBPrimaryMedia
   }
 
   @override
-  String get libraryPath => "${type.path}/$id";
+  String get absolutePath => "${type.path}/$id";
 
   Duration? get duration;
   num? get voteAverage;

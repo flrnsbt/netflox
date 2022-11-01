@@ -23,9 +23,7 @@ class TMDBMovie extends TMDBMultiMedia
       this.voteCount,
       this.date,
       this.voteAverage,
-      LibraryMediaInformation? libraryMediaInfo})
-      : libraryMediaInfo = libraryMediaInfo ??
-            LibraryMediaInformation(id: id, type: TMDBType.movie);
+      this.libraryMediaInfo = const LibraryMediaInformation()});
 
   factory TMDBMovie.fromMap(Map<String, dynamic> map) {
     final genres = <TMDBMovieGenre>[];

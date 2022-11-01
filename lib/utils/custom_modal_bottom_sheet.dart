@@ -25,11 +25,13 @@ class CustomModalBottomSheetItem extends StatelessWidget {
 class CustomModalBottomSheet<T> {
   final void Function(T? value)? onSelected;
   final List<CustomModalBottomSheetItem> _children;
+  final Color? backgroundColor;
   final Color? color;
 
   const CustomModalBottomSheet._(
       {this.onSelected,
       required List<CustomModalBottomSheetItem> children,
+      this.backgroundColor,
       this.color})
       : _children = children;
 
@@ -38,6 +40,7 @@ class CustomModalBottomSheet<T> {
       required T? defaultValue,
       required Iterable<T> values,
       Widget Function(T? value, bool selected)? builder,
+      Color? backgroundColor,
       Color? color}) {
     final v = [...values, null];
     final children = v.map<CustomModalBottomSheetItem>((e) {
@@ -70,7 +73,10 @@ class CustomModalBottomSheet<T> {
     }).toList();
 
     return CustomModalBottomSheet._(
-        children: children, color: color, onSelected: onSelected);
+        children: children,
+        color: color,
+        backgroundColor: backgroundColor,
+        onSelected: onSelected);
   }
 
   void show(BuildContext context) {
@@ -99,7 +105,7 @@ class CustomModalBottomSheet<T> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               decoration: BoxDecoration(
-                color: color ?? Theme.of(context).backgroundColor,
+                color: backgroundColor ?? Theme.of(context).backgroundColor,
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24.0),
                     topRight: Radius.circular(24.0)),
@@ -126,7 +132,7 @@ class CustomModalBottomSheet<T> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               decoration: BoxDecoration(
-                color: color ?? Theme.of(context).backgroundColor,
+                color: backgroundColor ?? Theme.of(context).backgroundColor,
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24.0),
                     topRight: Radius.circular(24.0)),

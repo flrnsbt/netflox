@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
-import 'package:provider/provider.dart';
 import '../../../../data/blocs/theme/theme_cubit_cubit.dart';
 import '../../../../data/models/tmdb/element.dart';
 import '../../buttons/home_button.dart';
 import 'header.dart';
 
 class TMDBScreenBuilder extends StatefulWidget {
-  final TMDBImageProvider element;
+  final TMDBElementWithImage element;
   final List<Widget> content;
   final Widget header;
   final ScrollController? controller;
@@ -60,8 +60,14 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
 
   Widget _buildAppbar(BuildContext context) {
     final double height = 20.w(context).clamp(240, 600);
+    final screenHeaderContent = TMDBScreenHeaderContent(
+      element: widget.element,
+      child: widget.header,
+    );
     return Theme(
-      data: ThemeDataCubit.darkThemeData,
+      data: screenHeaderContent.image != null
+          ? ThemeDataCubit.darkThemeData
+          : context.read<ThemeDataCubit>().state.data,
       child: SliverAppBar(
         backgroundColor: Theme.of(context).backgroundColor,
         floating: false,
@@ -95,10 +101,7 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
             StretchMode.blurBackground,
             StretchMode.zoomBackground
           ],
-          background: TMDBScreenHeader(
-            element: widget.element,
-            child: widget.header,
-          ),
+          background: screenHeaderContent,
         ),
       ),
     );

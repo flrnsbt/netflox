@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,34 +7,31 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/models/exception.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/repositories/tmdb_result.dart';
-import '../../../services/firestore_service.dart';
+import 'package:netflox/services/firestore_service.dart';
 import '../../../services/tmdb_service.dart';
-import '../../models/tmdb/library_media_information.dart';
+import '../../models/tmdb/error.dart';
+import '../../models/tmdb/type.dart';
 import 'basic_server_fetch_state.dart';
 import '../../models/tmdb/filter_parameter.dart';
-part 'library/library_multi_media_explore_bloc.dart';
-part 'tmdb/discover_bloc.dart';
-part 'tmdb/search_bloc.dart';
 
-abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
+abstract class PagedDataCollectionFetchBloc<P extends FilterParameter<T>,
+        T extends TMDBMedia>
     extends Bloc<PagedDataCollectionFetchEvent,
-        BasicServerFetchState<List<TMDBPrimaryMedia>>> {
+        BasicServerFetchState<List<T>>> {
   final Duration _minimumFetchDelay;
   P? _parameter;
   int _currentPage = 1;
   PagedDataCollectionFetchBloc(
       [this._minimumFetchDelay = const Duration(seconds: 1)])
       : super(BasicServerFetchState.init()) {
-    Future<TMDBCollectionResult<TMDBPrimaryMedia>?> fetch(
-        Emitter<BasicServerFetchState<List<TMDBPrimaryMedia>>> emit,
-        P parameter,
+    Future<TMDBCollectionResult<T>?> fetch(
+        Emitter<BasicServerFetchState<List<T>>> emit, P parameter,
         [int page = 1]) async {
       emit(BasicServerFetchState.loading());
       await Future.delayed(_minimumFetchDelay);
-      TMDBCollectionResult<TMDBPrimaryMedia>? result;
+      TMDBCollectionResult<T>? result;
       try {
-        result = await __fetch(parameter, page);
-        _parameter = parameter;
+        result = await get(parameter, page);
         _currentPage = result.currentPage;
         emit(BasicServerFetchState.success(
             result: result.data, error: result.error));
@@ -52,9 +51,10 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
 
     on<_PagedDataCollectionFetch>((event, emit) async {
       if (event is PagedDataCollectionUpdateParameter<P>) {
-        final newParameter = event.parameter;
         reset();
-        await fetch(emit, newParameter, _currentPage);
+        _parameter = event.parameter;
+
+        await fetch(emit, _parameter!, _currentPage);
       } else {
         emit(BasicServerFetchState.success(error: 'event-canceled'));
       }
@@ -82,8 +82,8 @@ abstract class PagedDataCollectionFetchBloc<P extends FilterParameter>
     resetParameter();
   }
 
-  Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
-      P parameters, int page);
+  @protected
+  Future<TMDBCollectionResult<T>> get(P parameters, int page);
 }
 
 abstract class PagedDataCollectionFetchEvent {
@@ -92,7 +92,7 @@ abstract class PagedDataCollectionFetchEvent {
   static const refresh = PagedDataCollectionRefreshEvent();
   static const cancel = PagedDataCollectionCancelEvent();
   static PagedDataCollectionUpdateParameter<P>
-      updateParameter<P extends FilterParameter>(P parameter) =>
+      setParameter<P extends FilterParameter>(P parameter) =>
           PagedDataCollectionUpdateParameter(parameter);
 }
 
@@ -117,4 +117,82 @@ class PagedDataCollectionFetchNextPage extends PagedDataCollectionFetchEvent {
 
 class PagedDataCollectionRefreshEvent extends PagedDataCollectionFetchEvent {
   const PagedDataCollectionRefreshEvent();
+}
+
+mixin FirestoreDataCollection<P extends FilterParameter<T>,
+    T extends TMDBLibraryMedia> on PagedDataCollectionFetchBloc<P, T> {
+  DocumentSnapshot? _lastDoc;
+  TMDBService get tmdbService;
+
+  @override
+  void resetPage() {
+    _lastDoc = null;
+  }
+
+  set lastDoc(DocumentSnapshot doc) {
+    _lastDoc = doc;
+  }
+
+  @protected
+  void appendToElement(Map<String, dynamic> rawData, T element) {}
+
+  @protected
+  @override
+  Future<TMDBCollectionResult<T>> get(parameters, int page) async {
+    final firestoreResult = await _fetchFromFirestore(parameters);
+    final allData = <T>[];
+    final errors = <TMDBError>[];
+    for (final doc in firestoreResult) {
+      try {
+        final data = doc.data();
+        final type = TMDBType.fromString(data['media_type']);
+        final id = data['id'].toString();
+        TMDBDocumentResult? result;
+        if (type.isMultimedia()) {
+          result = await tmdbService.getMultimedia(
+              id: id, type: type as TMDBType<TMDBMultiMedia>);
+        } else if (type.isTVElement()) {
+          final seasonNumber = data['season_number'] as int;
+
+          if (type.isTvEpisode()) {
+            final episodeNumber = data['episode_number'] as int;
+
+            result = await tmdbService.getEpisode(
+                tvShowId: id,
+                seasonNumber: seasonNumber,
+                episodeNumber: episodeNumber);
+          } else if (type.isTvSeason()) {
+            result = await tmdbService.getSeason(
+                tvShowId: id, seasonNumber: seasonNumber);
+          }
+        }
+        if (result?.hasData() ?? false) {
+          final media = result!.data!;
+          appendToElement(data, media);
+          allData.add(media);
+        }
+      } on TMDBError catch (e) {
+        errors.add(e);
+      }
+    }
+    return TMDBCollectionResult(data: allData, error: errors);
+  }
+
+  Query<Map<String, dynamic>> queryBuilder(P parameters);
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> postQueryFilter(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, P parameters) {
+    return docs;
+  }
+
+  @protected
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchFromFirestore(
+      P parameters) async {
+    final result = await queryBuilder(parameters).fetchAfterDoc(_lastDoc);
+    var docs = result.docs;
+    docs = postQueryFilter(docs, parameters);
+    if (docs.isNotEmpty) {
+      lastDoc = docs.last;
+    }
+    return docs;
+  }
 }

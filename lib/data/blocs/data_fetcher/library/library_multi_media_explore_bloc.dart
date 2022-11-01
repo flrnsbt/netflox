@@ -1,23 +1,28 @@
-part of '../paged_data_collection_fetch_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../services/firestore_service.dart';
+import '../../../../services/tmdb_service.dart';
+import '../../../models/tmdb/filter_parameter.dart';
+import '../../../models/tmdb/library_media_information.dart';
+import '../../../models/tmdb/media.dart';
+import '../paged_data_collection_fetch_bloc.dart';
 
-class LibraryMediaExploreBloc
-    extends PagedDataCollectionFetchBloc<LibraryFilterParameter> {
-  final TMDBService _tmdbService;
+class LibraryMediaExploreBloc<T extends TMDBLibraryMedia>
+    extends PagedDataCollectionFetchBloc<LibraryFilterParameter<T>, T>
+    with FirestoreDataCollection {
+  @override
+  final TMDBService tmdbService;
 
   LibraryMediaExploreBloc(BuildContext context)
-      : _tmdbService = context.read<TMDBService>();
+      : tmdbService = context.read<TMDBService>();
 
   @override
-  void resetPage() {
-    _lastDoc = null;
-  }
-
-  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchFromFirestore(
-      LibraryFilterParameter parameters) async {
+  Query<Map<String, dynamic>> queryBuilder(
+      LibraryFilterParameter<T> parameters) {
     final mediaStatus = parameters.status.name;
-    final typeNames = parameters.types.map((e) => e.name).toList();
+    final typeNames = parameters.selectedtypes.map((e) => e.path).toList();
     final language = parameters.language?.isoCode;
-    final subtitle = parameters.subtitle?.isoCode;
     var query = FirestoreService.media
         .where("media_status", isEqualTo: mediaStatus)
         .where("media_type", whereIn: typeNames)
@@ -27,9 +32,14 @@ class LibraryMediaExploreBloc
     if (language != null) {
       query = query.where('languages', arrayContains: language);
     }
+    return query;
+  }
 
-    final result = await query.fetchAfterDoc(_lastDoc);
-    final docs = result.docs;
+  @override
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> postQueryFilter(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+      LibraryFilterParameter<T> parameters) {
+    final subtitle = parameters.subtitle?.isoCode;
     if (subtitle != null) {
       return docs
           .where((e) => e.data()['subtitles']?.contains(subtitle) ?? false)
@@ -38,34 +48,9 @@ class LibraryMediaExploreBloc
     return docs;
   }
 
-  DocumentSnapshot? _lastDoc;
-
   @override
-  Future<TMDBCollectionResult<TMDBPrimaryMedia>> __fetch(
-      LibraryFilterParameter parameters, int page) async {
-    try {
-      final docs = await _fetchFromFirestore(parameters);
-      if (docs.isNotEmpty) {
-        _lastDoc = docs.last;
-      }
-      final allData = <TMDBMultiMedia>[];
-      for (final doc in docs) {
-        final data = doc.data();
-        dynamic libraryMediaInformation = LibraryMediaInformation.fromMap(data);
-        final result = await _tmdbService.getMultimedia(
-            id: libraryMediaInformation.id, type: libraryMediaInformation.type);
-
-        if (result.hasData()) {
-          final media = result.data!;
-          media.libraryMediaInfo = libraryMediaInformation;
-          allData.add(media);
-        }
-      }
-      return TMDBCollectionResult(
-        data: allData,
-      );
-    } catch (e) {
-      rethrow;
-    }
+  void appendToElement(Map<String, dynamic> rawData, T element) {
+    final libraryMediaInformation = LibraryMediaInformation.fromMap(rawData);
+    element.libraryMediaInfo = libraryMediaInformation;
   }
 }

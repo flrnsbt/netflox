@@ -29,10 +29,6 @@ class TMDBRepository {
     return BasicTMDBQuery<TMDBTv>._(_tmdbApiConfig);
   }
 
-  BasicTMDBQuery<TMDBTVSeason> season() {
-    return BasicTMDBQuery<TMDBTVSeason>._(_tmdbApiConfig);
-  }
-
   BasicTMDBQuery<TMDBPerson> people() {
     return BasicTMDBQuery<TMDBPerson>._(_tmdbApiConfig);
   }

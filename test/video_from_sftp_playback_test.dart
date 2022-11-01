@@ -18,7 +18,7 @@ Future<void> main() async {
       .sftp();
   test("sftp video file retrieval and http binding on localhost", () async {
     final sftpBloc = SFTPMediaAccessCubit(sftpClient);
-    sftpBloc.open(movieTestUrl);
+    sftpBloc.read(movieTestUrl);
     await sftpBloc.stream.listen((state) {
       debugPrint(state.toString());
       if (state is SFTPMediaOpenedState) {

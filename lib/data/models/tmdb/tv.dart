@@ -29,10 +29,8 @@ class TMDBTv extends TMDBMultiMedia {
       this.voteCount,
       this.date,
       this.voteAverage,
-      LibraryMediaInformation? libraryInformation})
-      : libraryMediaInfo = libraryInformation ??
-            LibraryMediaInformation(id: id, type: TMDBType.tv),
-        seasons = seasons ?? const [],
+      this.libraryMediaInfo = const LibraryMediaInformation()})
+      : seasons = seasons ?? const [],
         genres = genres ?? const [];
 
   static Duration _getAverageDuration(List<int> durations) {

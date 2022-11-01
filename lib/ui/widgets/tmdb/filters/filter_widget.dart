@@ -102,9 +102,9 @@ class LanguagePickerFilterWidget extends StatelessWidget
                                   RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       side: BorderSide(
-                                          width: 1.5,
-                                          color: Theme.of(context)
-                                              .highlightColor)))),
+                                          width: 1,
+                                          color:
+                                              Theme.of(context).hintColor)))),
                           onPressed: () => _showPicker(context),
                           child: Text(_.currentValue?.tr(context) ?? ''))
                     ],

@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import 'package:netflox/data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
 import 'package:netflox/data/constants/basic_fetch_status.dart';
-import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/netflox_loading_indicator.dart';
 import 'package:netflox/ui/widgets/visibility_animation_widget.dart';
-import 'package:nil/nil.dart';
-
 import '../../utils/platform_mobile_extension.dart';
 
 enum PagedSliverScrollViewEventType {
@@ -17,13 +13,12 @@ enum PagedSliverScrollViewEventType {
   load;
 }
 
-const _kOverscrollOffset = 100;
 const _kDelay = Duration(milliseconds: 2000);
 
 class PagedSliverScrollViewWrapper extends StatefulWidget {
   final Axis scrollDirection;
   final ScrollPhysics? physics;
-  final bool showFloatingReturnTopButton;
+  final bool showFloatingReturnBeginButton;
   final ScrollController? controller;
   final Widget child;
   final Widget? header;
@@ -32,13 +27,12 @@ class PagedSliverScrollViewWrapper extends StatefulWidget {
 
   const PagedSliverScrollViewWrapper({
     super.key,
-    double? loadingIndicatorSpacing,
     this.scrollDirection = Axis.vertical,
     this.physics = const BouncingScrollPhysics(),
     this.controller,
     required this.child,
     this.loadingIndicator,
-    this.showFloatingReturnTopButton = false,
+    this.showFloatingReturnBeginButton = false,
     this.onEvent,
     this.header,
   });
@@ -118,57 +112,63 @@ class _PagedSliverScrollViewWrapperState
 
   Timer? _refreshTimer;
 
+  bool _onNotification(ScrollNotification notification) {
+    final viewportDimension = notification.metrics.viewportDimension;
+    if (notification.metrics.pixels >=
+        notification.metrics.maxScrollExtent +
+            (platformIsMobile() ? (viewportDimension * 0.05) : 0)) {
+      _load();
+      return true;
+    }
+
+    if (notification.metrics.pixels < -viewportDimension * 0.1) {
+      _requestRefresh();
+      return true;
+    }
+
+    if (notification is ScrollEndNotification) {
+      if (notification.metrics.pixels > viewportDimension) {
+        _returnToTopScrollViewButtonController?.show();
+      }
+    }
+
+    if (notification is ScrollStartNotification) {
+      _returnToTopScrollViewButtonController?.hide();
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
         NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification.metrics.pixels >=
-                notification.metrics.maxScrollExtent +
-                    (platformIsMobile() ? 30 : 0)) {
-              _load();
-              return true;
-            }
-
-            if (notification.metrics.pixels < -_kOverscrollOffset) {
-              _requestRefresh();
-              return true;
-            }
-
-            if (notification is ScrollEndNotification) {
-              if (notification.metrics.pixels >
-                  MediaQuery.of(context).size.height) {
-                _returnToTopScrollViewButtonController?.show();
-              }
-            }
-
-            if (notification is ScrollStartNotification) {
-              _returnToTopScrollViewButtonController?.hide();
-            }
-            return false;
-          },
+          onNotification: _onNotification,
           child: CustomScrollView(
             controller: _controller,
             scrollDirection: widget.scrollDirection,
             physics: _physics,
             slivers: [
-              if (_header != null) _header!,
+              if (_header != null)
+                SliverPadding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    sliver: _header!),
               widget.child,
               SliverFillRemaining(
                   fillOverscroll: true,
                   hasScrollBody: false,
                   child: _loadIndicator),
               const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 25,
+                child: SizedBox.square(
+                  dimension: 25,
                 ),
               )
             ],
           ),
         ),
-        if (widget.showFloatingReturnTopButton)
-          _ReturnToTopButton(
+        if (widget.showFloatingReturnBeginButton)
+          _ReturnToBeginButton(
             controller: _returnToTopScrollViewButtonController!,
             onPressed: () {
               _controller.animateTo(0,
@@ -182,8 +182,7 @@ class _PagedSliverScrollViewWrapperState
 }
 
 class LoadingIndicator extends StatelessWidget {
-  final double loadingIndicatorSpacing;
-  final double maxHeight;
+  final BoxConstraints constraints;
   final Widget? Function(BuildContext context, [Object? error])? errorBuilder;
   final Widget Function(BuildContext context)? loadingBuilder;
   final Widget? Function(BuildContext context, [Object? result])? idleBuilder;
@@ -191,9 +190,8 @@ class LoadingIndicator extends StatelessWidget {
 
   LoadingIndicator(
       {super.key,
-      this.maxHeight = 150,
+      this.constraints = const BoxConstraints(maxHeight: 50, maxWidth: 100),
       LoadingIndicatorController? controller,
-      this.loadingIndicatorSpacing = 35,
       this.errorBuilder,
       this.loadingBuilder,
       this.idleBuilder})
@@ -202,63 +200,58 @@ class LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        child: BlocProvider(
-          create: (context) => _controller,
-          child: BlocBuilder<LoadingIndicatorController, BasicServerFetchState>(
-            builder: (context, state) {
-              Widget? child;
-              switch (state.status) {
-                case BasicServerFetchStatus.loading:
-                  child = loadingBuilder?.call(context) ??
-                      const NetfloxLoadingIndicator();
-                  break;
-                case BasicServerFetchStatus.failed:
-                  child = SizedBox(
-                    height: 80,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: errorBuilder?.call(context, state.error) ??
-                          CustomErrorWidget.from(
-                            error: state.error,
-                            showTitle: false,
-                          ),
-                    ),
-                  );
-                  break;
-                case BasicServerFetchStatus.success:
-                  child = idleBuilder?.call(context, state.result);
-                  break;
-                case BasicServerFetchStatus.init:
-                  break;
-              }
-              if (child != null) {
-                return Padding(
-                  padding:
-                      EdgeInsets.symmetric(vertical: loadingIndicatorSpacing),
-                  child: child,
-                );
-              }
-              return const Nil();
-            },
-          ),
-        ),
+      child: BlocBuilder<LoadingIndicatorController, BasicServerFetchState>(
+        bloc: _controller,
+        builder: (context, state) {
+          Widget? child;
+          switch (state.status) {
+            case BasicServerFetchStatus.loading:
+              child = loadingBuilder?.call(context) ??
+                  const NetfloxLoadingIndicator();
+              break;
+            case BasicServerFetchStatus.failed:
+              child = errorBuilder?.call(context, state.error) ??
+                  Icon(Icons.warning,
+                      size: 36, color: Theme.of(context).hintColor);
+              break;
+            case BasicServerFetchStatus.success:
+              child = idleBuilder?.call(context, state.result);
+              break;
+            case BasicServerFetchStatus.init:
+              break;
+          }
+          if (child != null) {
+            return Padding(
+              padding: const EdgeInsets.all(25),
+              child: ConstrainedBox(constraints: constraints, child: child),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
+    );
+  }
+
+  LoadingIndicator copyWith(
+      {BoxConstraints? constraints = const BoxConstraints(maxHeight: 50),
+      LoadingIndicatorController? controller,
+      Widget? Function(BuildContext context, [Object? error])? errorBuilder,
+      Widget Function(BuildContext context)? loadingBuilder,
+      Widget? Function(BuildContext context, [Object? result])? idleBuilder}) {
+    return LoadingIndicator(
+      constraints: constraints ?? this.constraints,
+      controller: controller ?? _controller,
+      errorBuilder: errorBuilder ?? this.errorBuilder,
+      loadingBuilder: loadingBuilder ?? this.loadingBuilder,
+      idleBuilder: idleBuilder ?? this.idleBuilder,
     );
   }
 }
 
 class LoadingIndicatorController extends Cubit<BasicServerFetchState> {
-  bool _active;
   void updateState(BasicServerFetchState state) {
-    if (_active) {
-      emit(state);
-    }
+    emit(state);
   }
-
-  activate() => _active = true;
-  deactivate() => _active = false;
 
   static LoadingIndicatorController from(PagedDataCollectionFetchBloc bloc) {
     final controller = LoadingIndicatorController();
@@ -270,15 +263,14 @@ class LoadingIndicatorController extends Cubit<BasicServerFetchState> {
 
   LoadingIndicatorController(
       {BasicServerFetchStatus initialState = BasicServerFetchStatus.init})
-      : _active = true,
-        super(BasicServerFetchState(status: initialState));
+      : super(BasicServerFetchState(status: initialState));
 }
 
-class _ReturnToTopButton extends StatelessWidget {
+class _ReturnToBeginButton extends StatelessWidget {
   final EasyVisibilityController controller;
   final void Function()? onPressed;
 
-  const _ReturnToTopButton({required this.controller, this.onPressed});
+  const _ReturnToBeginButton({required this.controller, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

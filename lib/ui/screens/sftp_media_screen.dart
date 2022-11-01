@@ -8,7 +8,7 @@ import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/video_player/stream_video_player.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
-import '../../data/blocs/sftp_server/sftp_file_access/sftp_media_file_access_cubit.dart';
+import '../../data/blocs/sftp_server/sftp_file_transfer/sftp_media_file_access_cubit.dart';
 import '../../data/blocs/sftp_server/ssh_connection/ssh_state.dart';
 
 class StreamSFTPMediaScreen extends StatefulWidget {
@@ -46,53 +46,49 @@ class _StreamSFTPMediaScreenState extends State<StreamSFTPMediaScreen>
   }
 
   void _openRemoteFile(BuildContext context) =>
-      context.read<SFTPMediaAccessCubit>().open(widget.playableMedia);
+      context.read<SFTPMediaReadDirectoryCubit>().read(widget.playableMedia);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        extendBody: true,
-        backgroundColor: Colors.black,
-        body: SizedBox.expand(
-          child: BlocBuilder<SSHConnectionCubit, SSHConnectionState>(
-            builder: (context, state) {
-              if (state.isConnected()) {
-                return BlocProvider(
-                  create: (context) =>
-                      SFTPMediaAccessCubit.fromSSHConnectedState(
-                          state as SSHConnectedState)
-                        ..open(widget.playableMedia),
-                  child: BlocBuilder<SFTPMediaAccessCubit,
-                      SFTPMediaFileAccessState>(
-                    builder: (context, remoteMediaState) {
-                      if (remoteMediaState is SFTPMediaOpenedState) {
-                        return SFTPVideoFilePlayer(
-                          docs: remoteMediaState.docs,
-                          startingTime: widget.startAt,
-                          onVideoClosed: widget.onVideoClosed,
-                        );
-                      } else if (remoteMediaState
-                          is SFTPMediaAccessFailedState) {
-                        return _buildErrorScreen(
-                            child: _tryAgainButton(
-                                () => _openRemoteFile(context)));
-                      }
-                      return const LoadingScreen(
-                        loadingMessage: 'fetching-files',
-                      );
-                    },
-                  ),
-                );
-              } else if (state.isConnecting()) {
+    return SizedBox.expand(
+      child: BlocBuilder<SSHConnectionCubit, SSHConnectionState>(
+        builder: (context, state) {
+          if (state.isConnected()) {
+            _openRemoteFile(context);
+            return BlocBuilder<SFTPMediaReadDirectoryCubit,
+                SFTPMediaFileAccessState>(
+              builder: (context, remoteMediaState) {
+                if (remoteMediaState is SFTPMediaOpenedState) {
+                  if (remoteMediaState.remoteFiles.playable()) {
+                    return SFTPVideoFilePlayer(
+                      remoteFiles: remoteMediaState.remoteFiles,
+                      startingTime: widget.startAt,
+                      onVideoClosed: widget.onVideoClosed,
+                    );
+                  } else {
+                    return _buildErrorScreen(
+                        error: 'server-error',
+                        child: _tryAgainButton(() => _openRemoteFile(context)));
+                  }
+                } else if (remoteMediaState is SFTPMediaAccessFailedState) {
+                  return _buildErrorScreen(
+                      child: _tryAgainButton(() => _openRemoteFile(context)));
+                }
                 return const LoadingScreen(
-                  loadingMessage: 'connecting-server',
+                  loadingMessage: 'fetching-files',
                 );
-              }
-              return _buildErrorScreen(
-                  child: _tryAgainButton(() => initConnection(context)));
-            },
-          ),
-        ));
+              },
+            );
+          } else if (state.isConnecting()) {
+            return const LoadingScreen(
+              loadingMessage: 'connecting-server',
+            );
+          }
+          return _buildErrorScreen(
+              child: _tryAgainButton(() => initConnection(context)));
+        },
+      ),
+    );
   }
 
   Widget _tryAgainButton(void Function() onPressed) {

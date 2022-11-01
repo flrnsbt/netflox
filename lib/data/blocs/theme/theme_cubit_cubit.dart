@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +46,7 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
           elevation: 0,
           backgroundColor: Color.fromARGB(255, 5, 5, 5),
           foregroundColor: Colors.white),
-      cardColor: const Color.fromARGB(255, 18, 18, 18),
+      cardColor: const Color.fromARGB(255, 22, 22, 22),
       canvasColor: const Color.fromARGB(255, 8, 8, 8),
       primaryColor: Colors.pinkAccent,
       colorScheme: ColorScheme.fromSwatch(
@@ -65,36 +67,37 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
       scaffoldBackgroundColor: const Color.fromARGB(255, 2, 2, 2),
       backgroundColor: Colors.black);
 
-  Future<void> _init() async {
-    final modeName =
-        await SharedPreferenceService.instance.get("netflox_theme_mode");
-    final mode = ThemeMode.values.firstWhere(
+  void _init() async {
+    final String? modeName =
+        SharedPreferenceService.instance.get("netflox_theme_mode");
+
+    final mode = Brightness.values.firstWhere(
       (element) => element.name == modeName,
-      orElse: () => ThemeMode.dark,
+      orElse: () => window.platformBrightness,
     );
     emit(_get(mode));
   }
 
-  ThemeDataState _get(ThemeMode mode) {
-    var data = mode == ThemeMode.dark ? darkThemeData : lightThemeData;
+  ThemeDataState _get(Brightness mode) {
+    var data = mode == Brightness.dark ? darkThemeData : lightThemeData;
     return ThemeDataState(mode, data);
   }
 
-  Future<void> changeMode(ThemeMode mode) async {
+  Future<void> changeMode(Brightness mode) async {
     await SharedPreferenceService.instance.set("netflox_theme_mode", mode.name);
     emit(_get(mode));
   }
 }
 
 class ThemeDataState extends Equatable {
-  final ThemeMode mode;
+  final Brightness mode;
   final ThemeData data;
 
-  static dark(ThemeData data) => ThemeDataState(ThemeMode.dark, data);
-  static light(ThemeData data) => ThemeDataState(ThemeMode.light, data);
+  static dark(ThemeData data) => ThemeDataState(Brightness.dark, data);
+  static light(ThemeData data) => ThemeDataState(Brightness.light, data);
 
   const ThemeDataState(this.mode, this.data);
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [mode];
 }

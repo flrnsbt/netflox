@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/models/tmdb/filter_parameter.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
@@ -11,12 +12,13 @@ import 'package:netflox/ui/widgets/search_bar.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
-import '../../router/router.gr.dart';
+import '../../../data/blocs/data_fetcher/tmdb/search_bloc.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/default_sliver_grid.dart';
 import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/tmdb_media_card.dart';
+import '../tmdb/media_screen.dart';
 
 class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
   SearchScreen({
@@ -81,57 +83,58 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
       endStop: 0,
       child: SafeArea(
           minimum: const EdgeInsets.only(left: 25, right: 25, top: 40),
-          child: PagedSliverScrollViewWrapper(
-              showFloatingReturnTopButton: true,
-              loadingIndicator: LoadingIndicator(
-                controller: LoadingIndicatorController.from(
-                    context.read<TMDBPrimaryMediaSearchBloc>()),
-                errorBuilder: (context, [error]) {
-                  if (_data.isNotEmpty) {
-                    return CustomErrorWidget.from(
-                      error: error,
-                      showDescription: false,
-                    );
+          child: SizedBox.expand(
+            child: PagedSliverScrollViewWrapper(
+                showFloatingReturnBeginButton: true,
+                loadingIndicator: LoadingIndicator(
+                  controller: LoadingIndicatorController.from(
+                      context.read<TMDBPrimaryMediaSearchBloc>()),
+                  errorBuilder: (context, [error]) {
+                    if (_data.isNotEmpty) {
+                      return CustomErrorWidget.from(
+                        error: error,
+                        showDescription: false,
+                      );
+                    }
+                  },
+                ),
+                onEvent: (eventType) {
+                  switch (eventType) {
+                    case PagedSliverScrollViewEventType.refresh:
+                      _data.clear();
+                      context
+                          .read<TMDBPrimaryMediaSearchBloc>()
+                          .add(PagedDataCollectionFetchEvent.refresh);
+                      break;
+                    case PagedSliverScrollViewEventType.load:
+                      context
+                          .read<TMDBPrimaryMediaSearchBloc>()
+                          .add(PagedDataCollectionFetchEvent.nextPage);
+                      break;
                   }
                 },
-              ),
-              onEvent: (eventType) {
-                switch (eventType) {
-                  case PagedSliverScrollViewEventType.refresh:
-                    _data.clear();
-
-                    context
-                        .read<TMDBPrimaryMediaSearchBloc>()
-                        .add(PagedDataCollectionFetchEvent.refresh);
-                    break;
-                  case PagedSliverScrollViewEventType.load:
-                    context
-                        .read<TMDBPrimaryMediaSearchBloc>()
-                        .add(PagedDataCollectionFetchEvent.nextPage);
-                    break;
-                }
-              },
-              header: _buildSearchBar(context),
-              child: BlocConsumer<TMDBPrimaryMediaSearchBloc,
-                  BasicServerFetchState>(listener: (context, state) {
-                if (state.hasData()) {
-                  _data.addAll(state.result!);
-                }
-              }, builder: (context, state) {
-                return DefaultSliverGrid(
-                  sliverChildBuilderDelegate:
-                      SliverChildBuilderDelegate(((context, index) {
-                    return TMDBMediaCard(
-                        media: _data.elementAt(index),
-                        showMediaType: true,
-                        showBottomTitle: true,
-                        onTap: (media) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          context.pushRoute(MediaRoute.fromMedia(media));
-                        });
-                  }), childCount: _data.length),
-                );
-              }))),
+                header: _buildSearchBar(context),
+                child: BlocConsumer<TMDBPrimaryMediaSearchBloc,
+                    BasicServerFetchState>(listener: (context, state) {
+                  if (state.hasData()) {
+                    _data.addAll(state.result!);
+                  }
+                }, builder: (context, state) {
+                  return DefaultSliverGrid(
+                    sliverChildBuilderDelegate:
+                        SliverChildBuilderDelegate(((context, index) {
+                      return TMDBMediaCard(
+                          media: _data.elementAt(index),
+                          showMediaType: true,
+                          showBottomTitle: true,
+                          onTap: (media) {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            TMDBMediaRouteHelper.pushRoute(context, media);
+                          });
+                    }), childCount: _data.length),
+                  );
+                })),
+          )),
     );
   }
 
@@ -146,15 +149,26 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
                   PagedDataFilterManager<SearchFilterParameter>(
                       _searchFilterParameter))
         ],
-        child: BlocListener<PagedDataFilterManager<SearchFilterParameter>,
-            SearchFilterParameter>(
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<ConnectivityManager, ConnectivityState>(
+                listener: (context, state) {
+              if (state.hasNetworkAccess() && _data.isEmpty) {
+                context
+                    .read<TMDBPrimaryMediaSearchBloc>()
+                    .add(PagedDataCollectionFetchEvent.refresh);
+              }
+            }),
+            BlocListener<PagedDataFilterManager<SearchFilterParameter>,
+                SearchFilterParameter>(
+              listener: (context, state) {
+                _data.clear();
+                final event = PagedDataCollectionFetchEvent.setParameter(state);
+                context.read<TMDBPrimaryMediaSearchBloc>().add(event);
+              },
+            )
+          ],
           child: this,
-          listener: (context, state) {
-            _data.clear();
-            context
-                .read<TMDBPrimaryMediaSearchBloc>()
-                .add(PagedDataCollectionFetchEvent.updateParameter(state));
-          },
         ));
   }
 }

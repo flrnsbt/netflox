@@ -6,11 +6,24 @@ import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/people.dart';
 import 'package:netflox/data/models/tmdb/type.dart';
 
-class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
+mixin TMDBTVElement on TMDBLibraryMedia {
+  String get showId;
+  int get seasonNumber;
+
+  @override
+  Map<String, dynamic> libraryIdMap() {
+    return super.libraryIdMap()
+      ..addAll({'id': showId, 'season_number': seasonNumber});
+  }
+}
+
+class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia, TMDBTVElement {
   @override
   final String? overview;
+  @override
   final int seasonNumber;
   final int? _episodeCount;
+  @override
   final String showId;
   @override
   final String? date;
@@ -18,6 +31,8 @@ class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
 
   @override
   final TMDBImg? img;
+
+  final List<TMDBPerson>? guests;
 
   @override
   get type => TMDBType.tvSeason;
@@ -27,14 +42,13 @@ class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
       this.overview,
       this.name,
       required this.showId,
-      LibraryMediaInformation? libraryMediaInfo,
       List<TMDBTVEpisode>? episodes,
       this.seasonNumber = 1,
       int? episodeCount,
-      this.date})
+      this.date,
+      this.guests,
+      this.libraryMediaInfo = const LibraryMediaInformation()})
       : episodes = episodes ?? const [],
-        libraryMediaInfo = libraryMediaInfo ??
-            LibraryMediaInformation(id: id, type: TMDBType.tvSeason),
         _episodeCount = episodeCount;
 
   int get episodeCount => _episodeCount ?? episodes.length;
@@ -50,6 +64,9 @@ class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
         img: img,
         name: map['name'],
         showId: showId,
+        guests: map['guest_stars']
+            ?.map<TMDBPerson>((e) => TMDBPerson.fromJson(e))
+            .toList(),
         overview: map['overview'],
         episodes: map['episodes']
             ?.map<TMDBTVEpisode>(((e) =>
@@ -72,23 +89,29 @@ class TMDBTVSeason extends TMDBMedia with TMDBLibraryMedia {
   LibraryMediaInformation libraryMediaInfo;
 
   @override
-  String get libraryPath {
-    return "tv/$showId/seasons/$seasonNumber";
+  String get absolutePath {
+    return "tv/$showId/season/$seasonNumber";
   }
 }
 
 class TMDBTVEpisode extends TMDBMedia
-    with TMDBLibraryMedia, TMDBPlayableMedia, TMDBImageProvider {
+    with
+        TMDBLibraryMedia,
+        TMDBPlayableMedia,
+        TMDBElementWithImage,
+        TMDBTVElement {
   @override
   final String? overview;
   @override
   final String? name;
+  @override
   final int seasonNumber;
   final int episodeNumber;
   @override
   final String? date;
   final num? voteAverage;
   final int? voteCount;
+  @override
   final String showId;
   final List<TMDBPerson>? guests;
 
@@ -107,9 +130,7 @@ class TMDBTVEpisode extends TMDBMedia
       this.voteAverage,
       this.voteCount,
       this.img,
-      LibraryMediaInformation? libraryMediaInfo})
-      : libraryMediaInfo = libraryMediaInfo ??
-            LibraryMediaInformation(id: id, type: TMDBType.tvEpisode);
+      this.libraryMediaInfo = const LibraryMediaInformation()});
 
   @override
   final TMDBImg? img;
@@ -140,8 +161,8 @@ class TMDBTVEpisode extends TMDBMedia
   }
 
   @override
-  String get libraryPath {
-    return "tv/$showId/seasons/$seasonNumber/episodes/$episodeNumber";
+  String get absolutePath {
+    return "tv/$showId/season/$seasonNumber/episode/$episodeNumber";
   }
 
   @override
@@ -149,4 +170,9 @@ class TMDBTVEpisode extends TMDBMedia
 
   @override
   final Duration? duration;
+
+  @override
+  Map<String, dynamic> libraryIdMap() {
+    return super.libraryIdMap()..addAll({'episode_number': episodeNumber});
+  }
 }

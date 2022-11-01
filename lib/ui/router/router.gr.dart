@@ -11,117 +11,166 @@
 // ignore_for_file: type=lint
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i17;
-import 'package:flutter/cupertino.dart' as _i19;
-import 'package:flutter/material.dart' as _i18;
-import 'package:netflox/data/models/exception.dart';
+import 'package:auto_route/auto_route.dart' as _i19;
+import 'package:flutter/foundation.dart' as _i21;
+import 'package:flutter/material.dart' as _i20;
+import 'package:netflox/data/blocs/account/auth/auth_form/auth_form_bloc.dart'
+    as _i23;
+import 'package:netflox/data/models/tmdb/filter_parameter.dart' as _i24;
+import 'package:netflox/data/models/tmdb/media.dart' as _i22;
+import 'package:netflox/main.dart' as _i1;
+import 'package:netflox/ui/screens/admin_screen.dart' as _i11;
+import 'package:netflox/ui/screens/auths/auth_screen.dart' as _i10;
+import 'package:netflox/ui/screens/auths/forgot_password_screen.dart' as _i18;
+import 'package:netflox/ui/screens/main/my_account_screen.dart' as _i17;
+import 'package:netflox/ui/screens/auths/unverified_user_screen.dart' as _i4;
+import 'package:netflox/ui/screens/download_screen.dart' as _i9;
+import 'package:netflox/ui/screens/error_screen.dart' as _i2;
+import 'package:netflox/ui/screens/main/explore_screen.dart' as _i15;
+import 'package:netflox/ui/screens/main/library_screen.dart' as _i16;
+import 'package:netflox/ui/screens/main/search_screen.dart' as _i14;
+import 'package:netflox/ui/screens/main/tab_home_screen.dart' as _i3;
+import 'package:netflox/ui/screens/settings_screen.dart' as _i12;
+import 'package:netflox/ui/screens/sftp_media_screen.dart' as _i8;
+import 'package:netflox/ui/screens/tmdb/media_screen.dart' as _i5;
+import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart' as _i7;
+import 'package:netflox/ui/screens/tmdb/tv_show_season_screen.dart' as _i6;
+import 'package:netflox/ui/screens/upload_screen.dart' as _i13;
 
-import '../../data/blocs/account/auth/auth_form/auth_form_bloc.dart' as _i22;
-import '../../data/models/tmdb/media.dart' as _i21;
-import '../../data/models/tmdb/media.dart';
-import '../../data/models/tmdb/season.dart' as _i20;
-import '../../main.dart' as _i1;
-import '../screens/admin_screen.dart' as _i10;
-import '../screens/auths/auth_screen.dart' as _i8;
-import '../screens/auths/forgot_password_screen.dart' as _i9;
-import '../screens/auths/my_account_screen.dart' as _i16;
-import '../screens/auths/unverified_user_screen.dart' as _i3;
-import '../screens/error_screen.dart' as _i2;
-import '../screens/main/explore_screen.dart' as _i14;
-import '../screens/main/library_screen.dart' as _i15;
-import '../screens/main/search_screen.dart' as _i13;
-import '../screens/main/tab_home_screen.dart' as _i21;
-import '../screens/settings_screen.dart' as _i11;
-import '../screens/sftp_media_screen.dart' as _i7;
-import '../screens/tmdb/media_screen.dart' as _i4;
-import '../screens/tmdb/tv_show_episode_screen.dart' as _i6;
-import '../screens/tmdb/tv_show_season_screen.dart' as _i5;
-import '../screens/upload_screen.dart' as _i12;
+import 'idle_timed_auto_push_route.dart';
 
-class NetfloxRouter extends _i17.RootStackRouter {
-  NetfloxRouter([_i18.GlobalKey<_i18.NavigatorState>? navigatorKey])
+class NetfloxRouter extends _i19.RootStackRouter with IdleTimedPushAutoRoute {
+  NetfloxRouter([_i20.GlobalKey<_i20.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
-  final Map<String, _i17.PageFactory> pagesMap = {
+  final Map<String, _i19.PageFactory> pagesMap = {
     StackRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
         child: const _i1.StackScreen(),
       );
     },
     ErrorRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
       final args = routeData.argsAs<ErrorRouteArgs>(
-          orElse: () => const ErrorRouteArgs());
-      return _i17.MaterialPageX<dynamic>(
+          orElse: () => ErrorRouteArgs(errorCode: pathParams.get('error')));
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
         child: _i2.ErrorScreen(
-          errorCode: args.errorCode ?? 'unknown-error',
+          key: args.key,
+          errorCode: args.errorCode,
+          child: args.child,
         ),
       );
     },
     TabHomeRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i21.TabHomeScreen(),
+        child: const _i3.TabHomeScreen(),
       );
     },
     UnverifiedUserRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i3.UnverifiedUserScreen(),
+        child: const _i4.UnverifiedUserScreen(),
       );
     },
-    MediaRoute.name: (routeData) {
+    TMDBMovieRoute.name: (routeData) {
       final pathParams = routeData.inheritedPathParams;
-      final args = routeData.argsAs<MediaRouteArgs>(
-          orElse: () => MediaRouteArgs(
-                id: pathParams.getString('id'),
-                mediaType: pathParams.get('mediaType'),
-              ));
-      return _i17.MaterialPageX<dynamic>(
-          routeData: routeData,
-          child: _i4.MediaScreen(
-            key: args.key,
-            id: args.id,
-            mediaType: args.mediaType,
-          ));
-    },
-    TVShowSeasonRoute.name: (routeData) {
-      final pathParams = routeData.inheritedPathParams;
-      final args = routeData.argsAs<TVShowSeasonRouteArgs>(
-          orElse: () => TVShowSeasonRouteArgs(
-                seasonNumber: pathParams.getInt('seasonNumber'),
-                tvShowId: pathParams.getString('tvShowId'),
-              ));
-      return _i17.MaterialPageX<dynamic>(
+      final args = routeData.argsAs<TMDBMovieRouteArgs>(
+          orElse: () => TMDBMovieRouteArgs(id: pathParams.getString('id')));
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i5.TVShowSeasonScreen(
+        child: _i19.WrappedRoute(
+            child: _i5.TMDBMovieScreen(
           key: args.key,
-          seasonNumber: args.seasonNumber,
-          tvShowId: args.tvShowId,
-        ),
+          id: args.id,
+        )),
+      );
+    },
+    TMDBPeopleRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<TMDBPeopleRouteArgs>(
+          orElse: () => TMDBPeopleRouteArgs(id: pathParams.getString('id')));
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: _i19.WrappedRoute(
+            child: _i5.TMDBPeopleScreen(
+          key: args.key,
+          id: args.id,
+        )),
+      );
+    },
+    TMDBTvRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<TMDBTvRouteArgs>(
+          orElse: () => TMDBTvRouteArgs(id: pathParams.getString('id')));
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: _i19.WrappedRoute(
+            child: _i5.TMDBTvScreen(
+          key: args.key,
+          id: args.id,
+        )),
+      );
+    },
+    TMDBTVShowSeasonRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<TMDBTVShowSeasonRouteArgs>(
+          orElse: () => TMDBTVShowSeasonRouteArgs(
+                id: pathParams.getInt('seasonNumber'),
+                showId: pathParams.getString('id'),
+              ));
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: _i19.WrappedRoute(
+            child: _i6.TMDBTVShowSeasonScreen(
+          key: args.key,
+          id: args.id,
+          showId: args.showId,
+        )),
       );
     },
     TVShowEpisodeRoute.name: (routeData) {
-      final args = routeData.argsAs<TVShowEpisodeRouteArgs>();
-      return _i17.MaterialPageX<dynamic>(
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<TVShowEpisodeRouteArgs>(
+          orElse: () => TVShowEpisodeRouteArgs(
+                id: pathParams.getInt('episodeNumber'),
+                seasonNumber: pathParams.getInt('seasonNumber'),
+                showId: pathParams.getString('id'),
+              ));
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i6.TVShowEpisodeScreen(
+        child: _i19.WrappedRoute(
+            child: _i7.TVShowEpisodeScreen(
           key: args.key,
-          episode: args.episode,
-        ),
+          id: args.id,
+          seasonNumber: args.seasonNumber,
+          showId: args.showId,
+        )),
       );
     },
-    StreamMediaRoute.name: (routeData) {
-      final args = routeData.argsAs<StreamMediaRouteArgs>();
-      return _i17.MaterialPageX<dynamic>(
+    StreamSFTPMediaRoute.name: (routeData) {
+      final args = routeData.argsAs<StreamSFTPMediaRouteArgs>();
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i7.StreamSFTPMediaScreen(
+        child: _i8.StreamSFTPMediaScreen(
           key: args.key,
-          onVideoClosed: args.onVideoClosed,
           playableMedia: args.playableMedia,
           startAt: args.startAt,
+          onVideoClosed: args.onVideoClosed,
+        ),
+        fullscreenDialog: true,
+      );
+    },
+    DownloadRoute.name: (routeData) {
+      final args = routeData.argsAs<DownloadRouteArgs>();
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: _i9.DownloadScreen(
+          key: args.key,
+          media: args.media,
         ),
         fullscreenDialog: true,
       );
@@ -129,182 +178,219 @@ class NetfloxRouter extends _i17.RootStackRouter {
     AuthRoute.name: (routeData) {
       final args =
           routeData.argsAs<AuthRouteArgs>(orElse: () => const AuthRouteArgs());
-      return _i17.MaterialPageX<bool>(
+      return _i19.AdaptivePage<bool>(
         routeData: routeData,
-        child: _i8.AuthScreen(
+        child: _i10.AuthScreen(
           key: args.key,
           onFinish: args.onFinish,
           mode: args.mode,
         ),
       );
     },
-    ForgotPasswordRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: const _i9.ForgotPasswordScreen(),
-      );
-    },
     AdminRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i10.AdminScreen(),
+        child: const _i11.AdminScreen(),
       );
     },
     SettingsRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i11.SettingsScreen(),
+        child: const _i12.SettingsScreen(),
       );
     },
     UploadRoute.name: (routeData) {
       final args = routeData.argsAs<UploadRouteArgs>();
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i12.UploadScreen(media: args.media),
+        child: _i13.UploadScreen(
+          key: args.key,
+          media: args.media,
+        ),
+      );
+    },
+    WrappedBuilderRoute.name: (routeData) {
+      final args = routeData.argsAs<WrappedBuilderRouteArgs>();
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: _i5.WrappedBuilderScreen(
+          key: args.key,
+          builder: args.builder,
+        ),
       );
     },
     SearchRoute.name: (routeData) {
       final args = routeData.argsAs<SearchRouteArgs>(
           orElse: () => const SearchRouteArgs());
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i17.WrappedRoute(child: _i13.SearchScreen(key: args.key)),
+        child: _i19.WrappedRoute(child: _i14.SearchScreen(key: args.key)),
       );
     },
-    DiscoverRoute.name: (routeData) {
-      final args = routeData.argsAs<DiscoverRouteArgs>(
-          orElse: () => const DiscoverRouteArgs());
-      return _i17.MaterialPageX<dynamic>(
+    ExploreRoute.name: (routeData) {
+      final args = routeData.argsAs<ExploreRouteArgs>(
+          orElse: () => const ExploreRouteArgs());
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i17.WrappedRoute(child: _i14.ExploreScreen(key: args.key)),
+        child: _i19.WrappedRoute(
+            child: _i15.ExploreScreen(
+          key: args.key,
+          parameter: args.parameter,
+        )),
       );
     },
     LibraryRoute.name: (routeData) {
-      final args = routeData.argsAs<LibraryRouteArgs>(
-          orElse: () => const LibraryRouteArgs());
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i15.LibraryScreen(key: args.key),
+        child: const _i16.LibraryScreen(),
       );
     },
     MyAccountRoute.name: (routeData) {
-      return _i17.MaterialPageX<dynamic>(
+      return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i16.MyAccountScreen(),
+        child: _i17.MyAccountScreen(),
+      );
+    },
+    ForgotPasswordRoute.name: (routeData) {
+      return _i19.AdaptivePage<dynamic>(
+        routeData: routeData,
+        child: const _i18.ForgotPasswordScreen(),
       );
     },
   };
 
   @override
-  List<_i17.RouteConfig> get routes => [
-        _i17.RouteConfig(
+  List<_i19.RouteConfig> get routes => [
+        _i19.RouteConfig(
           '/#redirect',
           path: '/',
           redirectTo: '',
           fullMatch: true,
         ),
-        _i17.RouteConfig(
+        _i19.RouteConfig(
           StackRoute.name,
           path: '',
           children: [
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               '#redirect',
               path: '',
               parent: StackRoute.name,
               redirectTo: 'dashboard',
               fullMatch: true,
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               TabHomeRoute.name,
               path: 'dashboard',
               parent: StackRoute.name,
               children: [
-                _i17.RouteConfig(
+                _i19.RouteConfig(
                   '#redirect',
                   path: '',
                   parent: TabHomeRoute.name,
                   redirectTo: 'search',
                   fullMatch: true,
                 ),
-                _i17.RouteConfig(
+                _i19.RouteConfig(
                   SearchRoute.name,
                   path: 'search',
                   parent: TabHomeRoute.name,
                 ),
-                _i17.RouteConfig(
-                  DiscoverRoute.name,
+                _i19.RouteConfig(
+                  ExploreRoute.name,
                   path: 'discover',
                   parent: TabHomeRoute.name,
                 ),
-                _i17.RouteConfig(
+                _i19.RouteConfig(
                   LibraryRoute.name,
                   path: 'library',
                   parent: TabHomeRoute.name,
                 ),
-                _i17.RouteConfig(
+                _i19.RouteConfig(
                   MyAccountRoute.name,
                   path: 'my-account',
                   parent: TabHomeRoute.name,
                 ),
               ],
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               UnverifiedUserRoute.name,
               path: 'unverified-user',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
-              MediaRoute.name,
-              path: ':mediaType/:id',
+            _i19.RouteConfig(
+              TMDBMovieRoute.name,
+              path: 'movie/:id',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
-              TVShowSeasonRoute.name,
-              path: 'tv/:tvShowId/:seasonNumber',
+            _i19.RouteConfig(
+              TMDBPeopleRoute.name,
+              path: 'people/:id',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
+              TMDBTvRoute.name,
+              path: 'tv/:id',
+              parent: StackRoute.name,
+            ),
+            _i19.RouteConfig(
+              TMDBTVShowSeasonRoute.name,
+              path: 'tv/:id/seasons/:seasonNumber',
+              parent: StackRoute.name,
+            ),
+            _i19.RouteConfig(
               TVShowEpisodeRoute.name,
-              path: 't-vshow-episode-screen',
+              path: 'tv/:id/seasons/:seasonNumber/episodes/:episodeNumber',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
-              StreamMediaRoute.name,
+            _i19.RouteConfig(
+              StreamSFTPMediaRoute.name,
               path: 'stream',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
+              DownloadRoute.name,
+              path: 'download',
+              parent: StackRoute.name,
+            ),
+            _i19.RouteConfig(
               AuthRoute.name,
               path: 'auth',
               parent: StackRoute.name,
+              children: [
+                _i19.RouteConfig(
+                  ForgotPasswordRoute.name,
+                  path: 'forgot-password',
+                  parent: AuthRoute.name,
+                )
+              ],
             ),
-            _i17.RouteConfig(
-              ForgotPasswordRoute.name,
-              path: 'forgot-password',
-              parent: StackRoute.name,
-            ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               AdminRoute.name,
               path: 'admin-panel',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               SettingsRoute.name,
               path: 'settings',
               parent: StackRoute.name,
             ),
-            _i17.RouteConfig(
+            _i19.RouteConfig(
               UploadRoute.name,
-              path: 'upload-file',
+              path: 'upload',
+              parent: StackRoute.name,
+            ),
+            _i19.RouteConfig(
+              WrappedBuilderRoute.name,
+              path: 'wrapped-builder-screen',
               parent: StackRoute.name,
             ),
           ],
         ),
-        _i17.RouteConfig(
+        _i19.RouteConfig(
           ErrorRoute.name,
           path: 'error/:error',
         ),
-        _i17.RouteConfig(
+        _i19.RouteConfig(
           '*#redirect',
           path: '*',
           redirectTo: 'error/404-not-found',
@@ -315,8 +401,8 @@ class NetfloxRouter extends _i17.RootStackRouter {
 
 /// generated route for
 /// [_i1.StackScreen]
-class StackRoute extends _i17.PageRouteInfo<void> {
-  const StackRoute({List<_i17.PageRouteInfo>? children})
+class StackRoute extends _i19.PageRouteInfo<void> {
+  const StackRoute({List<_i19.PageRouteInfo>? children})
       : super(
           StackRoute.name,
           path: '',
@@ -328,40 +414,48 @@ class StackRoute extends _i17.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i2.ErrorScreen]
-class ErrorRoute extends _i17.PageRouteInfo<ErrorRouteArgs> {
-  ErrorRoute({_i19.Key? key, String? error})
-      : super(
+class ErrorRoute extends _i19.PageRouteInfo<ErrorRouteArgs> {
+  ErrorRoute({
+    _i21.Key? key,
+    dynamic errorCode,
+    _i20.Widget? child,
+  }) : super(
           ErrorRoute.name,
           path: 'error/:error',
           args: ErrorRouteArgs(
             key: key,
-            errorCode: error,
+            errorCode: errorCode,
+            child: child,
           ),
-          rawPathParams: {
-            'error': error,
-          },
+          rawPathParams: {'error': errorCode},
         );
 
   static const String name = 'ErrorRoute';
 }
 
 class ErrorRouteArgs {
-  const ErrorRouteArgs({this.key, this.errorCode});
+  const ErrorRouteArgs({
+    this.key,
+    this.errorCode,
+    this.child,
+  });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
-  final String? errorCode;
+  final dynamic errorCode;
+
+  final _i20.Widget? child;
 
   @override
   String toString() {
-    return 'ErrorRouteArgs{key: $key, error: $errorCode}';
+    return 'ErrorRouteArgs{key: $key, errorCode: $errorCode, child: $child}';
   }
 }
 
 /// generated route for
-/// [_i1.TabHomeScreen]
-class TabHomeRoute extends _i17.PageRouteInfo<void> {
-  const TabHomeRoute({List<_i17.PageRouteInfo>? children})
+/// [_i3.TabHomeScreen]
+class TabHomeRoute extends _i19.PageRouteInfo<void> {
+  const TabHomeRoute({List<_i19.PageRouteInfo>? children})
       : super(
           TabHomeRoute.name,
           path: 'dashboard',
@@ -372,8 +466,8 @@ class TabHomeRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i3.UnverifiedUserScreen]
-class UnverifiedUserRoute extends _i17.PageRouteInfo<void> {
+/// [_i4.UnverifiedUserScreen]
+class UnverifiedUserRoute extends _i19.PageRouteInfo<void> {
   const UnverifiedUserRoute()
       : super(
           UnverifiedUserRoute.name,
@@ -384,108 +478,176 @@ class UnverifiedUserRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i4.MediaScreen]
-class MediaRoute extends _i17.PageRouteInfo<MediaRouteArgs> {
-  MediaRoute({
-    _i19.Key? key,
+/// [_i5.TMDBMovieScreen]
+class TMDBMovieRoute extends _i19.PageRouteInfo<TMDBMovieRouteArgs> {
+  TMDBMovieRoute({
+    _i21.Key? key,
     required String id,
-    required dynamic mediaType,
   }) : super(
-          MediaRoute.name,
-          path: ':mediaType/:id',
-          args: MediaRouteArgs(
+          TMDBMovieRoute.name,
+          path: 'movie/:id',
+          args: TMDBMovieRouteArgs(
             key: key,
             id: id,
-            mediaType: mediaType,
           ),
-          rawPathParams: {
-            'id': id,
-            'mediaType': mediaType,
-          },
+          rawPathParams: {'id': id},
         );
 
-  static const String name = 'MediaRoute';
-
-  static _i17.PageRouteInfo fromMedia(_i21.TMDBPrimaryMedia media) {
-    return MediaRoute(id: media.id, mediaType: media.type);
-  }
+  static const String name = 'TMDBMovieRoute';
 }
 
-class MediaRouteArgs {
-  const MediaRouteArgs({
+class TMDBMovieRouteArgs {
+  const TMDBMovieRouteArgs({
     this.key,
     required this.id,
-    required this.mediaType,
   });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
   final String id;
 
-  final dynamic mediaType;
-
   @override
   String toString() {
-    return 'MediaRouteArgs{key: $key, id: $id, mediaType: $mediaType}';
+    return 'TMDBMovieRouteArgs{key: $key, id: $id}';
   }
 }
 
 /// generated route for
-/// [_i5.TVShowSeasonScreen]
-class TVShowSeasonRoute extends _i17.PageRouteInfo<TVShowSeasonRouteArgs> {
-  TVShowSeasonRoute({
-    _i19.Key? key,
-    required int seasonNumber,
-    required String tvShowId,
+/// [_i5.TMDBPeopleScreen]
+class TMDBPeopleRoute extends _i19.PageRouteInfo<TMDBPeopleRouteArgs> {
+  TMDBPeopleRoute({
+    _i21.Key? key,
+    required String id,
   }) : super(
-          TVShowSeasonRoute.name,
-          path: 'tv/:tvShowId/:seasonNumber',
-          args: TVShowSeasonRouteArgs(
+          TMDBPeopleRoute.name,
+          path: 'people/:id',
+          args: TMDBPeopleRouteArgs(
             key: key,
-            seasonNumber: seasonNumber,
-            tvShowId: tvShowId,
+            id: id,
+          ),
+          rawPathParams: {'id': id},
+        );
+
+  static const String name = 'TMDBPeopleRoute';
+}
+
+class TMDBPeopleRouteArgs {
+  const TMDBPeopleRouteArgs({
+    this.key,
+    required this.id,
+  });
+
+  final _i21.Key? key;
+
+  final String id;
+
+  @override
+  String toString() {
+    return 'TMDBPeopleRouteArgs{key: $key, id: $id}';
+  }
+}
+
+/// generated route for
+/// [_i5.TMDBTvScreen]
+class TMDBTvRoute extends _i19.PageRouteInfo<TMDBTvRouteArgs> {
+  TMDBTvRoute({
+    _i21.Key? key,
+    required String id,
+  }) : super(
+          TMDBTvRoute.name,
+          path: 'tv/:id',
+          args: TMDBTvRouteArgs(
+            key: key,
+            id: id,
+          ),
+          rawPathParams: {'id': id},
+        );
+
+  static const String name = 'TMDBTvRoute';
+}
+
+class TMDBTvRouteArgs {
+  const TMDBTvRouteArgs({
+    this.key,
+    required this.id,
+  });
+
+  final _i21.Key? key;
+
+  final String id;
+
+  @override
+  String toString() {
+    return 'TMDBTvRouteArgs{key: $key, id: $id}';
+  }
+}
+
+/// generated route for
+/// [_i6.TMDBTVShowSeasonScreen]
+class TMDBTVShowSeasonRoute
+    extends _i19.PageRouteInfo<TMDBTVShowSeasonRouteArgs> {
+  TMDBTVShowSeasonRoute({
+    _i21.Key? key,
+    required int id,
+    required String showId,
+  }) : super(
+          TMDBTVShowSeasonRoute.name,
+          path: 'tv/:id/seasons/:seasonNumber',
+          args: TMDBTVShowSeasonRouteArgs(
+            key: key,
+            id: id,
+            showId: showId,
           ),
           rawPathParams: {
-            'seasonNumber': seasonNumber,
-            'tvShowId': tvShowId,
+            'seasonNumber': id,
+            'id': showId,
           },
         );
 
-  static const String name = 'TVShowSeasonRoute';
+  static const String name = 'TMDBTVShowSeasonRoute';
 }
 
-class TVShowSeasonRouteArgs {
-  const TVShowSeasonRouteArgs({
+class TMDBTVShowSeasonRouteArgs {
+  const TMDBTVShowSeasonRouteArgs({
     this.key,
-    required this.seasonNumber,
-    required this.tvShowId,
+    required this.id,
+    required this.showId,
   });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
-  final int seasonNumber;
+  final int id;
 
-  final String tvShowId;
+  final String showId;
 
   @override
   String toString() {
-    return 'TVShowSeasonRouteArgs{key: $key, seasonNumber: $seasonNumber, tvShowId: $tvShowId}';
+    return 'TMDBTVShowSeasonRouteArgs{key: $key, id: $id, showId: $showId}';
   }
 }
 
 /// generated route for
-/// [_i6.TVShowEpisodeScreen]
-class TVShowEpisodeRoute extends _i17.PageRouteInfo<TVShowEpisodeRouteArgs> {
+/// [_i7.TVShowEpisodeScreen]
+class TVShowEpisodeRoute extends _i19.PageRouteInfo<TVShowEpisodeRouteArgs> {
   TVShowEpisodeRoute({
-    _i19.Key? key,
-    required _i20.TMDBTVEpisode episode,
+    _i21.Key? key,
+    required int id,
+    required int seasonNumber,
+    required String showId,
   }) : super(
           TVShowEpisodeRoute.name,
-          path: 't-vshow-episode-screen',
+          path: 'tv/:id/seasons/:seasonNumber/episodes/:episodeNumber',
           args: TVShowEpisodeRouteArgs(
             key: key,
-            episode: episode,
+            id: id,
+            seasonNumber: seasonNumber,
+            showId: showId,
           ),
+          rawPathParams: {
+            'episodeNumber': id,
+            'seasonNumber': seasonNumber,
+            'id': showId,
+          },
         );
 
   static const String name = 'TVShowEpisodeRoute';
@@ -494,66 +656,112 @@ class TVShowEpisodeRoute extends _i17.PageRouteInfo<TVShowEpisodeRouteArgs> {
 class TVShowEpisodeRouteArgs {
   const TVShowEpisodeRouteArgs({
     this.key,
-    required this.episode,
+    required this.id,
+    required this.seasonNumber,
+    required this.showId,
   });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
-  final _i20.TMDBTVEpisode episode;
+  final int id;
+
+  final int seasonNumber;
+
+  final String showId;
 
   @override
   String toString() {
-    return 'TVShowEpisodeRouteArgs{key: $key, episode: $episode}';
+    return 'TVShowEpisodeRouteArgs{key: $key, id: $id, seasonNumber: $seasonNumber, showId: $showId}';
   }
 }
 
 /// generated route for
-/// [_i7.StreamSFTPMediaScreen]
-class StreamMediaRoute extends _i17.PageRouteInfo<StreamMediaRouteArgs> {
-  StreamMediaRoute(
-      {_i19.Key? key,
-      required _i21.TMDBPlayableMedia playableMedia,
-      void Function(Duration? playbackTimestamp)? onVideoClosed,
-      Duration? startAt})
-      : super(
-          StreamMediaRoute.name,
+/// [_i8.StreamSFTPMediaScreen]
+class StreamSFTPMediaRoute
+    extends _i19.PageRouteInfo<StreamSFTPMediaRouteArgs> {
+  StreamSFTPMediaRoute({
+    _i21.Key? key,
+    required _i22.TMDBPlayableMedia playableMedia,
+    Duration? startAt,
+    void Function(Duration?)? onVideoClosed,
+  }) : super(
+          StreamSFTPMediaRoute.name,
           path: 'stream',
-          args: StreamMediaRouteArgs(
-              key: key,
-              playableMedia: playableMedia,
-              startAt: startAt,
-              onVideoClosed: onVideoClosed),
+          args: StreamSFTPMediaRouteArgs(
+            key: key,
+            playableMedia: playableMedia,
+            startAt: startAt,
+            onVideoClosed: onVideoClosed,
+          ),
         );
 
-  static const String name = 'StreamMediaRoute';
+  static const String name = 'StreamSFTPMediaRoute';
 }
 
-class StreamMediaRouteArgs {
-  const StreamMediaRouteArgs(
-      {this.key,
-      required this.playableMedia,
-      this.startAt,
-      this.onVideoClosed});
+class StreamSFTPMediaRouteArgs {
+  const StreamSFTPMediaRouteArgs({
+    this.key,
+    required this.playableMedia,
+    this.startAt,
+    this.onVideoClosed,
+  });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
-  final _i21.TMDBPlayableMedia playableMedia;
+  final _i22.TMDBPlayableMedia playableMedia;
+
   final Duration? startAt;
-  final void Function(Duration? playbackTimestamp)? onVideoClosed;
+
+  final void Function(Duration?)? onVideoClosed;
 
   @override
   String toString() {
-    return 'StreamMediaRouteArgs{key: $key, playableMedia: $playableMedia}';
+    return 'StreamSFTPMediaRouteArgs{key: $key, playableMedia: $playableMedia, startAt: $startAt, onVideoClosed: $onVideoClosed}';
   }
 }
 
 /// generated route for
-/// [_i8.AuthScreen]
-class AuthRoute extends _i17.PageRouteInfo<AuthRouteArgs> {
+/// [_i9.DownloadScreen]
+class DownloadRoute extends _i19.PageRouteInfo<DownloadRouteArgs> {
+  DownloadRoute({
+    _i21.Key? key,
+    required _i22.TMDBLibraryMedia media,
+  }) : super(
+          DownloadRoute.name,
+          path: 'download',
+          args: DownloadRouteArgs(
+            key: key,
+            media: media,
+          ),
+        );
+
+  static const String name = 'DownloadRoute';
+}
+
+class DownloadRouteArgs {
+  const DownloadRouteArgs({
+    this.key,
+    required this.media,
+  });
+
+  final _i21.Key? key;
+
+  final _i22.TMDBLibraryMedia media;
+
+  @override
+  String toString() {
+    return 'DownloadRouteArgs{key: $key, media: $media}';
+  }
+}
+
+/// generated route for
+/// [_i10.AuthScreen]
+class AuthRoute extends _i19.PageRouteInfo<AuthRouteArgs> {
   AuthRoute({
-    _i19.Key? key,
+    _i21.Key? key,
     void Function()? onFinish,
-    _i22.AuthFormMode mode = _i22.AuthFormMode.signIn,
+    _i23.AuthFormMode mode = _i23.AuthFormMode.signIn,
+    List<_i19.PageRouteInfo>? children,
   }) : super(
           AuthRoute.name,
           path: 'auth',
@@ -562,6 +770,7 @@ class AuthRoute extends _i17.PageRouteInfo<AuthRouteArgs> {
             onFinish: onFinish,
             mode: mode,
           ),
+          initialChildren: children,
         );
 
   static const String name = 'AuthRoute';
@@ -571,14 +780,14 @@ class AuthRouteArgs {
   const AuthRouteArgs({
     this.key,
     this.onFinish,
-    this.mode = _i22.AuthFormMode.signIn,
+    this.mode = _i23.AuthFormMode.signIn,
   });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
   final void Function()? onFinish;
 
-  final _i22.AuthFormMode mode;
+  final _i23.AuthFormMode mode;
 
   @override
   String toString() {
@@ -587,20 +796,8 @@ class AuthRouteArgs {
 }
 
 /// generated route for
-/// [_i9.ForgotPasswordScreen]
-class ForgotPasswordRoute extends _i17.PageRouteInfo<void> {
-  const ForgotPasswordRoute()
-      : super(
-          ForgotPasswordRoute.name,
-          path: 'forgot-password',
-        );
-
-  static const String name = 'ForgotPasswordRoute';
-}
-
-/// generated route for
-/// [_i10.AdminScreen]
-class AdminRoute extends _i17.PageRouteInfo<void> {
+/// [_i11.AdminScreen]
+class AdminRoute extends _i19.PageRouteInfo<void> {
   const AdminRoute()
       : super(
           AdminRoute.name,
@@ -611,8 +808,8 @@ class AdminRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i11.SettingsScreen]
-class SettingsRoute extends _i17.PageRouteInfo<void> {
+/// [_i12.SettingsScreen]
+class SettingsRoute extends _i19.PageRouteInfo<void> {
   const SettingsRoute()
       : super(
           SettingsRoute.name,
@@ -623,18 +820,77 @@ class SettingsRoute extends _i17.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i12.UploadScreen]
-class UploadRoute extends _i17.PageRouteInfo<void> {
-  UploadRoute(TMDBLibraryMedia media)
-      : super(UploadRoute.name, path: 'upload', args: UploadRouteArgs(media));
+/// [_i13.UploadScreen]
+class UploadRoute extends _i19.PageRouteInfo<UploadRouteArgs> {
+  UploadRoute({
+    _i21.Key? key,
+    required _i22.TMDBLibraryMedia media,
+  }) : super(
+          UploadRoute.name,
+          path: 'upload',
+          args: UploadRouteArgs(
+            key: key,
+            media: media,
+          ),
+        );
 
   static const String name = 'UploadRoute';
 }
 
+class UploadRouteArgs {
+  const UploadRouteArgs({
+    this.key,
+    required this.media,
+  });
+
+  final _i21.Key? key;
+
+  final _i22.TMDBLibraryMedia media;
+
+  @override
+  String toString() {
+    return 'UploadRouteArgs{key: $key, media: $media}';
+  }
+}
+
 /// generated route for
-/// [_i13.SearchScreen]
-class SearchRoute extends _i17.PageRouteInfo<SearchRouteArgs> {
-  SearchRoute({_i19.Key? key})
+/// [_i5.WrappedBuilderScreen]
+class WrappedBuilderRoute extends _i19.PageRouteInfo<WrappedBuilderRouteArgs> {
+  WrappedBuilderRoute({
+    _i21.Key? key,
+    required _i20.Widget Function(_i20.BuildContext) builder,
+  }) : super(
+          WrappedBuilderRoute.name,
+          path: 'wrapped-builder-screen',
+          args: WrappedBuilderRouteArgs(
+            key: key,
+            builder: builder,
+          ),
+        );
+
+  static const String name = 'WrappedBuilderRoute';
+}
+
+class WrappedBuilderRouteArgs {
+  const WrappedBuilderRouteArgs({
+    this.key,
+    required this.builder,
+  });
+
+  final _i21.Key? key;
+
+  final _i20.Widget Function(_i20.BuildContext) builder;
+
+  @override
+  String toString() {
+    return 'WrappedBuilderRouteArgs{key: $key, builder: $builder}';
+  }
+}
+
+/// generated route for
+/// [_i14.SearchScreen]
+class SearchRoute extends _i19.PageRouteInfo<SearchRouteArgs> {
+  SearchRoute({_i21.Key? key})
       : super(
           SearchRoute.name,
           path: 'search',
@@ -644,16 +900,10 @@ class SearchRoute extends _i17.PageRouteInfo<SearchRouteArgs> {
   static const String name = 'SearchRoute';
 }
 
-class UploadRouteArgs {
-  final TMDBLibraryMedia media;
-
-  const UploadRouteArgs(this.media);
-}
-
 class SearchRouteArgs {
   const SearchRouteArgs({this.key});
 
-  final _i19.Key? key;
+  final _i21.Key? key;
 
   @override
   String toString() {
@@ -662,56 +912,54 @@ class SearchRouteArgs {
 }
 
 /// generated route for
-/// [_i14.ExploreScreen]
-class DiscoverRoute extends _i17.PageRouteInfo<DiscoverRouteArgs> {
-  DiscoverRoute({_i19.Key? key})
-      : super(
-          DiscoverRoute.name,
+/// [_i15.ExploreScreen]
+class ExploreRoute extends _i19.PageRouteInfo<ExploreRouteArgs> {
+  ExploreRoute({
+    _i21.Key? key,
+    _i24.DiscoverFilterParameter<_i22.TMDBMultiMedia>? parameter,
+  }) : super(
+          ExploreRoute.name,
           path: 'discover',
-          args: DiscoverRouteArgs(key: key),
+          args: ExploreRouteArgs(
+            key: key,
+            parameter: parameter,
+          ),
         );
 
-  static const String name = 'DiscoverRoute';
+  static const String name = 'ExploreRoute';
 }
 
-class DiscoverRouteArgs {
-  const DiscoverRouteArgs({this.key});
+class ExploreRouteArgs {
+  const ExploreRouteArgs({
+    this.key,
+    this.parameter,
+  });
 
-  final _i19.Key? key;
+  final _i21.Key? key;
+
+  final _i24.DiscoverFilterParameter<_i22.TMDBMultiMedia>? parameter;
 
   @override
   String toString() {
-    return 'DiscoverRouteArgs{key: $key}';
+    return 'ExploreRouteArgs{key: $key, parameter: $parameter}';
   }
 }
 
 /// generated route for
-/// [_i15.LibraryScreen]
-class LibraryRoute extends _i17.PageRouteInfo<LibraryRouteArgs> {
-  LibraryRoute({_i19.Key? key})
+/// [_i16.LibraryScreen]
+class LibraryRoute extends _i19.PageRouteInfo<void> {
+  const LibraryRoute()
       : super(
           LibraryRoute.name,
           path: 'library',
-          args: LibraryRouteArgs(key: key),
         );
 
   static const String name = 'LibraryRoute';
 }
 
-class LibraryRouteArgs {
-  const LibraryRouteArgs({this.key});
-
-  final _i19.Key? key;
-
-  @override
-  String toString() {
-    return 'LibraryRouteArgs{key: $key}';
-  }
-}
-
 /// generated route for
-/// [_i16.MyAccountScreen]
-class MyAccountRoute extends _i17.PageRouteInfo<void> {
+/// [_i17.MyAccountScreen]
+class MyAccountRoute extends _i19.PageRouteInfo<void> {
   const MyAccountRoute()
       : super(
           MyAccountRoute.name,
@@ -719,4 +967,16 @@ class MyAccountRoute extends _i17.PageRouteInfo<void> {
         );
 
   static const String name = 'MyAccountRoute';
+}
+
+/// generated route for
+/// [_i18.ForgotPasswordScreen]
+class ForgotPasswordRoute extends _i19.PageRouteInfo<void> {
+  const ForgotPasswordRoute()
+      : super(
+          ForgotPasswordRoute.name,
+          path: 'forgot-password',
+        );
+
+  static const String name = 'ForgotPasswordRoute';
 }

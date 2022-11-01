@@ -9,7 +9,7 @@ void showSnackBar(BuildContext context,
     Duration duration = const Duration(seconds: 10)}) {
   final snackBar = SnackBar(
     padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 25),
-    margin: const EdgeInsets.only(bottom: 25, right: 25, left: 25),
+    margin: const EdgeInsets.only(bottom: 35, right: 35, left: 35),
     content: AutoSizeText(
       text,
       maxLines: 3,
@@ -32,6 +32,5 @@ void showSnackBar(BuildContext context,
   );
 
   ScaffoldMessenger.maybeOf(context)?.clearSnackBars();
-
   ScaffoldMessenger.maybeOf(context)?.showSnackBar(snackBar);
 }
