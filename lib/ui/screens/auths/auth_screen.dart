@@ -6,6 +6,7 @@ import 'package:netflox/ui/screens/auths/reauthenticate_screen.dart';
 import 'package:netflox/ui/screens/auths/sign_in_screen.dart';
 import 'package:netflox/ui/screens/auths/sign_up_screen.dart';
 import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';
+import 'package:provider/provider.dart';
 import '../../../data/blocs/account/auth/auth_form/auth_form_bloc.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 
@@ -43,7 +44,11 @@ class AuthFormScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     NetfloxCustomDialog? dialog;
-    return BlocProvider(
+    return Provider(
+      dispose: (context, value) {
+        context.read<AuthFormBloc>().close();
+        dialog?.dismiss();
+      },
       create: (context) => AuthFormBloc(initialMode: mode),
       child: BlocConsumer<AuthFormBloc, AuthFormState>(
         builder: (context, state) {
@@ -59,7 +64,6 @@ class AuthFormScreen extends StatelessWidget {
         listener: (context, state) {
           dialog?.dismiss();
           dialog = null;
-
           switch (state.status) {
             case AuthFormStatus.loading:
               dialog = LoadingDialog(context);
@@ -73,6 +77,8 @@ class AuthFormScreen extends StatelessWidget {
                 exception,
                 context,
               ).tr();
+              break;
+            case AuthFormStatus.init:
               break;
           }
           dialog?.show();

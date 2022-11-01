@@ -15,7 +15,7 @@ import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart';
 import 'package:netflox/ui/screens/upload_screen.dart';
 
 import '../screens/main/tab_home_screen.dart';
-import '../screens/sftp_media_screen.dart';
+import '../screens/video_stream_screen.dart';
 import '../screens/tmdb/media_screen.dart';
 import '../screens/tmdb/tv_show_season_screen.dart';
 

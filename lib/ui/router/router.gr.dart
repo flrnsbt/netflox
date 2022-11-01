@@ -31,7 +31,7 @@ import 'package:netflox/ui/screens/main/library_screen.dart' as _i16;
 import 'package:netflox/ui/screens/main/search_screen.dart' as _i14;
 import 'package:netflox/ui/screens/main/tab_home_screen.dart' as _i3;
 import 'package:netflox/ui/screens/settings_screen.dart' as _i12;
-import 'package:netflox/ui/screens/sftp_media_screen.dart' as _i8;
+import 'package:netflox/ui/screens/video_stream_screen.dart' as _i8;
 import 'package:netflox/ui/screens/tmdb/media_screen.dart' as _i5;
 import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart' as _i7;
 import 'package:netflox/ui/screens/tmdb/tv_show_season_screen.dart' as _i6;

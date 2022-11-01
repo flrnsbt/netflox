@@ -27,7 +27,7 @@ class SFTPVideoFilePlayer extends StatefulWidget {
       {super.key,
       this.onVideoClosed,
       this.startingTime,
-      this.autoPlay = true,
+      this.autoPlay = false,
       this.quitOnFinish = true,
       this.defaultFullScreen = true,
       required this.remoteFiles});

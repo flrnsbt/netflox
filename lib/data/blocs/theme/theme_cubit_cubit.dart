@@ -42,6 +42,11 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
 
   static final darkThemeData = ThemeData(
       primaryColorDark: Colors.grey[900],
+      bannerTheme: const MaterialBannerThemeData(
+          contentTextStyle: TextStyle(
+            fontSize: 16,
+          ),
+          backgroundColor: Color.fromARGB(255, 22, 22, 22)),
       appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: Color.fromARGB(255, 5, 5, 5),

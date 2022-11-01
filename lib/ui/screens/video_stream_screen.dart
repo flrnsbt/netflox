@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_connection.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
@@ -50,43 +51,50 @@ class _StreamSFTPMediaScreenState extends State<StreamSFTPMediaScreen>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: BlocBuilder<SSHConnectionCubit, SSHConnectionState>(
-        builder: (context, state) {
-          if (state.isConnected()) {
-            _openRemoteFile(context);
-            return BlocBuilder<SFTPMediaReadDirectoryCubit,
-                SFTPMediaFileAccessState>(
-              builder: (context, remoteMediaState) {
-                if (remoteMediaState is SFTPMediaOpenedState) {
-                  if (remoteMediaState.remoteFiles.playable()) {
-                    return SFTPVideoFilePlayer(
-                      remoteFiles: remoteMediaState.remoteFiles,
-                      startingTime: widget.startAt,
-                      onVideoClosed: widget.onVideoClosed,
-                    );
-                  } else {
+    return Theme(
+      data: ThemeDataCubit.darkThemeData,
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.black,
+        body: BlocBuilder<SSHConnectionCubit, SSHConnectionState>(
+          builder: (context, state) {
+            if (state.isConnected()) {
+              _openRemoteFile(context);
+              return BlocBuilder<SFTPMediaReadDirectoryCubit,
+                  SFTPMediaFileAccessState>(
+                builder: (context, remoteMediaState) {
+                  if (remoteMediaState is SFTPMediaOpenedState) {
+                    if (remoteMediaState.remoteFiles.playable()) {
+                      return SFTPVideoFilePlayer(
+                        remoteFiles: remoteMediaState.remoteFiles,
+                        startingTime: widget.startAt,
+                        onVideoClosed: widget.onVideoClosed,
+                      );
+                    } else {
+                      return _buildErrorScreen(
+                          error: 'server-error',
+                          child:
+                              _tryAgainButton(() => _openRemoteFile(context)));
+                    }
+                  } else if (remoteMediaState is SFTPMediaAccessFailedState) {
                     return _buildErrorScreen(
-                        error: 'server-error',
                         child: _tryAgainButton(() => _openRemoteFile(context)));
                   }
-                } else if (remoteMediaState is SFTPMediaAccessFailedState) {
-                  return _buildErrorScreen(
-                      child: _tryAgainButton(() => _openRemoteFile(context)));
-                }
-                return const LoadingScreen(
-                  loadingMessage: 'fetching-files',
-                );
-              },
-            );
-          } else if (state.isConnecting()) {
-            return const LoadingScreen(
-              loadingMessage: 'connecting-server',
-            );
-          }
-          return _buildErrorScreen(
-              child: _tryAgainButton(() => initConnection(context)));
-        },
+                  return const LoadingScreen(
+                    loadingMessage: 'fetching-files',
+                  );
+                },
+              );
+            } else if (state.isConnecting()) {
+              return const LoadingScreen(
+                loadingMessage: 'connecting-server',
+              );
+            }
+            return _buildErrorScreen(
+                child: _tryAgainButton(() => initConnection(context)));
+          },
+        ),
       ),
     );
   }

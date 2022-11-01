@@ -198,8 +198,8 @@ class WatchButton extends StatelessWidget {
                     playbackTimestamp,
                   ) {
                     if (playbackTimestamp != null) {
-                      Provider.of<LibraryMediaUserDataCubit>(context,
-                              listen: false)
+                      context
+                          .read<LibraryMediaUserDataCubit>()
                           .updateTimestamp(playbackTimestamp);
                     }
                   },

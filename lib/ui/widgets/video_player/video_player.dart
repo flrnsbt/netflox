@@ -8,14 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
+import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:netflox/ui/widgets/video_player/subtitle_picker.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/ui/screens/loading_screen.dart';
-import '../custom_snackbar.dart';
 import 'custom_video_player_control.dart';
 
 // ignore: unused_import
@@ -36,7 +35,7 @@ class NetfloxVideoPlayer extends StatefulWidget {
     Key? key,
     required String this.videoUrl,
     this.startingTime,
-    this.autoPlay = true,
+    this.autoPlay = false,
     this.quitOnFinish = true,
     this.showControl = true,
     this.mute = false,
@@ -50,7 +49,7 @@ class NetfloxVideoPlayer extends StatefulWidget {
     Key? key,
     required File this.videoFile,
     this.startingTime,
-    this.autoPlay = true,
+    this.autoPlay = false,
     this.quitOnFinish = true,
     this.mute = false,
     this.showControl = true,
@@ -71,8 +70,8 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   late SubtitlePicker _subtitlePicker;
   OptionsTranslation? _translation;
   Key? _visibilityKey;
-  bool _initialized = false;
   bool _alreadyPlayed = false;
+  bool _initialized = false;
   @override
   void initState() {
     super.initState();
@@ -115,6 +114,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
         videoPlayerController: _videoPlayerController!,
         allowedScreenSleep: false,
         zoomAndPan: false,
+        useRootNavigator: false,
         showControls: widget.showControl,
         autoPlay: widget.autoPlay,
         fullScreenByDefault: widget.defaultFullScreen,
@@ -138,7 +138,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
           return [
             OptionItem(
                 onTap: () {
-                  Navigator.of(context, rootNavigator: true).pop();
+                  Navigator.of(context).pop();
                   _subtitlePicker.show(context);
                 },
                 iconData: Icons.subtitles,
@@ -157,52 +157,52 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   }
 
   void _playbackListener() {
-    if (_initialized && (_videoPlayerController?.value.isFinished() ?? false)) {
-      Navigator.of(context, rootNavigator: true).pop();
+    if (_videoPlayerController?.value.isFinished() ?? false) {
+      Navigator.of(
+        context,
+      ).pop();
     }
   }
 
   void _popupContinuePlaybackPrompt() {
     CustomAwesomeDialog(
-      context: context,
-      dialogType: DialogType.info,
-      desc:
-          "${'continue-watching-prompt'.tr(context)} (${widget.startingTime!.inMinutes}mins)",
-      btnCancelOnPress: () {},
-      btnOkText: 'keep-watching',
-      btnCancelText: 'restart-playback',
-      btnOkOnPress: () => _controller!.seekTo(widget.startingTime!),
-    ).show();
+            context: context,
+            title: 'keep-watching'.tr(context),
+            btnOkOnPress: () {
+              _controller!.seekTo(widget.startingTime!);
+            },
+            btnOkText: 'continue'.tr(context),
+            btnCancelText: 'no'.tr(context),
+            btnCancelOnPress: () {},
+            desc:
+                "${'continue-watching-prompt'.tr(context)} (${widget.startingTime!.inMinutes}mins)",
+            dialogType: DialogType.info)
+        .show();
   }
 
   void _initializeListener() async {
     if (!_initialized && _videoPlayerController!.value.isInitialized) {
+      if (widget.startingTime != null) {
+        _popupContinuePlaybackPrompt();
+      }
       setState(() {
         _initialized = true;
       });
     }
     if (_videoPlayerController!.value.isPlaying) {
-      _startedPlaying();
+      if (widget.mute) {
+        _controller!.setVolume(0);
+      }
       _videoPlayerController?.removeListener(_initializeListener);
-    }
-  }
-
-  Future<void> _startedPlaying() async {
-    await Future.delayed(const Duration(seconds: 1));
-    _alreadyPlayed = true;
-    if (widget.mute) {
-      _controller!.setVolume(0);
-    }
-    setState(() {});
-    if (widget.startingTime != null) {
-      _popupContinuePlaybackPrompt();
+      await Future.delayed(const Duration(seconds: 1));
+      _alreadyPlayed = true;
     }
   }
 
   @override
   void dispose() {
     if (_controller?.isFullScreen ?? false) {
-      Navigator.of(context, rootNavigator: true).maybePop();
+      Navigator.of(context).maybePop();
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
           overlays: _controller?.systemOverlaysAfterFullScreen);
       SystemChrome.setPreferredOrientations(
@@ -265,9 +265,8 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
               child: Chewie(controller: _controller!)),
         ),
       );
-    } else {
-      return const LoadingScreen();
     }
+    return const LoadingScreen();
   }
 }
 
