@@ -18,29 +18,30 @@ class NetfloxBackgroundImage extends StatelessWidget {
 
   Widget _buildOverlay(BuildContext context) {
     final color = this.color ?? Theme.of(context).scaffoldBackgroundColor;
-    return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
+    final backgroundImage = this.backgroundImage?.call(context);
+    return ShaderMask(
+        shaderCallback: (Rect rect) {
+          return LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               stops: const [
-            0,
-            0.5,
-            1
-          ],
+                0,
+                0.5,
+                1
+              ],
               colors: [
-            color.withOpacity(opacityStrength),
-            color.withOpacity(opacityStrength - 0.2),
-            color
-          ])),
-    );
+                color.withOpacity(opacityStrength),
+                color.withOpacity(opacityStrength - 0.2),
+                color
+              ]).createShader(rect);
+        },
+        blendMode: BlendMode.srcOver,
+        child: backgroundImage);
   }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundImage = this.backgroundImage?.call(context);
     return Stack(fit: StackFit.expand, children: [
-      if (backgroundImage != null) backgroundImage,
       if (overlay && backgroundImage != null) _buildOverlay(context),
       child
     ]);

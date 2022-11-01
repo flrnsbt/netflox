@@ -16,7 +16,6 @@ class TMDBImageWidget extends StatelessWidget {
   final double? aspectRatio;
   final BlendMode? colorBlendMode;
   final Color? color;
-  final Widget Function(BuildContext, ImageProvider<Object>)? imageBuilder;
   TMDBImageWidget(
       {GlobalKey? key,
       this.img,
@@ -28,7 +27,6 @@ class TMDBImageWidget extends StatelessWidget {
       this.colorBlendMode,
       this.aspectRatio,
       this.fadeAnimations = false,
-      this.imageBuilder,
       this.showProgressIndicator = true})
       : super(key: key ?? GlobalKey());
 
@@ -54,12 +52,11 @@ class TMDBImageWidget extends StatelessWidget {
               );
               return Padding(
                 padding: padding,
-                child: imageBuilder?.call(context, imageProvider) ??
-                    ClipRRect(
-                        borderRadius: borderRadius ?? BorderRadius.zero,
-                        child: aspectRatio != null
-                            ? AspectRatio(aspectRatio: aspectRatio!, child: img)
-                            : img),
+                child: ClipRRect(
+                    borderRadius: borderRadius ?? BorderRadius.zero,
+                    child: aspectRatio != null
+                        ? AspectRatio(aspectRatio: aspectRatio!, child: img)
+                        : img),
               );
             },
             colorBlendMode: colorBlendMode,

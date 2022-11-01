@@ -11,22 +11,27 @@ import 'package:netflox/services/tmdb_service.dart';
 import '../../../repositories/tmdb_result.dart';
 import '../basic_server_fetch_state.dart';
 
-abstract class TMDBElementCubit<K> extends Cubit<BasicServerFetchState<K>> {
+abstract class BasicTMDBElementCubit<K>
+    extends Cubit<BasicServerFetchState<K>> {
   final TMDBService _tmdbService;
-  final String _id;
 
-  TMDBElementCubit(
-      {required String id,
-      required BuildContext context,
-      bool autoFetch = true})
+  BasicTMDBElementCubit.fromContext(BuildContext context,
+      [bool autoFetch = true])
       : _tmdbService = context.read<TMDBService>(),
-        _id = id,
         super(BasicServerFetchState.init()) {
     if (autoFetch) {
       fetch();
     }
   }
 
+  BasicTMDBElementCubit(this._tmdbService, [bool autoFetch = true])
+      : super(BasicServerFetchState.init()) {
+    if (autoFetch) {
+      fetch();
+    }
+  }
+
+  @protected
   Future<void> fetch() async {
     if (!isClosed) {
       emit(BasicServerFetchState.loading());
@@ -46,7 +51,37 @@ abstract class TMDBElementCubit<K> extends Cubit<BasicServerFetchState<K>> {
     return super.close();
   }
 
-  Future _fetch();
+  Future<K?> _fetch();
+}
+
+abstract class TMDBElementCubit<K> extends BasicTMDBElementCubit<K> {
+  final String _id;
+
+  TMDBElementCubit({required String id, required BuildContext context})
+      : _id = id,
+        super.fromContext(context);
+}
+
+class TMDBEpisodeCubit extends TMDBElementCubit<TMDBTVEpisode> {
+  final int seasonNumber;
+  final int episodeNumber;
+  TMDBEpisodeCubit(
+      {required super.id,
+      required this.episodeNumber,
+      required this.seasonNumber,
+      required super.context});
+
+  @override
+  Future<TMDBTVEpisode?> _fetch() async {
+    final result = await _tmdbService.getEpisode(
+        tvShowId: _id,
+        seasonNumber: seasonNumber,
+        episodeNumber: episodeNumber);
+    if (result.hasData()) {
+      return result.data;
+    }
+    return null;
+  }
 }
 
 class TMDBSeasonCubit extends TMDBElementCubit<TMDBTVSeason> {
@@ -74,12 +109,11 @@ class TMDBPrimaryMediaCubit<T extends TMDBPrimaryMedia>
     required super.id,
     required this.mediaType,
     required super.context,
-  });
+  }) : assert(mediaType.isPrimaryMedia());
 
   @override
   Future<T?> _fetch() async {
-    final result =
-        await _tmdbService.getPrimaryMedia<T>(id: _id, type: mediaType);
+    final result = await _tmdbService.getPrimaryMedia(id: _id, type: mediaType);
     if (result.hasData()) {
       return result.data!;
     }
@@ -117,20 +151,17 @@ class TMDBFetchVideosCubit extends TMDBElementCubit<List<TMDBVideo>> {
   }
 }
 
-class TMDBFetchMediaCredits extends TMDBElementCubit<List<TMDBPerson>> {
-  final TMDBType<TMDBMultiMedia> type;
+class TMDBFetchMediaCredits extends BasicTMDBElementCubit<List<TMDBPerson>> {
+  final TMDBLibraryMedia media;
   TMDBFetchMediaCredits({
-    required TMDBMultiMedia media,
-    required super.context,
-  })  : type = media.type,
-        super(
-          id: media.id,
-        );
+    required this.media,
+    required BuildContext context,
+  }) : super.fromContext(context);
 
   @override
   Future<List<TMDBPerson>> _fetch() async {
     final data = <TMDBPerson>[];
-    final result = await _tmdbService.getMediaCredits(id: _id, type: type);
+    final result = await _tmdbService.getLibraryMediaCredits(media: media);
     if (result.hasData()) {
       data.addAll(result.data!);
     }

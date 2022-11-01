@@ -13,10 +13,11 @@ class TabHomeScreen extends StatelessWidget {
     return AutoTabsScaffold(
       routes: [
         SearchRoute(),
-        LibraryRoute(),
-        DiscoverRoute(),
+        const LibraryRoute(),
+        ExploreRoute(),
         const MyAccountRoute()
       ],
+      lazyLoad: false,
       animationCurve: Curves.ease,
       animationDuration: const Duration(milliseconds: 800),
       homeIndex: 0,

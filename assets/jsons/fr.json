@@ -342,6 +342,7 @@
     "unknown-error": "Erreur inconnue",
     "unknown-error-desc": "Une erreur inconnue s'est produite, veuillez réessayer plus tard ou nous contacter si le problème persiste",
     "unsaved-changes": "Vous avez des changements non enregistrés. Voulez-vous continuer?",
+    "upload": "Upload",
     "use-valid-email": "Veuillez utiliser un e-mail valide",
     "user-not-found": "Utilisateur non trouvé",
     "user-not-found-desc": "Utilisateur non trouvé. Veuillez réessayer.",

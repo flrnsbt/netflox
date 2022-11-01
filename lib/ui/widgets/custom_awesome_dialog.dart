@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:netflox/data/models/exception.dart';
@@ -54,7 +56,10 @@ class CustomAwesomeDialog extends AwesomeDialog with NetfloxCustomDialog {
       super.reverseBtnOrder,
       super.titleTextStyle,
       super.transitionAnimationDuration,
-      super.width = 350});
+      double? width})
+      : super(
+            width: width ??
+                (MediaQuery.of(context).size.width * 0.85).clamp(100, 600));
 
   CustomAwesomeDialog copyWith({
     BuildContext? context,
@@ -171,61 +176,71 @@ class ErrorDialog extends CustomAwesomeDialog {
   }
 }
 
-class LoadingDialog with NetfloxCustomDialog {
+class LoadingDialog extends NetfloxCustomDialog {
   @override
   final BuildContext context;
-  const LoadingDialog(this.context);
+  LoadingDialog(this.context);
+  bool _isShowing = false;
 
   @override
-  void dismiss() {
-    Navigator.of(context, rootNavigator: false).pop();
+  Future show() async {
+    if (!_isShowing) {
+      _isShowing = true;
+      await showGeneralDialog(
+        context: context,
+        useRootNavigator: false,
+        barrierDismissible: false,
+        pageBuilder: (
+          BuildContext buildContext,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return Center(
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Center(
+                child: NetfloxLoadingIndicator(),
+              ),
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) =>
+            AnimationTransition.scale(
+          animation,
+          secondaryAnimation,
+          child,
+        ),
+        barrierColor: const Color.fromARGB(208, 0, 0, 0),
+        barrierLabel:
+            MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      );
+      _isShowing = false;
+    }
   }
 
   @override
-  Future show() {
-    return showGeneralDialog(
-      context: context,
-      useRootNavigator: false,
-      barrierDismissible: false,
-      pageBuilder: (
-        BuildContext buildContext,
-        Animation<double> animation,
-        Animation<double> secondaryAnimation,
-      ) {
-        return Center(
-          child: Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(
-              child: NetfloxLoadingIndicator(),
-            ),
-          ),
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-      transitionBuilder: (
-        BuildContext context,
-        Animation<double> animation,
-        Animation<double> secondaryAnimation,
-        Widget child,
-      ) =>
-          AnimationTransition.scale(
-        animation,
-        secondaryAnimation,
-        child,
-      ),
-      barrierColor: const Color.fromARGB(208, 0, 0, 0),
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    );
+  void dismiss() {
+    if (_isShowing) {
+      Navigator.of(context).pop();
+    }
   }
 }
 
 abstract class NetfloxCustomDialog {
   Future<dynamic> show();
+
   void dismiss();
+
   BuildContext get context;
 }

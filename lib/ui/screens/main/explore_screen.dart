@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/auto_route.dart' show AutoRouteWrapper;
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,15 +8,17 @@ import 'package:netflox/data/blocs/data_fetcher/paged_data_collection_fetch_bloc
 import 'package:netflox/data/models/language.dart';
 import 'package:netflox/data/models/tmdb/filter_parameter.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
-import 'package:netflox/ui/router/router.gr.dart';
 import 'package:provider/provider.dart';
+import '../../../data/blocs/connectivity/connectivity_manager.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
+import '../../../data/blocs/data_fetcher/tmdb/discover_bloc.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/error_widget.dart';
 import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
+import '../tmdb/media_screen.dart';
 
 class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
   final DiscoverFilterParameter _discoverFilterParameter;
@@ -52,9 +54,8 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
     return Container(
         height: 35,
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        width: MediaQuery.of(context).size.width,
         alignment: Alignment.center,
-        color: const Color.fromARGB(8, 255, 255, 255),
+        color: Theme.of(context).highlightColor,
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
             DiscoverFilterParameter>(
           builder: (context, state) {
@@ -79,9 +80,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
                       Text(
                         "${filter.key.tr(context)}:",
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
+                            fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       const SizedBox(
                         width: 5,
@@ -89,7 +88,6 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
                       Text(
                         filterValue,
                         style: const TextStyle(
-                          color: Colors.white,
                           fontSize: 12,
                         ),
                       )
@@ -148,7 +146,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
               onPressed: () => showFilterMenuDialog(context),
               icon: const Icon(Icons.filter_list)),
           const SizedBox(
-            width: 20,
+            width: 10,
           )
         ],
       );
@@ -192,10 +190,10 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
         return SliverList(
             delegate: SliverChildBuilderDelegate(
                 ((context, index) => TMDBListMediaCard(
-                      media: _data.elementAt(index),
-                      onTap: (media) =>
-                          context.pushRoute(MediaRoute.fromMedia(media)),
-                    )),
+                    media: _data.elementAt(index),
+                    onTap: (media) {
+                      TMDBMediaRouteHelper.pushRoute(context, media);
+                    })),
                 childCount: _data.length));
       }),
     );
@@ -212,15 +210,27 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
               create: (context) =>
                   PagedDataFilterManager(_discoverFilterParameter))
         ],
-        child: BlocListener<PagedDataFilterManager<DiscoverFilterParameter>,
-            DiscoverFilterParameter>(
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<ConnectivityManager, ConnectivityState>(
+                listener: (context, state) {
+              if (state.hasNetworkAccess() && _data.isEmpty) {
+                context
+                    .read<TMDBMultimediaDiscoverBloc>()
+                    .add(PagedDataCollectionFetchEvent.refresh);
+              }
+            }),
+            BlocListener<PagedDataFilterManager<DiscoverFilterParameter>,
+                DiscoverFilterParameter>(
+              listener: (context, state) {
+                _data.clear();
+                context
+                    .read<TMDBMultimediaDiscoverBloc>()
+                    .add(PagedDataCollectionUpdateParameter(state));
+              },
+            )
+          ],
           child: this,
-          listener: (context, state) {
-            _data.clear();
-            context
-                .read<TMDBMultimediaDiscoverBloc>()
-                .add(PagedDataCollectionUpdateParameter(state));
-          },
         ));
   }
 }

@@ -1,11 +1,11 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:netflox/data/blocs/account/auth/user_account_data_cubit.dart';
+import 'package:netflox/data/blocs/account/auth/auth_cubit.dart';
+import 'package:netflox/data/blocs/account/data/library_media_user_data_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/models/language.dart';
-import 'package:nil/nil.dart';
-
+import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
+import 'package:provider/provider.dart';
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/library/library_media_cubit.dart';
 import '../../../../data/models/tmdb/library_media_information.dart';
@@ -14,10 +14,10 @@ import '../../../router/router.gr.dart';
 import '../../custom_awesome_dialog.dart';
 import 'components.dart';
 
-class LibraryMediaControlLayout extends StatelessWidget {
+class LibraryMediaStatusWidget extends StatelessWidget {
   final TMDBLibraryMedia media;
 
-  const LibraryMediaControlLayout({Key? key, required this.media})
+  const LibraryMediaStatusWidget({Key? key, required this.media})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -125,34 +125,40 @@ class LibraryMediaControlLayout extends StatelessWidget {
     );
   }
 
+  Widget _buildPendingMediaLayout(BuildContext context) {
+    final isAdmin = context.read<AuthCubit>().state.user!.isAdmin();
+    return ElevatedButton(
+      onPressed: () {
+        if (isAdmin) {
+          context.pushRoute(UploadRoute(media: media));
+        } else {
+          CustomAwesomeDialog(
+                  title: "media-pending-state",
+                  context: context,
+                  btnOkOnPress: () {},
+                  desc: "media-pending-state-desc")
+              .tr()
+              .show();
+        }
+      },
+      style: ButtonStyle(
+          backgroundColor: MaterialStatePropertyAll(isAdmin
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).disabledColor)),
+      child: Text(
+        isAdmin ? "upload".tr(context) : "${"pending".tr(context)}...",
+        style: const TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
   Widget _buildMediaLayout(
       LibraryMediaInformation mediaInfo, BuildContext context) {
     switch (mediaInfo.mediaStatus) {
       case MediaStatus.available:
         return _buildAvailableMediaLayout(context, mediaInfo);
       case MediaStatus.pending:
-        if (media is TMDBPlayableMedia) {
-          return ElevatedButton(
-            onPressed: () {
-              CustomAwesomeDialog(
-                      title: "media-pending-state",
-                      context: context,
-                      btnOkOnPress: () {},
-                      desc: "media-pending-state-desc")
-                  .tr()
-                  .show();
-            },
-            style: ButtonStyle(
-                backgroundColor:
-                    MaterialStatePropertyAll(Theme.of(context).disabledColor)),
-            child: Text(
-              "${"pending".tr(context)}...",
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
-        } else {
-          return const Nil();
-        }
+        return _buildPendingMediaLayout(context);
       case MediaStatus.rejected:
         return const Text("unavailable").tr();
       case MediaStatus.unavailable:
@@ -171,22 +177,21 @@ class WatchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LibraryMediaUserPlaybackStateCubit,
-        LibraryMediaUserPlaybackState>(
+    return BlocBuilder<LibraryMediaUserDataCubit, LibraryMediaUserDataState>(
       builder: (context, state) {
         var text = 'watch';
         var mediaDuration = media.duration;
         if (mediaDuration == null || mediaDuration == const Duration()) {
-          mediaDuration = const Duration(minutes: 90);
+          mediaDuration = const Duration(minutes: 60);
         }
         if (state.playbackTimestamp != null &&
             (state.playbackTimestamp! <
-                (mediaDuration - const Duration(minutes: 4)))) {
+                (mediaDuration - const Duration(minutes: 6)))) {
           text = 'continue';
         }
         return TMDBHeaderButton(
             text: text,
-            onPressed: () => context.pushRoute(StreamMediaRoute(
+            onPressed: () => context.pushRoute(StreamSFTPMediaRoute(
                   playableMedia: media,
                   startAt: state.playbackTimestamp,
                   onVideoClosed: (
@@ -194,8 +199,8 @@ class WatchButton extends StatelessWidget {
                   ) {
                     if (playbackTimestamp != null) {
                       context
-                          .read<LibraryMediaUserPlaybackStateCubit>()
-                          .update(playbackTimestamp);
+                          .read<LibraryMediaUserDataCubit>()
+                          .updateTimestamp(playbackTimestamp);
                     }
                   },
                 )));

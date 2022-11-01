@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:netflox/data/models/tmdb/element.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/movie.dart';
@@ -25,18 +26,18 @@ mixin TMDBPrimaryMediaType {
 }
 
 mixin TMDBLibraryMediaType {
-  static const all = [movie, tv, episode];
+  static const all = [movie, tv, episode, season];
   static const movie = TMDBType.movie;
   static const tv = TMDBType.tv;
   static const episode = TMDBType.tvEpisode;
+  static const season = TMDBType.tvSeason;
 }
 
 class TMDBType<T extends TMDBElement> {
   const TMDBType();
 
-  static TMDBType fromType(Type element) {
-    return values
-        .singleWhere((e) => e.genericTypeName == element.genericTypeName);
+  static TMDBType fromType(Type type) {
+    return values.singleWhere((e) => e.genericTypeName == type.genericTypeName);
   }
 
   bool isPeople() => T == TMDBPerson;
@@ -45,9 +46,10 @@ class TMDBType<T extends TMDBElement> {
   bool isTV() => T == TMDBTv;
   bool isTvSeason() => T == TMDBTVSeason;
   bool isTvEpisode() => T == TMDBTVEpisode;
-  bool isMedia() => isPrimaryMedia() || isTvSeason() || isTvEpisode();
+  bool isMedia() => isLibraryMedia() || isPeople();
   bool isMultimedia() => isMovie() || isTV();
   bool isPrimaryMedia() => isPeople() || isMovie() || isTV();
+  bool isLibraryMedia() => isMultimedia() || isTVElement();
 
   static const video = TMDBType<TMDBVideo>();
   static const movie = TMDBType<TMDBMovie>();
@@ -99,8 +101,16 @@ class TMDBType<T extends TMDBElement> {
   static TMDBType fromString(String? typeName,
       {TMDBType Function() orElse = _defaultElse}) {
     return values.singleWhere(
-      (e) => e.name == typeName,
+      (e) => e.path == typeName,
       orElse: orElse,
     );
   }
+
+  bool isTVElement() => isTvEpisode() || isTvSeason();
+
+  @override
+  bool operator ==(covariant TMDBType other) => other.name == name;
+
+  @override
+  int get hashCode => T.hashCode;
 }

@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,51 +6,49 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
-
 import '../../../../data/models/tmdb/media.dart';
-import '../../../router/router.gr.dart';
+import '../../../screens/tmdb/media_screen.dart';
 import '../tmdb_media_card.dart';
 import 'components.dart';
 
 const double kPadding = 25;
 
-class TMDBListPrimaryMediaLayout<
-        B extends TMDBElementCubit<List<TMDBPrimaryMedia>>>
+class TMDBListMediaLayout<B extends BasicTMDBElementCubit<List<TMDBMedia>>>
     extends StatelessWidget {
   final double? height;
   final String title;
   final bool play;
 
-  factory TMDBListPrimaryMediaLayout.responsive(
+  factory TMDBListMediaLayout.responsive(
       {required String title,
       bool play = false,
       required BuildContext context}) {
     final double? height =
         ResponsiveWrapper.of(context).isSmallerThan(TABLET) ? 200 : null;
-    return TMDBListPrimaryMediaLayout(
+    return TMDBListMediaLayout(
       title: title,
       height: height,
       play: play,
     );
   }
 
-  const TMDBListPrimaryMediaLayout(
+  const TMDBListMediaLayout(
       {super.key, required this.title, this.play = false, this.height});
 
-  const TMDBListPrimaryMediaLayout.carousel(
+  const TMDBListMediaLayout.carousel(
       {Key? key,
       required this.title,
       this.play = false,
       required double this.height})
       : super(key: key);
 
-  const TMDBListPrimaryMediaLayout.grid({super.key, required this.title})
+  const TMDBListMediaLayout.grid({super.key, required this.title})
       : play = false,
         height = null;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<B, BasicServerFetchState<List<TMDBPrimaryMedia>>>(
+    return BlocBuilder<B, BasicServerFetchState<List<TMDBMedia>>>(
       builder: (context, state) {
         if (state.success() && state.hasData()) {
           final data = state.result!;
@@ -76,7 +73,7 @@ class TMDBListPrimaryMediaLayout<
 }
 
 class _GridLayout extends StatelessWidget {
-  final List<TMDBPrimaryMedia> data;
+  final List<TMDBMedia> data;
   const _GridLayout({required this.data});
 
   @override
@@ -97,14 +94,14 @@ class _GridLayout extends StatelessWidget {
           return TMDBMediaCard(
             media: media,
             showBottomTitle: true,
-            onTap: (media) => context.pushRoute(MediaRoute.fromMedia(media)),
+            onTap: (media) => TMDBMediaRouteHelper.pushRoute(context, media),
           );
         }), childCount: data.length));
   }
 }
 
 class _CarouselLayout extends StatefulWidget {
-  final List<TMDBPrimaryMedia> data;
+  final List<TMDBMedia> data;
   final double height;
   final bool play;
   const _CarouselLayout(
@@ -151,7 +148,7 @@ class _CarouselLayoutState extends State<_CarouselLayout> {
                   media: media,
                   showBottomTitle: true,
                   onTap: (media) =>
-                      context.pushRoute(MediaRoute.fromMedia(media)),
+                      TMDBMediaRouteHelper.pushRoute(context, media),
                 ),
               ),
             ),

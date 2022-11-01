@@ -11,7 +11,7 @@ import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 
 export 'favorite_button.dart';
 export 'header.dart';
-export 'media_access_control.dart';
+export 'library_media_user_widget.dart';
 export 'person_casting_grid_layout.dart';
 export 'tmdb_list_media_layout.dart';
 export 'tmdb_screen_builder.dart';
@@ -51,7 +51,6 @@ class MediaScreenComponent extends StatelessWidget {
         decoration: BoxDecoration(
             color: backgroundColor ?? Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(5)),
-        // alignment: Alignment.topCenter,
         margin: EdgeInsets.only(
             left: leftMargin,
             right: rightMargin,

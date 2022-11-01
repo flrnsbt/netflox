@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/img.dart';
-import 'package:netflox/data/models/tmdb/season.dart';
 import 'package:netflox/data/models/tmdb/type.dart';
 import 'package:netflox/data/models/tmdb/video.dart';
 
@@ -20,20 +19,15 @@ abstract class TMDBElement with EquatableMixin {
   }
 
   static TMDBElement fromMap(Map<String, dynamic> map) {
+    final type = map["tmdb_type"] as TMDBType;
     try {
-      final TMDBType type = map["tmdb_type"];
-      switch (type) {
-        case TMDBType.video:
-          return TMDBVideo.fromJson(map);
-        case TMDBType.tvEpisode:
-          return TMDBTVEpisode.fromMap(map);
-        case TMDBType.tvSeason:
-          return TMDBTVSeason.fromMap(map);
-        default:
-          return TMDBMedia.fromMap(map);
+      if (type.isVideo()) {
+        return TMDBVideo.fromJson(map);
+      } else {
+        return TMDBMedia.fromMap(map);
       }
     } catch (e) {
-      throw UnsupportedError('unsupported type ${map['type']}');
+      throw UnsupportedError('unsupported type $type');
     }
   }
 
@@ -49,7 +43,7 @@ mixin TMDBNameProvider on TMDBElement {
   String? get name;
 }
 
-mixin TMDBImageProvider on TMDBElement {
+mixin TMDBElementWithImage on TMDBElement {
   TMDBImg? get img;
 }
 

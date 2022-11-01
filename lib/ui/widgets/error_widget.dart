@@ -15,8 +15,11 @@ class CustomErrorWidget extends StatelessWidget {
       this.bottom,
       this.maxWidth = 400,
       Widget? image})
-      : image =
-            image ?? const Icon(Icons.warning, size: 48, color: Colors.white70),
+      : image = image ??
+            const Icon(
+              Icons.warning,
+              size: 36,
+            ),
         super(key: key);
 
   factory CustomErrorWidget.from(
@@ -44,42 +47,39 @@ class CustomErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        padding: const EdgeInsets.symmetric(horizontal: 35),
-        child: Column(
-          textDirection: TextDirection.ltr,
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              constraints: BoxConstraints.loose(const Size.fromHeight(200)),
-              child: image,
+    return Container(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            constraints: BoxConstraints.loose(const Size.fromHeight(200)),
+            child: image,
+          ),
+          if (errorTitle != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                errorTitle!,
+                style: const TextStyle(
+                  fontSize: 18,
+                ),
+              ).tr(),
             ),
-            if (errorTitle != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  errorTitle!,
-                  style: const TextStyle(
-                    fontSize: 20,
-                  ),
-                ).tr(),
-              ),
-            if (errorDescription != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  errorDescription!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14),
-                ).tr(),
-              ),
-            if (bottom != null) bottom!,
-          ],
-        ),
+          if (errorDescription != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                errorDescription!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12),
+              ).tr(),
+            ),
+          if (bottom != null) bottom!,
+        ],
       ),
     );
   }

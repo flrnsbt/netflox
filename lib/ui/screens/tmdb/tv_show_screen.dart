@@ -1,11 +1,14 @@
 part of 'media_screen.dart';
 
-class TMDBTvScreen extends StatelessWidget {
-  final TMDBTv tv;
-  const TMDBTvScreen({Key? key, required this.tv}) : super(key: key);
+class TMDBTvScreen extends TMDBMediaScreenWrapper<TMDBTv>
+    with TMDBPrimaryScreenWrapper {
+  TMDBTvScreen({
+    super.key,
+    @PathParam('id') required this.id,
+  });
 
-  Widget _buildSeasonLayout(BuildContext context) {
-    final seasons = tv.seasons.reversed;
+  Widget _buildSeasonLayout(BuildContext context, TMDBTv media) {
+    final seasons = media.seasons.reversed;
     final count = seasons.length;
 
     return ListView.builder(
@@ -63,9 +66,7 @@ class TMDBTvScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 5),
                     child: Text(season.date!,
                         style: const TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontSize: 8,
-                            color: Colors.white)),
+                            fontStyle: FontStyle.italic, fontSize: 8)),
                   ),
               ],
             ),
@@ -73,8 +74,10 @@ class TMDBTvScreen extends StatelessWidget {
               text: mediaStatus.tr(context),
               color: mediaStatusColor(mediaStatus),
             ),
-            onTap: () => context.pushRoute(TVShowSeasonRoute(
-                seasonNumber: season.seasonNumber, tvShowId: tv.id)),
+            onTap: () {
+              context.router.push(
+                  TMDBTVShowSeasonRoute(id: season.seasonNumber, showId: id));
+            },
           );
         },
       ),
@@ -82,100 +85,41 @@ class TMDBTvScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildLayout(BuildContext context, TMDBTv media) {
     return TMDBScreenBuilder(
-      element: tv,
-      content: [
-        TMDBInfoComponent(
-          media: tv,
-        ),
-        if (tv.seasons.isNotEmpty)
-          MediaScreenComponent(
-              bottomMargin: 0,
-              backgroundColor: Colors.transparent,
-              padding: const EdgeInsets.only(left: 0, right: 0),
-              name: 'season'.tr(context),
-              child: _buildSeasonLayout(context)),
-        if (ResponsiveWrapper.of(context).isSmallerThan(DESKTOP))
-          VideoTrailer(
-            media: tv,
+        element: media,
+        content: [
+          TMDBInfoComponent(
+            media: media,
           ),
-        TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<
-                RecommendationRequestType>>.responsive(
-          title: 'recommendations'.tr(context),
-          context: context,
-        ),
-        TMDBListPrimaryMediaLayout<
-            TMDBFetchMultimediaCollection<SimilarRequestType>>.responsive(
-          title: 'similars'.tr(context),
-          context: context,
-        ),
-      ],
-      header: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Flexible(
-            flex: 6,
-            child: AutoSizeText(
-              tv.name,
-              wrapWords: false,
-              maxLines: 3,
-              textAlign: TextAlign.end,
-              minFontSize: 18,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 55, fontWeight: FontWeight.bold),
+          if (media.seasons.isNotEmpty)
+            MediaScreenComponent(
+                bottomMargin: 0,
+                backgroundColor: Colors.transparent,
+                padding: const EdgeInsets.only(left: 0, right: 0),
+                name: 'season'.tr(context),
+                child: _buildSeasonLayout(context, media)),
+          if (ResponsiveWrapper.of(context).isSmallerThan(DESKTOP))
+            VideoTrailer(
+              media: media,
             ),
+          TMDBListMediaLayout<
+              TMDBFetchMultimediaCollection<
+                  RecommendationRequestType>>.responsive(
+            title: 'recommendations'.tr(context),
+            context: context,
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          Flexible(
-            flex: 2,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: Row(
-                children: [
-                  if (tv.genres.isNotEmpty)
-                    FramedText(
-                      text: tv.genres.first.tr(context),
-                    ),
-                  FramedText(
-                    text: tv.type.name.tr(context),
-                  ),
-                  if (tv.duration != null && tv.duration!.inMinutes != 0)
-                    FramedText(
-                      text: "${tv.duration!.inMinutes} mins",
-                    ),
-                ]
-                    .map((e) => Padding(
-                        padding: const EdgeInsets.only(left: 7), child: e))
-                    .toList(),
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          if (tv.voteAverage != null)
-            Flexible(
-              flex: 1,
-              child: RatingWidget(
-                score: tv.voteAverage!,
-              ),
-            ),
-          const SizedBox(
-            height: 15,
-          ),
-          Flexible(
-            flex: 4,
-            child: LibraryMediaControlLayout(
-              media: tv,
-            ),
+          TMDBListMediaLayout<
+              TMDBFetchMultimediaCollection<SimilarRequestType>>.responsive(
+            title: 'similars'.tr(context),
+            context: context,
           ),
         ],
-      ),
-    );
+        header: MultimediaDefaultHeader(
+          media: media,
+        ));
   }
+
+  @override
+  final String id;
 }

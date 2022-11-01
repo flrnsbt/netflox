@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:netflox/data/models/tmdb/genre.dart';
@@ -18,14 +19,10 @@ class TMDBService {
 
   TMDBService({required TMDBRepository repository, Locale? defaultLanguage})
       : _repository = repository,
+        _client = HttpClient(),
         defaultLanguage = defaultLanguage?.languageCode;
 
-  TMDBQueryHTTPClient? _currentQueryClient;
-
-  void _updateQueryClient(TMDBQueryHTTPClient queryClient) {
-    _currentQueryClient?.close(true);
-    _currentQueryClient = queryClient;
-  }
+  final HttpClient _client;
 
   Future<TMDBDocumentResult<TMDBMovie>> getMovie(
       {required String movieId, String? language}) async {
@@ -33,7 +30,7 @@ class TMDBService {
         .movie()
         .document(movieId)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
+
     final result = await query.fetch();
     return result;
   }
@@ -44,7 +41,6 @@ class TMDBService {
         .tv()
         .document(tvShowId)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
@@ -61,7 +57,6 @@ class TMDBService {
         .getSeason(seasonNumber)
         .getEpisode(episodeNumber)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
@@ -76,7 +71,6 @@ class TMDBService {
         .document(tvShowId)
         .getSeason(seasonNumber)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
@@ -88,7 +82,6 @@ class TMDBService {
         .primaryMedia<T>(type)
         .document(id)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
@@ -100,7 +93,6 @@ class TMDBService {
         .multimedia<T>(type)
         .document(id)
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
@@ -118,8 +110,6 @@ class TMDBService {
     }
     final collectionQuery = query.searchTerms(searchTerms);
     collectionQuery.setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(collectionQuery);
-
     final result = await collectionQuery.fetch(page: page);
     return result;
   }
@@ -148,8 +138,6 @@ class TMDBService {
     }
     final collectionQuery = query.submit();
     collectionQuery.setLanguage(resultLanguage ?? defaultLanguage);
-    _updateQueryClient(collectionQuery);
-
     final result = await collectionQuery.fetch(page: page);
     return result;
   }
@@ -160,7 +148,6 @@ class TMDBService {
         .primaryMedia<T>(mediaType)
         .getPopulars()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch(page: page);
 
@@ -173,7 +160,6 @@ class TMDBService {
         .multimedia<T>(mediaType)
         .getTopRated()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch(page: page);
 
@@ -191,7 +177,6 @@ class TMDBService {
         .timeWindow(timeWindow)
         .get()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch(page: page);
 
@@ -208,7 +193,6 @@ class TMDBService {
         .document(id)
         .getRecommendations()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch(page: page);
 
@@ -225,7 +209,6 @@ class TMDBService {
         .document(id)
         .getVideos()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     result.data?.sort();
@@ -242,22 +225,33 @@ class TMDBService {
         .document(id)
         .getSimilars()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch(page: page);
     return result;
   }
 
-  Future<TMDBDocumentResult<List<TMDBPerson>>> getMediaCredits(
-      {required String id,
-      required TMDBType<TMDBMultiMedia> type,
-      String? language}) async {
-    final query = _repository
-        .multimedia(type)
-        .document(id)
-        .credits()
-        .setLanguage(language ?? defaultLanguage);
-    final result = await query.fetch();
+  Future<TMDBDocumentResult<List<TMDBPerson>>> getLibraryMediaCredits(
+      {required TMDBLibraryMedia media, String? language}) async {
+    TMDBDocument<TMDBLibraryMedia> query;
+    if (media.type.isMultimedia()) {
+      query = _repository
+          .multimedia((media as TMDBMultiMedia).type)
+          .document(media.id);
+    } else if (media.type.isTVElement()) {
+      final showId = (media as TMDBTVElement).showId;
+      dynamic q =
+          _repository.tv().document(showId).getSeason(media.seasonNumber);
+      if (media is TMDBTVEpisode) {
+        q = q.getEpisode(media.episodeNumber);
+      }
+      query = q;
+    } else {
+      throw UnsupportedError('Incorrect media type');
+    }
+
+    final multiDocQuery =
+        query.credits().setLanguage(language ?? defaultLanguage);
+    final result = await multiDocQuery.fetch();
     return result;
   }
 
@@ -268,13 +262,12 @@ class TMDBService {
         .document(id)
         .credits()
         .setLanguage(language ?? defaultLanguage);
-    _updateQueryClient(query);
 
     final result = await query.fetch();
     return result;
   }
 
   void close([bool force = false]) {
-    _currentQueryClient?.close(force);
+    _client.close(force: force);
   }
 }

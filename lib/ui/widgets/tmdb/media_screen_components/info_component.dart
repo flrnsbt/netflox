@@ -105,7 +105,7 @@ class TMDBInfoComponent extends StatelessWidget {
   }
 
   Widget _buildCredits(BuildContext context) {
-    return const TMDBListPrimaryMediaLayout<TMDBFetchMediaCredits>.carousel(
+    return const TMDBListMediaLayout<TMDBFetchMediaCredits>.carousel(
       title: 'credits',
       play: true,
       height: 180,

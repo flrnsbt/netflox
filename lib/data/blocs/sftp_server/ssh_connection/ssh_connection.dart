@@ -2,19 +2,24 @@ import 'dart:async';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_state.dart';
+import '../../../constants/default_app_timeout.dart';
 import '../../../models/server_configs/ssh_config.dart';
 import '../../../models/user/user.dart';
 
 class SSHConnectionCubit extends Cubit<SSHConnectionState> {
   final NetfloxSSHConfig _sshConfig;
   final List<SSHKeyPair>? _identities;
-  SSHConnectionCubit(this._identities, this._sshConfig)
+  final String _username;
+  SSHConnectionCubit(this._identities, this._sshConfig, this._username)
       : super(SSHConnectionState.disconnected());
 
   factory SSHConnectionCubit.fromUser(
       NetfloxUser user, NetfloxSSHConfig sshConfig) {
     final sshKeyPair = user.sshKeyPair;
-    return SSHConnectionCubit(sshKeyPair, sshConfig);
+    final userType = user.userType.name;
+    final username =
+        "netflox${userType.substring(0, 1).toUpperCase()}${userType.substring(1)}";
+    return SSHConnectionCubit(sshKeyPair, sshConfig, username);
   }
 
   FutureOr<void> connect() async {
@@ -24,13 +29,15 @@ class SSHConnectionCubit extends Cubit<SSHConnectionState> {
         final socket = await SSHSocket.connect(
           _sshConfig.hostName,
           _sshConfig.port,
-          timeout: const Duration(seconds: 30),
+          timeout: kDefaultTimeout,
         );
-        socket.done.whenComplete(() => emit(SSHConnectionState.disconnected()));
-        final sshClient = SSHClient(socket,
-            username: _sshConfig.username, identities: _identities);
+        final sshClient =
+            SSHClient(socket, username: _username, identities: _identities);
+        sshClient.done
+            .whenComplete(() => emit(SSHConnectionState.disconnected()));
+
         await sshClient.authenticated;
-        final sftpClient = await sshClient.sftp();
+        final sftpClient = await sshClient.sftp().timeout(kDefaultTimeout);
         emit(SSHConnectionState.connected(sftpClient));
       } catch (e) {
         emit(SSHConnectionState.disconnected(e));
@@ -51,3 +58,8 @@ class SSHConnectionCubit extends Cubit<SSHConnectionState> {
     }
   }
 }
+
+
+//TODO: CHECK SERVER MEMORY
+
+//TODO: CONNECTION STATUS

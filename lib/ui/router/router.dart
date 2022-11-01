@@ -3,12 +3,11 @@ import 'package:netflox/main.dart';
 import 'package:netflox/ui/screens/admin_screen.dart';
 import 'package:netflox/ui/screens/auths/auth_screen.dart';
 import 'package:netflox/ui/screens/auths/forgot_password_screen.dart';
-import 'package:netflox/ui/screens/auths/my_account_screen.dart';
+import 'package:netflox/ui/screens/main/my_account_screen.dart';
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/main/explore_screen.dart';
 import 'package:netflox/ui/screens/download_screen.dart';
-import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/screens/main/search_screen.dart';
 import 'package:netflox/ui/screens/main/library_screen.dart';
 import 'package:netflox/ui/screens/settings_screen.dart';
@@ -16,11 +15,11 @@ import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart';
 import 'package:netflox/ui/screens/upload_screen.dart';
 
 import '../screens/main/tab_home_screen.dart';
-import '../screens/stream_media_screen.dart';
+import '../screens/video_stream_screen.dart';
 import '../screens/tmdb/media_screen.dart';
 import '../screens/tmdb/tv_show_season_screen.dart';
 
-@MaterialAutoRouter(
+@AdaptiveAutoRouter(
   replaceInRouteName: 'Screen,Route',
   routes: <AutoRoute>[
     AutoRoute(page: StackScreen, initial: true, path: "", children: [
@@ -45,32 +44,30 @@ import '../screens/tmdb/tv_show_season_screen.dart';
             AutoRoute(page: MyAccountScreen, path: 'my-account'),
           ]),
       AutoRoute(page: UnverifiedUserScreen, path: "unverified-user"),
+      AutoRoute(page: TMDBMovieScreen, path: "movie/:id"),
+      AutoRoute(page: TMDBPeopleScreen, path: "people/:id"),
+      AutoRoute(page: TMDBTvScreen, path: "tv/:id"),
       AutoRoute(
-        page: MediaScreen,
-        path: ":mediaType/:id",
-      ),
+          page: TMDBTVShowSeasonScreen, path: 'tv/:id/seasons/:seasonNumber'),
       AutoRoute(
-        page: TVShowSeasonScreen,
-        path: "tv/:tvShowId/:seasonNumber",
-      ),
-      AutoRoute(
-        page: TVShowEpisodeScreen,
-      ),
+          path: 'tv/:id/seasons/:seasonNumber/episodes/:episodeNumber',
+          page: TVShowEpisodeScreen),
       AutoRoute(
         path: 'stream',
         fullscreenDialog: true,
-        page: StreamMediaScreen,
+        page: StreamSFTPMediaScreen,
       ),
       AutoRoute(
         path: 'download',
         fullscreenDialog: true,
         page: DownloadScreen,
       ),
-      AutoRoute<bool>(page: AuthScreen, path: 'auth'),
-      AutoRoute(
-        page: ForgotPasswordScreen,
-        path: "forgot-password",
-      ),
+      AutoRoute<bool>(page: AuthScreen, path: 'auth', children: [
+        AutoRoute(
+          page: ForgotPasswordScreen,
+          path: "forgot-password",
+        ),
+      ]),
       AutoRoute(
         path: 'admin-panel',
         page: AdminScreen,
@@ -80,8 +77,11 @@ import '../screens/tmdb/tv_show_season_screen.dart';
         page: SettingsScreen,
       ),
       AutoRoute(
-        path: 'upload-file',
+        path: 'upload',
         page: UploadScreen,
+      ),
+      AutoRoute(
+        page: WrappedBuilderScreen,
       ),
     ]),
     AutoRoute(

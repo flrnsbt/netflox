@@ -1,14 +1,14 @@
-import 'dart:ui';
 import 'package:equatable/equatable.dart';
 import 'package:language_picker/languages.dart';
 import 'package:netflox/data/models/tmdb/genre.dart';
 import 'package:netflox/data/models/tmdb/tv.dart';
+import 'package:netflox/utils/list_where_in.dart';
 import 'library_media_information.dart';
 import 'media.dart';
 import 'movie.dart';
 import 'type.dart';
 
-abstract class FilterParameter<T extends TMDBPrimaryMedia> extends Equatable {
+abstract class FilterParameter<T extends TMDBMedia> extends Equatable {
   const FilterParameter();
 
   @override
@@ -154,8 +154,24 @@ class DiscoverFilterParameter<T extends TMDBMultiMedia>
       ];
 }
 
-class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
-  final List<TMDBType<TMDBMultiMedia>> types;
+class LibraryUserDataFilterParameter<T extends TMDBLibraryMedia>
+    extends FilterParameter<T> {
+  final bool? liked;
+  final bool? watched;
+  final LibrarySortCriterion sortCriterion;
+  final SortOrder sortOrder;
+
+  const LibraryUserDataFilterParameter({
+    this.sortCriterion = LibrarySortCriterion.addedOn,
+    this.sortOrder = SortOrder.desc,
+    this.liked,
+    this.watched,
+  }) : assert(liked != null || watched != null);
+}
+
+class LibraryFilterParameter<T extends TMDBLibraryMedia>
+    extends FilterParameter<T> {
+  final List<TMDBType<T>> selectedtypes;
   final LibrarySortCriterion sortCriterion;
   final SortOrder sortOrder;
   final Language? language;
@@ -167,17 +183,16 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
 
   const LibraryFilterParameter(
       {this.sortCriterion = LibrarySortCriterion.addedOn,
-      List<TMDBType<TMDBMultiMedia>>? types,
+      required this.selectedtypes,
       this.sortOrder = SortOrder.desc,
       this.language,
       this.subtitle,
-      this.status = MediaStatus.available})
-      : types = types ?? TMDBMultiMediaType.all;
+      this.status = MediaStatus.available});
 
   factory LibraryFilterParameter.fromMap(Map<String, dynamic> map) {
     return LibraryFilterParameter(
         sortCriterion: map['sort_by'],
-        types: map['media_type'],
+        selectedtypes: map['media_type'],
         sortOrder: map['order_by'],
         language: map['language'],
         subtitle: map['subtitle'],
@@ -186,7 +201,7 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
 
   Map<String, dynamic> toMap() {
     return {
-      'media_type': types,
+      'media_type': selectedtypes,
       'sort_by': sortCriterion,
       'language': language,
       'subtitle': subtitle,
@@ -197,6 +212,7 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
 
   LibraryFilterParameter copyWith(
       {List<TMDBType<TMDBMultiMedia>>? types,
+      List<TMDBType<TMDBLibraryMedia>>? allowedTypes,
       int? year,
       LibrarySortCriterion? sortCriterion,
       Language? language,
@@ -204,7 +220,7 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
       MediaStatus? status,
       SortOrder? sortOrder}) {
     return LibraryFilterParameter(
-      types: types ?? this.types,
+      selectedtypes: types ?? selectedtypes,
       sortCriterion: sortCriterion ?? this.sortCriterion,
       sortOrder: sortOrder ?? this.sortOrder,
       language: language ?? this.language,
@@ -215,7 +231,7 @@ class LibraryFilterParameter extends FilterParameter<TMDBMultiMedia> {
 
   @override
   List<Object?> get props =>
-      [types, status, subtitle, language, sortCriterion, sortOrder];
+      [selectedtypes, status, subtitle, language, sortCriterion, sortOrder];
 }
 
 class SimpleMultimediaFilterParameter extends FilterParameter<TMDBMultiMedia> {

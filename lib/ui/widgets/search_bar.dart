@@ -57,7 +57,7 @@ class _NetfloxSearchBarState extends State<NetfloxSearchBar> {
       maxLength: 100,
       textInputAction: TextInputAction.search,
       keyboardType: TextInputType.text,
-      cursorColor: Colors.black,
+      cursorColor: Theme.of(context).primaryColor,
       textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(vertical: 5),

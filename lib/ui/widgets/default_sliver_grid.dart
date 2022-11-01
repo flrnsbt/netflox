@@ -9,14 +9,14 @@ class DefaultSliverGrid extends StatelessWidget {
   const DefaultSliverGrid(
       {super.key,
       this.gridDelegate,
-      this.padding = const EdgeInsets.only(top: 5),
+      this.padding = EdgeInsets.zero,
       required this.sliverChildBuilderDelegate})
       : _pageSize = null;
   final int? _pageSize;
   const DefaultSliverGrid.paged(
       {super.key,
       required this.sliverChildBuilderDelegate,
-      this.padding = const EdgeInsets.only(top: 5),
+      this.padding = EdgeInsets.zero,
       int pageSize = kDefaultPageItemNumber})
       : _pageSize = pageSize,
         gridDelegate = null;

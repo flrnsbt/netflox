@@ -3,23 +3,15 @@ import 'package:flutter/material.dart';
 
 import '../../router/router.gr.dart';
 
-class HomeButton extends StatefulWidget {
+class HomeButton extends StatelessWidget {
   final Color? color;
   const HomeButton({Key? key, this.color}) : super(key: key);
-
-  @override
-  State<HomeButton> createState() => _HomeButtonState();
-}
-
-class _HomeButtonState extends State<HomeButton> {
-  bool _mainRouteInStack = true;
-
   @override
   Widget build(BuildContext context) {
-    if (!_previousIsMainRoute()) {
+    if (_previousRouteIsRoot(context)) {
       return IconButton(
           onPressed: () {
-            if (_mainRouteInStack) {
+            if (_hasHomeRouteInStack(context)) {
               context.router.popUntilRoot();
             } else {
               context.router.replaceAll([const StackRoute()]);
@@ -27,22 +19,20 @@ class _HomeButtonState extends State<HomeButton> {
           },
           icon: Icon(
             Icons.home,
-            color: widget.color,
+            color: color,
           ));
     }
     return const SizedBox.shrink();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _mainRouteInStack = context.router.stack.first.name == "TabHomeRoute";
-  }
-
-  bool _previousIsMainRoute() {
-    if (!_mainRouteInStack) {
+  bool _previousRouteIsRoot(BuildContext context) {
+    if (!_hasHomeRouteInStack(context)) {
       return false;
     }
-    return context.router.stack.length <= 2;
+    return context.router.pageCount > 2;
+  }
+
+  bool _hasHomeRouteInStack(BuildContext context) {
+    return context.router.root.current.name == StackRoute.name;
   }
 }

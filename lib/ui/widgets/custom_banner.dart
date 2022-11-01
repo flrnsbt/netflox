@@ -15,9 +15,6 @@ const TextStyle _kTextStyle = TextStyle(
 );
 
 class CustomBanner extends StatelessWidget {
-  final Widget? child;
-
-  // if height is null, the banner will be sized to fit the child proportionally
   final double height;
 
   final double? offset;
@@ -30,8 +27,7 @@ class CustomBanner extends StatelessWidget {
 
   final TextStyle textStyle;
 
-  factory CustomBanner.fromOptions(CustomBannerOptions options,
-      [Widget? child]) {
+  factory CustomBanner.fromOptions(CustomBannerOptions options) {
     return CustomBanner(
       message: options.message,
       location: options.location,
@@ -39,7 +35,6 @@ class CustomBanner extends StatelessWidget {
       textStyle: options.textStyle,
       height: options.height,
       offset: options.offset,
-      child: child,
     );
   }
 
@@ -50,25 +45,26 @@ class CustomBanner extends StatelessWidget {
       required this.color,
       required this.textStyle,
       this.height = _kHeight,
-      this.offset,
-      this.child});
+      this.offset});
 
   @override
   Widget build(BuildContext context) {
     final offset = this.offset ?? message.length * 0.3 + height * 2.2;
-    return ClipRect(
-      child: CustomPaint(
-        foregroundPainter: CustomBannerPainter(
-          height: height,
-          offset: offset,
-          message: message,
-          textDirection: Directionality.of(context),
-          location: location,
-          layoutDirection: Directionality.of(context),
-          color: color,
-          textStyle: textStyle.copyWith(fontSize: height * 0.5),
+    return SizedBox.square(
+      dimension: offset + height,
+      child: ClipRect(
+        child: CustomPaint(
+          foregroundPainter: CustomBannerPainter(
+            height: height,
+            offset: offset,
+            message: message,
+            textDirection: Directionality.of(context),
+            location: location,
+            layoutDirection: Directionality.of(context),
+            color: color,
+            textStyle: textStyle.copyWith(fontSize: height * 0.5),
+          ),
         ),
-        child: child,
       ),
     );
   }

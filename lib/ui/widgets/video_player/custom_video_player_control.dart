@@ -1,3 +1,5 @@
+// ignore_for_file: implementation_imports
+
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
@@ -11,6 +13,7 @@ import 'package:chewie/src/cupertino/widgets/cupertino_options_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:netflox/ui/widgets/netflox_loading_indicator.dart';
+import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -117,46 +120,48 @@ class _CustomControlsState extends State<CustomControls>
     final buttonPadding = orientation == Orientation.portrait ? 16.0 : 24.0;
 
     return SafeArea(
+        minimum: EdgeInsets.symmetric(
+            vertical: 2.h(context), horizontal: 3.w(context)),
         child: MouseRegion(
-      onHover: (_) => _cancelAndRestartTimer(),
-      child: GestureDetector(
-        onTap: () => _cancelAndRestartTimer(),
-        child: AbsorbPointer(
-          absorbing: notifier.hideStuff,
-          child: Stack(
-            children: [
-              if (_displayBufferingIndicator)
-                const Center(
-                  child: NetfloxLoadingIndicator(),
-                )
-              else
-                _buildHitArea(),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  _buildTopBar(
-                    backgroundColor,
-                    iconColor,
-                    barHeight,
-                    buttonPadding,
-                  ),
-                  const Spacer(),
-                  if (_subtitleOn)
-                    Transform.translate(
-                      offset: Offset(
-                        0.0,
-                        notifier.hideStuff ? barHeight * 0.8 : 0.0,
+          onHover: (_) => _cancelAndRestartTimer(),
+          child: GestureDetector(
+            onTap: () => _cancelAndRestartTimer(),
+            child: AbsorbPointer(
+              absorbing: notifier.hideStuff,
+              child: Stack(
+                children: [
+                  if (_displayBufferingIndicator)
+                    const Center(
+                      child: NetfloxLoadingIndicator(),
+                    )
+                  else
+                    _buildHitArea(),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      _buildTopBar(
+                        backgroundColor,
+                        iconColor,
+                        barHeight,
+                        buttonPadding,
                       ),
-                      child: _buildSubtitles(chewieController.subtitle!),
-                    ),
-                  _buildBottomBar(backgroundColor, iconColor, barHeight),
+                      const Spacer(),
+                      if (_subtitleOn)
+                        Transform.translate(
+                          offset: Offset(
+                            0.0,
+                            notifier.hideStuff ? barHeight * 0.8 : 0.0,
+                          ),
+                          child: _buildSubtitles(chewieController.subtitle!),
+                        ),
+                      _buildBottomBar(backgroundColor, iconColor, barHeight),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    ));
+        ));
   }
 
   @override
@@ -636,7 +641,9 @@ class _CustomControlsState extends State<CustomControls>
       ),
       child: Row(
         children: <Widget>[
-          if (!chewieController.isFullScreen)
+          if (!chewieController.isFullScreen &&
+              chewieController.allowFullScreen &&
+              Navigator.canPop(context))
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _buildExitButton(
