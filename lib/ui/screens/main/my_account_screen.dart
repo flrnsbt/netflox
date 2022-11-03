@@ -28,28 +28,7 @@ class MyAccountScreen extends StatefulWidget {
   State<MyAccountScreen> createState() => _MyAccountScreenState();
 }
 
-class _MyAccountScreenState extends State<MyAccountScreen>
-    with WidgetsBindingObserver {
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-  }
-
+class _MyAccountScreenState extends State<MyAccountScreen> {
   Widget _buildAccountInfoCard(BuildContext context) {
     final user = context.read<AuthCubit>().state.user!;
     return SizedBox(

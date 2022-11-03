@@ -23,16 +23,15 @@ class ConstrainedLargeScreenWidget extends StatelessWidget {
           shrinkWrap: false,
           breakpointsLandscape: const [
             ResponsiveBreakpoint.resize(300, name: MOBILE),
-            ResponsiveBreakpoint.autoScale(600, scaleFactor: 1.2, name: TABLET),
+            ResponsiveBreakpoint.autoScale(700, scaleFactor: 1.2, name: TABLET),
             ResponsiveBreakpoint.resize(1000, name: DESKTOP),
             ResponsiveBreakpoint.resize(1700, scaleFactor: 1.2, name: "XL"),
           ],
           breakpoints: const [
-            ResponsiveBreakpoint.resize(300, name: MOBILE),
-            ResponsiveBreakpoint.resize(600, name: TABLET),
-            ResponsiveBreakpoint.autoScale(1000,
-                scaleFactor: 1.4, name: DESKTOP),
-            ResponsiveBreakpoint.resize(1700, scaleFactor: 1.5, name: "XL"),
+            ResponsiveBreakpoint.resize(250, name: MOBILE),
+            ResponsiveBreakpoint.resize(500, name: TABLET),
+            ResponsiveBreakpoint.resize(1200, name: DESKTOP),
+            ResponsiveBreakpoint.resize(1700, scaleFactor: 1.2, name: "XL"),
           ],
           child: child),
     );

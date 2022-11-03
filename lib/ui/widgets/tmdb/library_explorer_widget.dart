@@ -52,6 +52,7 @@ class LibraryExplorerWidget extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return SliverAppBar(
       titleSpacing: 0,
+      backgroundColor: Theme.of(context).backgroundColor,
       leading: Navigator.canPop(context)
           ? const BackButton()
           : IconButton(

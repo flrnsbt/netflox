@@ -85,8 +85,10 @@ class _TMDBScreenBuilderState extends State<TMDBScreenBuilder> {
             width: 25,
           )
         ],
-        centerTitle: false,
+        centerTitle: true,
         title: _show ? _title : null,
+        titleTextStyle:
+            const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         leading: Row(children: const [
           SizedBox(
             width: 25,

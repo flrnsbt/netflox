@@ -24,8 +24,10 @@ class NetfloxUser extends Equatable {
   final String? imgURL;
   final UserType userType;
   final bool verified;
+  final bool _testAccount;
   final List<SSHKeyPair>? sshKeyPair;
 
+  bool isTestAccount() => _testAccount;
   bool isAdmin() => userType == UserType.admin;
   bool isNormalUser() => userType == UserType.user;
 
@@ -34,15 +36,17 @@ class NetfloxUser extends Equatable {
     required this.displayName,
     this.userType = UserType.user,
     this.verified = false,
+    bool testAccount = false,
     this.email,
     this.imgURL,
     this.sshKeyPair,
-  });
+  }) : _testAccount = testAccount;
 
   Map<String, dynamic> toMap() {
     return {
       'userType': userType,
       'verified': verified,
+      'test_account': _testAccount
     };
   }
 
@@ -63,6 +67,7 @@ class NetfloxUser extends Equatable {
     return NetfloxUser(
       id: map['id'],
       userType: UserType.fromString(map['userType']),
+      testAccount: map['test_account'] ?? false,
       verified: map['verified'] ?? false,
       displayName:
           map['firstName'] ?? map['email']?.split("@").first ?? map['id'],

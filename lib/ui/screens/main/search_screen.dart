@@ -143,7 +143,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
                 }, builder: (context, state) {
                   return DefaultSliverGrid(
                     sliverChildBuilderDelegate:
-                        SliverChildBuilderDelegate(((context, index) {
+                        SliverChildBuilderDelegate((context, index) {
                       return TMDBMediaCard(
                           media: _data.elementAt(index),
                           showMediaType: true,
@@ -152,7 +152,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
                             FocusManager.instance.primaryFocus?.unfocus();
                             TMDBMediaRouteHelper.pushRoute(context, media);
                           });
-                    }), childCount: _data.length),
+                    }, childCount: _data.length),
                   );
                 })),
           )),

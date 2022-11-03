@@ -150,7 +150,11 @@ class _PagedSliverScrollViewWrapperState
             scrollDirection: widget.scrollDirection,
             physics: _physics,
             slivers: [
-              if (_header != null) _header!,
+              if (_header != null)
+                SliverPadding(
+                  sliver: _header!,
+                  padding: const EdgeInsets.only(bottom: 15),
+                ),
               widget.child,
               SliverFillRemaining(
                   fillOverscroll: true,

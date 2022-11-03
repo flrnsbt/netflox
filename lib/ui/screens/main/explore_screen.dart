@@ -53,55 +53,54 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
 
   Widget _bottomAppBar(BuildContext context) {
     return Container(
-        height: 35,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        alignment: Alignment.center,
-        color: Theme.of(context).cardColor,
+        height: 45,
+        alignment: Alignment.centerRight,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        color: const Color.fromARGB(12, 255, 255, 255),
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
             DiscoverFilterParameter>(
           builder: (context, state) {
             final singleValueFilters = state.toMap().entries.where((e) {
               return e.value != null && e.value is! List;
             }).toList();
-            return Center(
-              child: ListView.separated(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (BuildContext context, int index) {
-                  final filter = singleValueFilters[index];
-                  dynamic filterValue = filter.value;
-                  if (filterValue is! Language) {
-                    filterValue = filterValue.toString().tr(context);
-                  } else {
-                    filterValue = filterValue.tr(context);
-                  }
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "${filter.key.tr(context)}:",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 13),
+            return ListView.separated(
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (BuildContext context, int index) {
+                final filter = singleValueFilters[index];
+                dynamic filterValue = filter.value;
+                if (filterValue is! Language) {
+                  filterValue = filterValue.toString().tr(context);
+                } else {
+                  filterValue = filterValue.tr(context);
+                }
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${filter.key.tr(context)}:",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      filterValue,
+                      style: const TextStyle(
+                        fontSize: 12,
                       ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        filterValue,
-                        style: const TextStyle(
-                          fontSize: 12,
-                        ),
-                      )
-                    ],
-                  );
-                },
-                itemCount: singleValueFilters.length,
-                separatorBuilder: (BuildContext context, int index) =>
-                    const VerticalDivider(
-                  thickness: 2,
-                  indent: 5,
-                  endIndent: 5,
-                ),
+                    )
+                  ],
+                );
+              },
+              itemCount: singleValueFilters.length,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const VerticalDivider(
+                thickness: 2,
+                indent: 5,
+                endIndent: 5,
               ),
             );
           },
@@ -131,6 +130,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
         elevation: 10,
         titleSpacing: 0,
         snap: true,
+        backgroundColor: Theme.of(context).backgroundColor,
         centerTitle: false,
         leading: const Icon(Icons.explore),
         title: const Text(
@@ -138,7 +138,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ).tr(),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
+          preferredSize: const Size.fromHeight(45),
           child: _bottomAppBar(context),
         ),
         actions: [
