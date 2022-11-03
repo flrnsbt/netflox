@@ -13,6 +13,7 @@ import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/default_sliver_grid.dart';
 import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
 import '../../widgets/paged_sliver_grid_view.dart';
+import '../buttons/refresh_button.dart';
 import '../error_widget.dart';
 
 class LibraryExplorerWidget extends StatelessWidget {
@@ -73,7 +74,7 @@ class LibraryExplorerWidget extends StatelessWidget {
       bottom: PreferredSize(
           preferredSize: const Size.fromHeight(40),
           child: Padding(
-            padding: const EdgeInsets.only(left: 25, right: 5),
+            padding: const EdgeInsets.only(left: 20, right: 5),
             child: BlocBuilder<PagedDataFilterManager<LibraryFilterParameter>,
                 LibraryFilterParameter>(builder: (context, state) {
               return Row(
@@ -117,9 +118,16 @@ class LibraryExplorerWidget extends StatelessWidget {
                 context.read<LibraryMediaExploreBloc>()),
             errorBuilder: (context, [error]) {
               if (_data.isNotEmpty) {
-                return CustomErrorWidget.from(
-                  error: error,
-                  showDescription: false,
+                return CustomErrorWidget(
+                  errorDescription: error?.toString(),
+                );
+              } else {
+                return RefreshButton(
+                  onPressed: () {
+                    context
+                        .read<LibraryMediaExploreBloc>()
+                        .add(PagedDataCollectionFetchEvent.refresh);
+                  },
                 );
               }
             },

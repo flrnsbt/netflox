@@ -2,13 +2,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/models/tmdb/filter_parameter.dart';
 import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
+import 'package:netflox/data/models/tmdb/type.dart';
+import 'package:netflox/ui/widgets/buttons/refresh_button.dart';
 import 'package:netflox/ui/widgets/error_widget.dart';
 import 'package:netflox/ui/widgets/faded_edge_widget.dart';
 import 'package:netflox/ui/widgets/search_bar.dart';
+import 'package:nil/nil.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_collection_fetch_bloc.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
@@ -78,7 +82,7 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
   @override
   Widget build(BuildContext context) {
     return FadedEdgeWidget(
-      show: context.read<ThemeDataCubit>().state.mode == ThemeMode.dark,
+      show: context.read<ThemeDataCubit>().state.brightness == ThemeMode.dark,
       startStop: 0.05,
       endStop: 0,
       child: SafeArea(
@@ -90,12 +94,29 @@ class SearchScreen extends StatelessWidget with AutoRouteWrapper, RouteAware {
                   controller: LoadingIndicatorController.from(
                       context.read<TMDBPrimaryMediaSearchBloc>()),
                   errorBuilder: (context, [error]) {
-                    if (_data.isNotEmpty) {
-                      return CustomErrorWidget.from(
-                        error: error,
-                        showDescription: false,
-                      );
+                    if (_data.isEmpty) {
+                      if (context
+                              .read<
+                                  PagedDataFilterManager<
+                                      SearchFilterParameter>>()
+                              .state
+                              .type !=
+                          TMDBType.person) {
+                        return RefreshButton(
+                          onPressed: () {
+                            context
+                                .read<TMDBPrimaryMediaSearchBloc>()
+                                .add(PagedDataCollectionFetchEvent.refresh);
+                          },
+                        );
+                      }
+                      error = 'no-search-terms-provided'.tr(context);
                     }
+                    return CustomErrorWidget(
+                      errorDescription: error?.toString(),
+                      // showTitle: false,
+                      leading: const Nil(),
+                    );
                   },
                 ),
                 onEvent: (eventType) {

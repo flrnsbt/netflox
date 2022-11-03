@@ -13,6 +13,7 @@ import '../../../data/blocs/connectivity/connectivity_manager.dart';
 import '../../../data/blocs/data_fetcher/basic_server_fetch_state.dart';
 import '../../../data/blocs/data_fetcher/paged_data_filter_manager.dart';
 import '../../../data/blocs/data_fetcher/tmdb/discover_bloc.dart';
+import '../../widgets/buttons/refresh_button.dart';
 import '../../widgets/custom_awesome_dialog.dart';
 import '../../widgets/error_widget.dart';
 import '../../widgets/tmdb/filters/filter_menu_dialog.dart';
@@ -55,7 +56,7 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
         height: 35,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,
-        color: Theme.of(context).highlightColor,
+        color: Theme.of(context).cardColor,
         child: BlocBuilder<PagedDataFilterManager<DiscoverFilterParameter>,
             DiscoverFilterParameter>(
           builder: (context, state) {
@@ -163,6 +164,14 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
               error: error,
               showDescription: false,
             );
+          } else {
+            return RefreshButton(
+              onPressed: () {
+                context
+                    .read<TMDBMultimediaDiscoverBloc>()
+                    .add(PagedDataCollectionFetchEvent.refresh);
+              },
+            );
           }
         },
       ),
@@ -189,11 +198,11 @@ class ExploreScreen extends StatelessWidget with AutoRouteWrapper {
       }, builder: (context, state) {
         return SliverList(
             delegate: SliverChildBuilderDelegate(
-                ((context, index) => TMDBListMediaCard(
+                (context, index) => TMDBListMediaCard(
                     media: _data.elementAt(index),
                     onTap: (media) {
                       TMDBMediaRouteHelper.pushRoute(context, media);
-                    })),
+                    }),
                 childCount: _data.length));
       }),
     );

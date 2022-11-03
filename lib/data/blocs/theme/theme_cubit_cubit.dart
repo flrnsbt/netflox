@@ -1,8 +1,8 @@
 import 'dart:ui';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../services/shared_preferences.dart';
 
 class ThemeDataCubit extends Cubit<ThemeDataState> {
@@ -24,11 +24,13 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
     textTheme: const TextTheme(
         subtitle1:
             TextStyle(fontSize: 20, color: Color.fromARGB(255, 33, 33, 33))),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
         elevation: 0,
-        titleTextStyle: TextStyle(color: Color.fromARGB(255, 24, 24, 24)),
-        backgroundColor: Color.fromARGB(255, 239, 239, 239),
-        foregroundColor: Color.fromARGB(255, 39, 39, 39)),
+        systemOverlayStyle: SystemUiOverlayStyle.dark
+            .copyWith(statusBarColor: Colors.transparent),
+        titleTextStyle: const TextStyle(color: Color.fromARGB(255, 24, 24, 24)),
+        backgroundColor: const Color.fromARGB(255, 239, 239, 239),
+        foregroundColor: const Color.fromARGB(255, 39, 39, 39)),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         selectedItemColor: Colors.pink,
         type: BottomNavigationBarType.fixed,
@@ -47,9 +49,11 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
             fontSize: 16,
           ),
           backgroundColor: Color.fromARGB(255, 22, 22, 22)),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
           elevation: 0,
-          backgroundColor: Color.fromARGB(255, 5, 5, 5),
+          systemOverlayStyle: SystemUiOverlayStyle.light
+              .copyWith(statusBarColor: Colors.transparent),
+          backgroundColor: const Color.fromARGB(255, 5, 5, 5),
           foregroundColor: Colors.white),
       cardColor: const Color.fromARGB(255, 22, 22, 22),
       canvasColor: const Color.fromARGB(255, 8, 8, 8),
@@ -88,21 +92,22 @@ class ThemeDataCubit extends Cubit<ThemeDataState> {
     return ThemeDataState(mode, data);
   }
 
-  Future<void> changeMode(Brightness mode) async {
-    await SharedPreferenceService.instance.set("netflox_theme_mode", mode.name);
-    emit(_get(mode));
+  Future<void> change(Brightness brightness) async {
+    await SharedPreferenceService.instance
+        .set("netflox_theme_mode", brightness.name);
+    emit(_get(brightness));
   }
 }
 
 class ThemeDataState extends Equatable {
-  final Brightness mode;
+  final Brightness brightness;
   final ThemeData data;
 
   static dark(ThemeData data) => ThemeDataState(Brightness.dark, data);
   static light(ThemeData data) => ThemeDataState(Brightness.light, data);
 
-  const ThemeDataState(this.mode, this.data);
+  const ThemeDataState(this.brightness, this.data);
 
   @override
-  List<Object?> get props => [mode];
+  List<Object?> get props => [brightness];
 }

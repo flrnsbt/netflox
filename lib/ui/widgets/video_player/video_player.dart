@@ -13,12 +13,11 @@ import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:netflox/ui/widgets/video_player/subtitle_picker.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
 import 'package:video_player/video_player.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'custom_video_player_control.dart';
 
 // ignore: unused_import
-import 'package:video_player_macos/video_player_macos.dart';
+// import 'package:video_player_macos/video_player_macos.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
   final String? videoUrl;
@@ -69,7 +68,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
   VideoPlayerController? _videoPlayerController;
   late SubtitlePicker _subtitlePicker;
   OptionsTranslation? _translation;
-  Key? _visibilityKey;
   bool _alreadyPlayed = false;
   bool _initialized = false;
   @override
@@ -150,7 +148,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
           DeviceOrientation.landscapeRight
         ],
         optionsTranslation: _translation);
-    _visibilityKey = Key(_controller.hashCode.toString());
     if (widget.quitOnFinish) {
       _videoPlayerController!.addListener(_playbackListener);
     }
@@ -182,7 +179,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
 
   void _initializeListener() async {
     if (!_initialized && _videoPlayerController!.value.isInitialized) {
-      if (widget.startingTime != null) {
+      if ((widget.startingTime?.inMinutes ?? 0) > 5) {
         _popupContinuePlaybackPrompt();
       }
       setState(() {
@@ -223,9 +220,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
     _videoPlayerController = null;
     _controller = null;
     WidgetsBinding.instance.removeObserver(this);
-    if (_visibilityKey != null) {
-      VisibilityDetectorController.instance.forget(_visibilityKey!);
-    }
     super.dispose();
   }
 
@@ -244,29 +238,18 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
     }
   }
 
-  void _onVisibilityChanged(VisibilityInfo info) {
-    if (_alreadyPlayed && info.visibleFraction < 0.5) {
-      _controller?.pause();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_initialized) {
-      return Theme(
-        data: ThemeDataCubit.darkThemeData,
-        child: Scaffold(
-          extendBody: true,
-          extendBodyBehindAppBar: true,
-          backgroundColor: Colors.black,
-          body: VisibilityDetector(
-              key: _visibilityKey!,
-              onVisibilityChanged: _onVisibilityChanged,
-              child: Chewie(controller: _controller!)),
-        ),
-      );
-    }
-    return const LoadingScreen();
+    return Theme(
+      data: ThemeDataCubit.darkThemeData,
+      child: _initialized
+          ? Scaffold(
+              extendBody: true,
+              extendBodyBehindAppBar: true,
+              body: Chewie(controller: _controller!),
+            )
+          : const LoadingScreen(),
+    );
   }
 }
 

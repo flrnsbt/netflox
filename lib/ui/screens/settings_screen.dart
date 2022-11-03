@@ -3,6 +3,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
@@ -88,10 +89,10 @@ class SettingsScreen extends StatelessWidget {
           ).tr(),
           onValueChanged: (value) {
             if (value != null) {
-              context.read<ThemeDataCubit>().changeMode(value);
+              context.read<ThemeDataCubit>().change(value);
             }
           },
-          currentValue: state.mode,
+          currentValue: state.brightness,
         );
       },
     );
@@ -103,10 +104,6 @@ class SettingsScreen extends StatelessWidget {
         child: Scaffold(
             appBar: AppBar(
               elevation: 0,
-              title: const Text(
-                "settings",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ).tr(),
               backgroundColor: Colors.transparent,
               foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
@@ -246,17 +243,19 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
             ),
           ),
           const SizedBox(
-            height: 15,
+            height: 25,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.user.isAdmin())
                 ElevatedButton(
-                    style: const ButtonStyle(
-                        elevation: MaterialStatePropertyAll(0),
-                        fixedSize:
-                            MaterialStatePropertyAll(Size.fromHeight(40))),
+                    style: ButtonStyle(
+                        shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100))),
+                        elevation: const MaterialStatePropertyAll(0),
+                        fixedSize: const MaterialStatePropertyAll(
+                            Size.fromHeight(40))),
                     onPressed: () => context.router.push(const AdminRoute()),
                     child: AutoSizeText(
                       "admin-panel".tr(context),
@@ -266,9 +265,12 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                       minFontSize: 10,
                     )),
               ElevatedButton(
-                style: const ButtonStyle(
-                    elevation: MaterialStatePropertyAll(0),
-                    fixedSize: MaterialStatePropertyAll(Size.fromHeight(40))),
+                style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100))),
+                    elevation: const MaterialStatePropertyAll(0),
+                    fixedSize:
+                        const MaterialStatePropertyAll(Size.fromHeight(40))),
                 child: AutoSizeText(
                   "sign-out".tr(context),
                   maxLines: 1,
@@ -280,9 +282,9 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
               ),
               ElevatedButton(
                 style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100))),
                     elevation: const MaterialStatePropertyAll(0),
-                    backgroundColor:
-                        MaterialStatePropertyAll(Theme.of(context).hintColor),
                     fixedSize:
                         const MaterialStatePropertyAll(Size.fromHeight(40))),
                 child: AutoSizeText(
@@ -306,7 +308,7 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
                 .toList(),
           ),
           const SizedBox(
-            height: 45,
+            height: 35,
           ),
           Form(
             onWillPop: _onWillPop,
@@ -454,8 +456,8 @@ class _AccountDetailEditorState extends State<_AccountDetailEditor> {
             flex: 1,
             child: ElevatedButton(
               style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(
-                      Theme.of(context).disabledColor)),
+                  backgroundColor:
+                      MaterialStatePropertyAll(Theme.of(context).hintColor)),
               onPressed: () {
                 setState(() {
                   _reset();
@@ -558,7 +560,7 @@ class SettingCard extends StatelessWidget {
               Text(
                 title,
                 style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(

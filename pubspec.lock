@@ -935,7 +935,7 @@ packages:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.0+2"
+    version: "2.2.0+3"
   sqflite_common:
     dependency: transitive
     description:
@@ -1104,13 +1104,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.7"
-  video_player_macos:
-    dependency: "direct main"
-    description:
-      name: video_player_macos
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.6"
   video_player_platform_interface:
     dependency: transitive
     description:

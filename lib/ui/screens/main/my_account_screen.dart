@@ -21,124 +21,121 @@ import '../../widgets/profile_image.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
 import '../tmdb/media_screen.dart';
 
-class MyAccountScreen extends StatelessWidget {
+class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({Key? key}) : super(key: key);
 
   @override
+  State<MyAccountScreen> createState() => _MyAccountScreenState();
+}
+
+class _MyAccountScreenState extends State<MyAccountScreen>
+    with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  Widget _buildAccountInfoCard(BuildContext context) {
+    final user = context.read<AuthCubit>().state.user!;
+    return SizedBox(
+      height: 75,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Material(
+          color: Theme.of(context).cardColor,
+          child: InkWell(
+            onTap: () => context.pushRoute(const SettingsRoute()),
+            child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ProfileImage(
+                      imgUrl: user.imgURL,
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          user.displayName,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        if (user.email != null)
+                          Text(
+                            user.email!,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 12),
+                          ),
+                      ],
+                    ),
+                    const Spacer(),
+                    IconButton(
+                        onPressed: () =>
+                            context.pushRoute(const SettingsRoute()),
+                        icon: Icon(
+                          Icons.settings,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ))
+                  ],
+                )),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(listener: (context, state) {
-      if (state.hasError()) {
-        final exception = NetfloxException.from(state.message!);
-        ErrorDialog.fromException(exception, context);
-      }
-    }, builder: (context, state) {
-      if (state.isLoading()) {
-        return const LoadingScreen();
-      }
-      if (state.isUnauthenticated()) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              "not-logged-in",
-              textAlign: TextAlign.center,
-            ).tr(),
-            const SizedBox(
-              height: 15,
-            ),
-            TextButton(
-                onPressed: () => context.router.push(AuthRoute()),
-                child: const Text("sign-in").tr())
-          ],
-        );
-      }
-      final user = state.user!;
-      final double horizontalPadding = 4.w(context).clamp(15, 100);
-      return SafeArea(
-          minimum: EdgeInsets.only(
-              left: horizontalPadding, right: horizontalPadding, top: 40),
-          child: ListView(shrinkWrap: true, children: [
-            const SizedBox(
-              height: 10,
-            ),
-            SizedBox(
-              height: 75,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Material(
-                  color: Theme.of(context).cardColor,
-                  child: InkWell(
-                    onTap: () => context.pushRoute(const SettingsRoute()),
-                    child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 25),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ProfileImage(
-                              imgUrl: user.imgURL,
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  user.displayName,
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                if (user.email != null)
-                                  Text(
-                                    user.email!,
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                        fontSize: 12),
-                                  ),
-                              ],
-                            ),
-                            const Spacer(),
-                            IconButton(
-                                onPressed: () =>
-                                    context.pushRoute(const SettingsRoute()),
-                                icon: Icon(
-                                  Icons.settings,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ))
-                          ],
-                        )),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            LibraryMediaUserDataLayout(
-              title: 'keep-watching'.tr(context),
-              iconLeading: Icons.play_circle,
-              parameter: const LibraryUserDataFilterParameter(watched: true),
-            ),
-            LibraryMediaUserDataLayout(
-              title: 'favorites'.tr(context),
-              iconLeading: Icons.favorite,
-              parameter: const LibraryUserDataFilterParameter(liked: true),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-          ]));
-    });
+    final double horizontalPadding = 4.w(context).clamp(15, 100);
+    return SafeArea(
+        minimum: EdgeInsets.only(
+            left: horizontalPadding, right: horizontalPadding, top: 40),
+        child: ListView(shrinkWrap: true, children: [
+          const SizedBox(
+            height: 10,
+          ),
+          _buildAccountInfoCard(context),
+          const SizedBox(
+            height: 8,
+          ),
+          LibraryMediaUserDataLayout(
+            title: 'keep-watching'.tr(context),
+            iconLeading: Icons.play_circle,
+            parameter: const LibraryUserDataFilterParameter(watched: true),
+          ),
+          LibraryMediaUserDataLayout(
+            title: 'favorites'.tr(context),
+            iconLeading: Icons.favorite,
+            parameter: const LibraryUserDataFilterParameter(liked: true),
+          ),
+          const SizedBox(
+            height: 30,
+          ),
+        ]));
   }
 }
 

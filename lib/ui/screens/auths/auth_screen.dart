@@ -46,7 +46,6 @@ class AuthFormScreen extends StatelessWidget {
     NetfloxCustomDialog? dialog;
     return Provider(
       dispose: (context, value) {
-        context.read<AuthFormBloc>().close();
         dialog?.dismiss();
       },
       create: (context) => AuthFormBloc(initialMode: mode),

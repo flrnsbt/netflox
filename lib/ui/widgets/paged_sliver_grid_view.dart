@@ -116,12 +116,12 @@ class _PagedSliverScrollViewWrapperState
     final viewportDimension = notification.metrics.viewportDimension;
     if (notification.metrics.pixels >=
         notification.metrics.maxScrollExtent +
-            (platformIsMobile() ? (viewportDimension * 0.05) : 0)) {
+            (platformIsMobile() ? (10 + viewportDimension * 0.03) : 0)) {
       _load();
       return true;
     }
 
-    if (notification.metrics.pixels < -viewportDimension * 0.1) {
+    if (notification.metrics.pixels < -viewportDimension * 0.15) {
       _requestRefresh();
       return true;
     }
@@ -150,10 +150,7 @@ class _PagedSliverScrollViewWrapperState
             scrollDirection: widget.scrollDirection,
             physics: _physics,
             slivers: [
-              if (_header != null)
-                SliverPadding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    sliver: _header!),
+              if (_header != null) _header!,
               widget.child,
               SliverFillRemaining(
                   fillOverscroll: true,
@@ -182,7 +179,7 @@ class _PagedSliverScrollViewWrapperState
 }
 
 class LoadingIndicator extends StatelessWidget {
-  final BoxConstraints constraints;
+  // final BoxConstraints constraints;
   final Widget? Function(BuildContext context, [Object? error])? errorBuilder;
   final Widget Function(BuildContext context)? loadingBuilder;
   final Widget? Function(BuildContext context, [Object? result])? idleBuilder;
@@ -190,7 +187,7 @@ class LoadingIndicator extends StatelessWidget {
 
   LoadingIndicator(
       {super.key,
-      this.constraints = const BoxConstraints(maxHeight: 50, maxWidth: 100),
+      // this.constraints = const BoxConstraints(maxHeight: 100, maxWidth: 150),
       LoadingIndicatorController? controller,
       this.errorBuilder,
       this.loadingBuilder,
@@ -223,7 +220,7 @@ class LoadingIndicator extends StatelessWidget {
           if (child != null) {
             return Padding(
               padding: const EdgeInsets.all(25),
-              child: ConstrainedBox(constraints: constraints, child: child),
+              child: child,
             );
           }
           return const SizedBox.shrink();
@@ -233,13 +230,14 @@ class LoadingIndicator extends StatelessWidget {
   }
 
   LoadingIndicator copyWith(
-      {BoxConstraints? constraints = const BoxConstraints(maxHeight: 50),
+      {
+      // BoxConstraints? constraints = const BoxConstraints(maxHeight: 50),
       LoadingIndicatorController? controller,
       Widget? Function(BuildContext context, [Object? error])? errorBuilder,
       Widget Function(BuildContext context)? loadingBuilder,
       Widget? Function(BuildContext context, [Object? result])? idleBuilder}) {
     return LoadingIndicator(
-      constraints: constraints ?? this.constraints,
+      // constraints: constraints ?? this.constraints,
       controller: controller ?? _controller,
       errorBuilder: errorBuilder ?? this.errorBuilder,
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,

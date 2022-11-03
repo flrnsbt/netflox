@@ -119,38 +119,47 @@ class _NetfloxAppState extends State<NetfloxApp> {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeDataCubit, ThemeDataState>(
         builder: (context, themeState) {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-          statusBarIconBrightness: MediaQuery.platformBrightnessOf(context),
-          statusBarColor: Colors.transparent));
-      return BlocBuilder<AppLocalization, AppLocalizationState>(
-          builder: (context, state) => KeyedSubtree(
-              key: ValueKey(state),
-              child: MaterialApp.router(
-                builder: _buildResponsiveLayout,
-                scrollBehavior: const MaterialScrollBehavior().copyWith(
-                  dragDevices: {
-                    PointerDeviceKind.mouse,
-                    PointerDeviceKind.touch,
-                    PointerDeviceKind.stylus,
-                    PointerDeviceKind.trackpad,
-                    PointerDeviceKind.unknown
-                  },
-                ),
-                routerDelegate: context.router.delegate(),
-                supportedLocales: AppLocalization.supportedLocales,
-                locale: state.currentLocale,
-                localizationsDelegates: const [
-                  AppLocalizationsDelegate(),
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                routeInformationParser: context.router
-                    .defaultRouteParser(includePrefixMatches: true),
-                theme: themeState.data,
-                debugShowCheckedModeBanner: false,
-              )));
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: _statusBarStyle(themeState.brightness),
+        child: BlocBuilder<AppLocalization, AppLocalizationState>(
+            builder: (context, state) => KeyedSubtree(
+                key: ValueKey(state),
+                child: MaterialApp.router(
+                  builder: _buildResponsiveLayout,
+                  scrollBehavior: const MaterialScrollBehavior().copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.mouse,
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.stylus,
+                      PointerDeviceKind.trackpad,
+                      PointerDeviceKind.unknown
+                    },
+                  ),
+                  routerDelegate: context.router.delegate(),
+                  supportedLocales: AppLocalization.supportedLocales,
+                  locale: state.currentLocale,
+                  localizationsDelegates: const [
+                    AppLocalizationsDelegate(),
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  routeInformationParser: context.router
+                      .defaultRouteParser(includePrefixMatches: true),
+                  theme: themeState.data,
+                  debugShowCheckedModeBanner: false,
+                ))),
+      );
     });
+  }
+
+  SystemUiOverlayStyle _statusBarStyle(Brightness brightness) {
+    final androidStatusBarBrightness =
+        brightness == Brightness.dark ? Brightness.light : Brightness.dark;
+    return SystemUiOverlayStyle(
+        statusBarBrightness: brightness,
+        statusBarIconBrightness: androidStatusBarBrightness,
+        statusBarColor: Colors.transparent);
   }
 }
 

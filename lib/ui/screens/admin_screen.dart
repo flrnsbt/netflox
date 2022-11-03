@@ -34,43 +34,40 @@ class AdminScreen extends StatelessWidget with AutoRouteWrapper {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: LibraryExplorerWidget(
-        title: 'admin-panel',
-        isGridLayout: false,
-        itemBuilder: (context, media) {
-          return TMDBListMediaCard(
-              media: media,
-              action: PopupMenuButton(
-                itemBuilder: (context) {
-                  final popupEntries =
-                      _itemControlButtonBuilder(context, media);
-                  return <PopupMenuEntry>[
-                    for (final e in popupEntries)
-                      PopupMenuItem(
-                          onTap: () {
-                            if (e == "delete") {
-                            } else if (e == "reject") {
-                            } else {
-                              context.pushRoute(UploadRoute(media: media));
-                            }
-                          },
-                          child: Text(
-                            e,
-                            style: const TextStyle(fontSize: 12),
-                          ).tr())
-                  ];
-                },
-                child: Icon(
-                  Icons.menu,
-                  color: Theme.of(context).hintColor,
-                ),
+    return LibraryExplorerWidget(
+      title: 'admin-panel',
+      isGridLayout: false,
+      itemBuilder: (context, media) {
+        return TMDBListMediaCard(
+            media: media,
+            action: PopupMenuButton(
+              itemBuilder: (context) {
+                final popupEntries = _itemControlButtonBuilder(context, media);
+                return <PopupMenuEntry>[
+                  for (final e in popupEntries)
+                    PopupMenuItem(
+                        onTap: () {
+                          if (e == "delete") {
+                          } else if (e == "reject") {
+                          } else {
+                            context.pushRoute(UploadRoute(media: media));
+                          }
+                        },
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 12),
+                        ).tr())
+                ];
+              },
+              child: Icon(
+                Icons.menu,
+                color: Theme.of(context).hintColor,
               ),
-              onTap: (media) {
-                TMDBMediaRouteHelper.pushRoute(context, media);
-              });
-        },
-      ),
+            ),
+            onTap: (media) {
+              TMDBMediaRouteHelper.pushRoute(context, media);
+            });
+      },
     );
   }
 

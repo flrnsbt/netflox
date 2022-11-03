@@ -6,20 +6,21 @@ class CustomErrorWidget extends StatelessWidget {
   final String? errorTitle;
   final String? errorDescription;
   final Widget? bottom;
-  final Widget image;
+  final Widget leading;
   final double maxWidth;
   const CustomErrorWidget(
       {Key? key,
       this.errorTitle,
-      this.errorDescription,
+      String? errorDescription,
       this.bottom,
       this.maxWidth = 400,
-      Widget? image})
-      : image = image ??
+      Widget? leading})
+      : leading = leading ??
             const Icon(
               Icons.warning,
               size: 36,
             ),
+        errorDescription = errorDescription ?? 'error',
         super(key: key);
 
   factory CustomErrorWidget.from(
@@ -27,7 +28,7 @@ class CustomErrorWidget extends StatelessWidget {
       bool showDescription = true,
       Object? error,
       Widget? bottom,
-      Widget? image}) {
+      Widget? leading}) {
     final exception = NetfloxException.from(error);
     String? desc;
     String? title;
@@ -38,7 +39,7 @@ class CustomErrorWidget extends StatelessWidget {
       title = exception.errorCode;
     }
     return CustomErrorWidget(
-      image: image,
+      leading: leading,
       errorTitle: title,
       errorDescription: desc,
       bottom: bottom,
@@ -57,7 +58,7 @@ class CustomErrorWidget extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(bottom: 10),
             constraints: BoxConstraints.loose(const Size.fromHeight(200)),
-            child: image,
+            child: leading,
           ),
           if (errorTitle != null)
             Padding(
@@ -65,7 +66,7 @@ class CustomErrorWidget extends StatelessWidget {
               child: Text(
                 errorTitle!,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                 ),
               ).tr(),
             ),

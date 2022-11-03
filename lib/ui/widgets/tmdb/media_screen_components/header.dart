@@ -19,10 +19,13 @@ class TMDBScreenHeaderContent extends StatelessWidget {
   Widget? _buildBackgroundImage(BuildContext context) {
     final img = image;
     if (img != null) {
-      return TMDBImageWidget(
-        img: img,
-        showError: false,
-        showProgressIndicator: false,
+      return InkWell(
+        onTap: () => _showImageDialog(context),
+        child: TMDBImageWidget(
+          img: img,
+          showError: false,
+          showProgressIndicator: false,
+        ),
       );
     }
     return null;
@@ -35,30 +38,28 @@ class TMDBScreenHeaderContent extends StatelessWidget {
     return null;
   }
 
+  Future<void> _showImageDialog(BuildContext context) => showDialog(
+      useRootNavigator: false,
+      context: context,
+      builder: (context) => Dialog(
+            child: GestureDetector(
+              onTap: () {
+                context.router.pop();
+              },
+              child: TMDBImageWidget(
+                fit: BoxFit.contain,
+                img: element.img,
+              ),
+            ),
+          ));
+
   Widget _buildImg(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 20),
       child: AspectRatio(
         aspectRatio: 2 / 3,
         child: InkWell(
-          onTap: () => showDialog(
-              useRootNavigator: false,
-              context: context,
-              builder: (context) => ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 400, maxHeight: 500),
-                    child: Material(
-                      child: InkWell(
-                        onTap: () {
-                          context.router.pop();
-                        },
-                        child: TMDBImageWidget(
-                          fit: BoxFit.contain,
-                          img: element.img,
-                        ),
-                      ),
-                    ),
-                  )),
+          onTap: () => _showImageDialog(context),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15),
             child: TMDBImageWidget(

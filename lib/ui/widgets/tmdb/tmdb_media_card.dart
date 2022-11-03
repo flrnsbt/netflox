@@ -87,7 +87,7 @@ class TMDBMediaCard<T extends TMDBMedia> extends StatelessWidget {
           textDirection: Directionality.maybeOf(context),
         ),
         child: Material(
-            color: Theme.of(context).canvasColor,
+            color: Theme.of(context).highlightColor,
             child: InkWell(
               onHover: (value) {
                 hovered.value = value;

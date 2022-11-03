@@ -211,14 +211,14 @@ class _CarouselLayoutState extends State<_CarouselLayout> {
   }
 
   Widget _buildController() {
-    final color = _highlightControllers ? Colors.white60 : Colors.white10;
+    final color = _highlightControllers ? Colors.black38 : Colors.black26;
     return Positioned.fill(
       right: kPadding,
       child: Row(
         children: [
           ElevatedButton(
               style: ButtonStyle(
-                  elevation: const MaterialStatePropertyAll(2),
+                  elevation: const MaterialStatePropertyAll(0),
                   padding: const MaterialStatePropertyAll(EdgeInsets.all(10)),
                   shape: const MaterialStatePropertyAll(CircleBorder()),
                   backgroundColor: MaterialStatePropertyAll(color)),
@@ -227,12 +227,13 @@ class _CarouselLayoutState extends State<_CarouselLayout> {
               },
               child: Icon(
                 Icons.arrow_back,
+                size: 20,
                 color: Theme.of(context).backgroundColor.withOpacity(0.7),
               )),
           const Spacer(),
           ElevatedButton(
               style: ButtonStyle(
-                  elevation: const MaterialStatePropertyAll(2),
+                  elevation: const MaterialStatePropertyAll(0),
                   padding: const MaterialStatePropertyAll(EdgeInsets.all(10)),
                   shape: const MaterialStatePropertyAll(CircleBorder()),
                   backgroundColor: MaterialStatePropertyAll(color)),
@@ -241,6 +242,7 @@ class _CarouselLayoutState extends State<_CarouselLayout> {
               },
               child: Icon(
                 Icons.arrow_forward,
+                size: 20,
                 color: Theme.of(context).backgroundColor.withOpacity(0.7),
               )),
         ],
