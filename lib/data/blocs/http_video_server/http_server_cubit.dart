@@ -73,7 +73,7 @@ class HTTPServerVideoBinderCubit extends Cubit<HttpVideoBinderState> {
               }
 
               final stream = video
-                  .read(offset: start, length: retrievedLength)!
+                  .read(offset: start, length: retrievedLength)
                   .handleError((e) {
                 throw e;
               });

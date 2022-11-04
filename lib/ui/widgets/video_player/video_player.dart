@@ -17,7 +17,7 @@ import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'custom_video_player_control.dart';
 
 // ignore: unused_import
-// import 'package:video_player_macos/video_player_macos.dart';
+import 'package:video_player_macos/video_player_macos.dart';
 
 class NetfloxVideoPlayer extends StatefulWidget {
   final String? videoUrl;
@@ -148,9 +148,6 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
           DeviceOrientation.landscapeRight
         ],
         optionsTranslation: _translation);
-    if (widget.quitOnFinish) {
-      _videoPlayerController!.addListener(_playbackListener);
-    }
   }
 
   void _playbackListener() {
@@ -193,6 +190,9 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       _videoPlayerController?.removeListener(_initializeListener);
       await Future.delayed(const Duration(seconds: 1));
       _alreadyPlayed = true;
+      if (widget.quitOnFinish) {
+        _videoPlayerController!.addListener(_playbackListener);
+      }
     }
   }
 
@@ -244,9 +244,7 @@ class _NetfloxVideoPlayerState extends State<NetfloxVideoPlayer>
       data: ThemeDataCubit.darkThemeData,
       child: _initialized
           ? Scaffold(
-              extendBody: true,
-              extendBodyBehindAppBar: true,
-              body: Chewie(controller: _controller!),
+              body: ClipRect(child: Chewie(controller: _controller!)),
             )
           : const LoadingScreen(),
     );
@@ -282,7 +280,7 @@ class SubtitleBuilder extends StatelessWidget {
   }
 
   double _getFontSize(BuildContext context) {
-    var fontSize = 5.hw(context);
+    var fontSize = 4.5.hw(context);
     if (MediaQuery.of(context).orientation == Orientation.portrait) {
       fontSize /= 2;
     }

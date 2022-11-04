@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/models/exception.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
-import 'package:netflox/ui/screens/loading_screen.dart';
-import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:netflox/ui/widgets/default_shimmer.dart';
 import 'package:netflox/ui/widgets/tmdb/tmdb_media_card.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
@@ -21,14 +18,9 @@ import '../../widgets/profile_image.dart';
 import '../../widgets/tmdb/list_tmdb_media_card.dart';
 import '../tmdb/media_screen.dart';
 
-class MyAccountScreen extends StatefulWidget {
-  const MyAccountScreen({Key? key}) : super(key: key);
+class MyAccountScreen extends StatelessWidget {
+  const MyAccountScreen({super.key});
 
-  @override
-  State<MyAccountScreen> createState() => _MyAccountScreenState();
-}
-
-class _MyAccountScreenState extends State<MyAccountScreen> {
   Widget _buildAccountInfoCard(BuildContext context) {
     final user = context.read<AuthCubit>().state.user!;
     return SizedBox(
@@ -93,10 +85,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     return SafeArea(
         minimum: EdgeInsets.only(
             left: horizontalPadding, right: horizontalPadding, top: 40),
-        child: ListView(shrinkWrap: true, children: [
-          const SizedBox(
-            height: 10,
-          ),
+        child: ListView(padding: EdgeInsets.zero, shrinkWrap: true, children: [
           _buildAccountInfoCard(context),
           const SizedBox(
             height: 8,
@@ -146,7 +135,6 @@ class _LibraryMediaUserDataLayoutState
     bloc = LibraryMediaUserDataExploreBloc(context);
     bloc!.add(PagedDataCollectionFetchEvent.setParameter(widget.parameter));
     final loadingController = LoadingIndicatorController.from(bloc!);
-
     _loadingIndicator = LoadingIndicator(
       controller: loadingController,
     );
@@ -164,6 +152,7 @@ class _LibraryMediaUserDataLayoutState
       body: PagedSliverScrollViewWrapper(
         showFloatingReturnBeginButton: true,
         header: SliverAppBar(
+          backgroundColor: Colors.transparent,
           title: Text(
             widget.title,
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
@@ -186,6 +175,9 @@ class _LibraryMediaUserDataLayoutState
   void _onPagedScrollViewEvent(eventType) {
     if (eventType == PagedSliverScrollViewEventType.load) {
       bloc?.add(PagedDataCollectionFetchEvent.nextPage);
+    } else if (eventType == PagedSliverScrollViewEventType.refresh) {
+      data.clear();
+      bloc?.add(const PagedDataCollectionRefreshEvent());
     }
   }
 
@@ -264,7 +256,7 @@ class _LibraryMediaUserDataLayoutState
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         minimumSize: const MaterialStatePropertyAll(Size.zero),
                         padding: const MaterialStatePropertyAll(
-                            EdgeInsets.symmetric(vertical: 5, horizontal: 10)),
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 15)),
                       ),
                       child: Text(
                         'see-all',
