@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
 import 'package:netflox/data/repositories/tmdb_repository.dart';
 import 'package:netflox/services/local_storage_manager.dart';

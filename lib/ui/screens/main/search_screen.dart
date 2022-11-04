@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/models/tmdb/filter_parameter.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/data/models/tmdb/type.dart';
 import 'package:netflox/ui/widgets/buttons/refresh_button.dart';

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/app_localization_cubit.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/data/models/user/user.dart';
 import 'package:netflox/ui/router/idle_timed_auto_push_route.dart';
 import 'package:netflox/ui/widgets/constrained_large_screen_widget.dart';

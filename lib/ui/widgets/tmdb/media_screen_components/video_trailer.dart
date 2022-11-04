@@ -46,6 +46,6 @@ class VideoTrailer extends StatelessWidget {
         }),
       );
     }
-    return const Nil();
+    return const SizedBox.shrink();
   }
 }

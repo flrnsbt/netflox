@@ -153,7 +153,7 @@ class _PagedSliverScrollViewWrapperState
               if (_header != null)
                 SliverPadding(
                   sliver: _header!,
-                  padding: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.only(bottom: 10),
                 ),
               widget.child,
               SliverFillRemaining(

@@ -6,7 +6,7 @@ import 'package:netflox/data/models/tmdb/media.dart';
 import '../../framed_text.dart';
 import '../../rating_widget.dart';
 import 'favorite_button.dart';
-import 'library_media_user_widget.dart';
+import 'library_media_status_widget.dart';
 
 class MultimediaDefaultHeader extends StatelessWidget {
   final TMDBMultiMedia media;
@@ -29,7 +29,7 @@ class MultimediaDefaultHeader extends StatelessWidget {
               minFontSize: 18,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 55,
+                fontSize: 45,
                 fontWeight: FontWeight.bold,
               ),
             ),

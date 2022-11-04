@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'package:netflox/data/blocs/connectivity/connectivity_manager.dart';
 import 'package:netflox/data/blocs/sftp_server/ssh_connection/ssh_connection.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';

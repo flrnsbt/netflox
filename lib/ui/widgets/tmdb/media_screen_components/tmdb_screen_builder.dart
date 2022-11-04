@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/data/models/tmdb/media.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
-import '../../../../data/blocs/theme/theme_cubit_cubit.dart';
+import '../../../../data/blocs/theme/theme_cubit.dart';
 import '../../../../data/models/tmdb/element.dart';
 import '../../buttons/home_button.dart';
 import 'header.dart';

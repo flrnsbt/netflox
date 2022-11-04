@@ -232,7 +232,7 @@ class LoadingDialog extends NetfloxCustomDialog {
   @override
   void dismiss() {
     if (_isShowing) {
-      Navigator.of(context).pop();
+      Navigator.maybeOf(context)?.pop();
     }
   }
 }

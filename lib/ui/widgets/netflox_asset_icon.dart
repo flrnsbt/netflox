@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/blocs/theme/theme_cubit_cubit.dart';
+import '../../data/blocs/theme/theme_cubit.dart';
 
 class NetfloxAssetIcon extends StatelessWidget {
   final double height;

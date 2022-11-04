@@ -11,7 +11,7 @@ import '../../../../data/blocs/data_fetcher/tmdb/element_cubit.dart';
 
 export 'favorite_button.dart';
 export 'header.dart';
-export 'library_media_user_widget.dart';
+export 'library_media_status_widget.dart';
 export 'person_casting_grid_layout.dart';
 export 'tmdb_list_media_layout.dart';
 export 'tmdb_screen_builder.dart';

@@ -4,7 +4,7 @@ import 'package:group_button/group_button.dart';
 import 'package:language_picker/language_picker_dialog.dart';
 import 'package:language_picker/languages.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/data/models/language.dart';
 import 'package:netflox/data/models/tmdb/genre.dart';
 import 'package:netflox/data/models/tmdb/media.dart';

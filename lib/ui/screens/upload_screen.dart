@@ -23,7 +23,7 @@ import 'package:netflox/ui/widgets/upload_process_provider_widget.dart';
 import 'package:netflox/ui/widgets/video_player/video_player.dart';
 import '../../data/blocs/sftp_server/sftp_file_transfer/sftp_media_file_access_cubit.dart';
 import '../../data/blocs/sftp_server/sftp_file_transfer/sftp_upload_media_files_cubit.dart';
-import '../../data/blocs/theme/theme_cubit_cubit.dart';
+import '../../data/blocs/theme/theme_cubit.dart';
 import '../../data/models/language.dart';
 import '../../data/models/tmdb/library_files.dart';
 import '../widgets/country_flag_icon.dart';

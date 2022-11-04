@@ -6,7 +6,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:language_picker/languages.dart';
-import 'package:netflox/data/blocs/theme/theme_cubit_cubit.dart';
+import 'package:netflox/data/blocs/theme/theme_cubit.dart';
 import 'package:netflox/ui/screens/error_screen.dart';
 import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
