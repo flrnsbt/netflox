@@ -22,24 +22,22 @@ import 'package:netflox/main.dart' as _i1;
 import 'package:netflox/ui/screens/admin_screen.dart' as _i11;
 import 'package:netflox/ui/screens/auths/auth_screen.dart' as _i10;
 import 'package:netflox/ui/screens/auths/forgot_password_screen.dart' as _i18;
-import 'package:netflox/ui/screens/main/my_account_screen.dart' as _i17;
 import 'package:netflox/ui/screens/auths/unverified_user_screen.dart' as _i4;
 import 'package:netflox/ui/screens/download_screen.dart' as _i9;
 import 'package:netflox/ui/screens/error_screen.dart' as _i2;
 import 'package:netflox/ui/screens/main/explore_screen.dart' as _i15;
 import 'package:netflox/ui/screens/main/library_screen.dart' as _i16;
+import 'package:netflox/ui/screens/main/my_account_screen.dart' as _i17;
 import 'package:netflox/ui/screens/main/search_screen.dart' as _i14;
 import 'package:netflox/ui/screens/main/tab_home_screen.dart' as _i3;
 import 'package:netflox/ui/screens/settings_screen.dart' as _i12;
-import 'package:netflox/ui/screens/video_stream_screen.dart' as _i8;
 import 'package:netflox/ui/screens/tmdb/media_screen.dart' as _i5;
 import 'package:netflox/ui/screens/tmdb/tv_show_episode_screen.dart' as _i7;
 import 'package:netflox/ui/screens/tmdb/tv_show_season_screen.dart' as _i6;
 import 'package:netflox/ui/screens/upload_screen.dart' as _i13;
+import 'package:netflox/ui/screens/video_stream_screen.dart' as _i8;
 
-import 'idle_timed_auto_push_route.dart';
-
-class NetfloxRouter extends _i19.RootStackRouter with IdleTimedPushAutoRoute {
+class NetfloxRouter extends _i19.RootStackRouter {
   NetfloxRouter([_i20.GlobalKey<_i20.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
@@ -190,7 +188,7 @@ class NetfloxRouter extends _i19.RootStackRouter with IdleTimedPushAutoRoute {
     AdminRoute.name: (routeData) {
       return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i11.AdminScreen(),
+        child: _i19.WrappedRoute(child: const _i11.AdminScreen()),
       );
     },
     SettingsRoute.name: (routeData) {
@@ -242,13 +240,13 @@ class NetfloxRouter extends _i19.RootStackRouter with IdleTimedPushAutoRoute {
     LibraryRoute.name: (routeData) {
       return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: const _i16.LibraryScreen(),
+        child: _i19.WrappedRoute(child: const _i16.LibraryScreen()),
       );
     },
     MyAccountRoute.name: (routeData) {
       return _i19.AdaptivePage<dynamic>(
         routeData: routeData,
-        child: _i17.MyAccountScreen(),
+        child: const _i17.MyAccountScreen(),
       );
     },
     ForgotPasswordRoute.name: (routeData) {
@@ -284,15 +282,8 @@ class NetfloxRouter extends _i19.RootStackRouter with IdleTimedPushAutoRoute {
               parent: StackRoute.name,
               children: [
                 _i19.RouteConfig(
-                  '#redirect',
-                  path: '',
-                  parent: TabHomeRoute.name,
-                  redirectTo: 'search',
-                  fullMatch: true,
-                ),
-                _i19.RouteConfig(
                   SearchRoute.name,
-                  path: 'search',
+                  path: '',
                   parent: TabHomeRoute.name,
                 ),
                 _i19.RouteConfig(
@@ -893,7 +884,7 @@ class SearchRoute extends _i19.PageRouteInfo<SearchRouteArgs> {
   SearchRoute({_i21.Key? key})
       : super(
           SearchRoute.name,
-          path: 'search',
+          path: '',
           args: SearchRouteArgs(key: key),
         );
 

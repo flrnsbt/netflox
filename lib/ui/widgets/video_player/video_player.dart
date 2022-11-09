@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:chewie/chewie.dart';
@@ -12,6 +11,7 @@ import 'package:netflox/ui/screens/loading_screen.dart';
 import 'package:netflox/ui/widgets/custom_awesome_dialog.dart';
 import 'package:netflox/ui/widgets/video_player/subtitle_picker.dart';
 import 'package:netflox/utils/reponsive_size_helper.dart';
+import 'package:universal_io/io.dart';
 import 'package:video_player/video_player.dart';
 import 'package:netflox/data/blocs/app_localization/extensions.dart';
 import 'custom_video_player_control.dart';

@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netflox/services/json_file_reader.dart';
 import 'package:netflox/services/shared_preferences.dart';
+import 'package:universal_io/io.dart';
 
 Locale localeFromString(String locale) {
   final array = locale.split("_");

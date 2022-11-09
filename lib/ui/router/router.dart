@@ -30,7 +30,7 @@ import '../screens/tmdb/tv_show_season_screen.dart';
           children: [
             AutoRoute(
               page: SearchScreen,
-              path: "search",
+              path: "",
               initial: true,
             ),
             AutoRoute(

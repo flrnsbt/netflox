@@ -7,42 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:834533946583:android:ff62dedda9a3fd45ceec92",
-        "android_client_info": {
-          "package_name": "com.example.netflox"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "834533946583-dg5ch72rebomnqhou9lqcimo7o39mv3h.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCQPpOwFjuMOf_yI_vyZlFut73DptyNwfE"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "834533946583-dg5ch72rebomnqhou9lqcimo7o39mv3h.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "834533946583-8p8qnlan17mdebdc2n8tu59ad9fr845a.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.floriansabate.netflox"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:834533946583:android:b472f410b1701317ceec92",
         "android_client_info": {
           "package_name": "com.floriansabate.netflox"

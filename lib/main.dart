@@ -51,7 +51,14 @@ Future<void> main() async {
 
 Future<void> initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await NotificationService.init();
+  await SharedPreferenceService.init();
+  if (!kIsWeb) {
+    await LocalStorageManager.init();
+  }
   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
     if (kDebugMode) {
       return CustomErrorWidget(
@@ -60,12 +67,6 @@ Future<void> initApp() async {
     }
     return const Nil();
   };
-  await SharedPreferenceService.init();
-  await LocalStorageManager.init();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -226,18 +227,25 @@ class ConnectedScreen extends StatelessWidget {
           final language = context.read<AppLocalization>().state.currentLocale;
           final tmdbService = TMDBService(
               repository: tmdbRepository, defaultLanguage: language);
-          return MultiProvider(
-            providers: [
-              BlocProvider<SSHConnectionCubit>(
-                  create: (BuildContext context) =>
-                      SSHConnectionCubit.fromUser(user, state.sshConfig!)),
-              Provider(
-                create: (context) => tmdbService,
-                dispose: (context, value) => value.close(true),
-              )
-            ],
-            child: UploadProcessManager(child: child),
-          );
+          if (!kIsWeb) {
+            return MultiProvider(
+              providers: [
+                BlocProvider<SSHConnectionCubit>(
+                    create: (BuildContext context) =>
+                        SSHConnectionCubit.fromUser(user, state.sshConfig!)),
+                Provider(
+                  create: (context) => tmdbService,
+                  dispose: (context, value) => value.close(true),
+                )
+              ],
+              child: UploadProcessManager(child: child),
+            );
+          } else {
+            return Provider(
+              create: (context) => tmdbService,
+              child: child,
+            );
+          }
         } else if (state.isLoading()) {
           return LoadingScreen(
             loadingMessage: 'fetching-app-config'.tr(context),
